@@ -17,6 +17,7 @@ enum ProfileSettingsModels {
         let phone: String
         let photo: URL?
         let dateOfBirth: String?
+        let createdAt: Date
     }
     
     struct Users: Codable {

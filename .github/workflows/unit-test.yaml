@@ -1,4 +1,4 @@
-name: Test Swift Code
+name: Unit Tests
 
 on:
   push:
@@ -10,7 +10,6 @@ on:
 
 jobs:
   test:
-    name: Run Unit Tests
     runs-on: macos-latest
 
     steps:
@@ -28,20 +27,26 @@ jobs:
             swift package resolve
           fi
 
-      - name: Clean DerivedData
-        run: rm -rf ~/Library/Developer/Xcode/DerivedData/
+      - name: Cache Swift packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.swiftpm
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swiftpm-${{ runner.os }}-
 
       - name: Run Unit Tests
         run: |
+          rm -rf ~/Library/Developer/Xcode/DerivedData/
           mkdir -p Config
           echo "" > Config/config.xcconfig
           xcodebuild test \
-          -scheme chakchat \
-          -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.4' 
+            -scheme chakchat \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.4' \
+            -parallel-testing-enabled YES
 
       - name: Upload test result logs (optional)
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: build/Logs/Test
-
