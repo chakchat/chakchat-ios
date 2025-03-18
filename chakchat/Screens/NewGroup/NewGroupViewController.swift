@@ -250,7 +250,7 @@ final class NewGroupViewController: UIViewController {
             showErrorMessage()
             return
         }
-        interactor.createGroupChat(name, nil, members)
+        interactor.createGroupChat(name, nil, members, iconImageView.image)
     }
     
     private func showErrorMessage() {

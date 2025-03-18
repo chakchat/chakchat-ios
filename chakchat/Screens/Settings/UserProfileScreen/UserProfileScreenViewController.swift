@@ -91,9 +91,6 @@ final class UserProfileScreenViewController: UIViewController {
             let image = ImageCacheManager.shared.getImage(for: url as NSURL)
             iconImageView.image = image
             iconImageView.layer.cornerRadius = 50
-        } else {
-            iconImageView.image = UIImage(systemName: Constants.iconDefaultName, withConfiguration: config)
-            iconImageView.layer.cornerRadius = 50
         }
     }
     

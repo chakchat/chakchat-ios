@@ -78,6 +78,15 @@ final class SettingsScreenViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .languageDidChange, object: nil)
         configureUI()
     }
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            guard let text = nicknameLabel.text else { return }
+            let image = UIProfilePhoto(text, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+            iconImageView.image = image
+        }
+    }
     
     // MARK: - Public Methods
     func configureUserData(_ data: ProfileSettingsModels.ProfileUserData) {
@@ -115,8 +124,6 @@ final class SettingsScreenViewController: UIViewController {
         if let url = photo {
             iconImageView.image = ImageCacheManager.shared.getImage(for: url as NSURL)
             iconImageView.layer.cornerRadius = 40
-        } else {
-            iconImageView.image = UIImage(systemName: Constants.defaultProfileImageSymbol, withConfiguration: config)
         }
     }
     

@@ -32,8 +32,7 @@ enum GroupChatProfileAssembly {
         }
         // интересно как это будет выглядеть
         interactor.onRouteToChatMenu = { [weak coordinator] in
-            coordinator?.popScreen()
-            coordinator?.popScreen()
+            coordinator?.setChatsScreen()
         }
         interactor.onRouteBack = { [weak coordinator] in
             coordinator?.popScreen()
