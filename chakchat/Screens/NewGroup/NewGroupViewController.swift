@@ -28,8 +28,7 @@ final class NewGroupViewController: UIViewController {
     private let titleLabel: UINewGroupTitleLabel = UINewGroupTitleLabel()
     private var searchController: UISearchController = UISearchController()
     private var users: [ProfileSettingsModels.ProfileUserData] = []
-    private var emptyButtonTopConstraint: NSLayoutConstraint!
-    // Clear button. It needed cause there was a problem with pinning table top.
+    private var emptyButtonTopConstraint: NSLayoutConstraint = NSLayoutConstraint()
     private let emptyButton: UIButton = UIButton()
     private let tableView: UITableView = UITableView()
     private var shouldAnimateEmptyButton = false

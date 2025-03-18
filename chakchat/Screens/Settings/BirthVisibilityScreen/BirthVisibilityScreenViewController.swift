@@ -17,7 +17,7 @@ final class BirthVisibilityScreenViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private var selectedIndex: IndexPath?
+    private var selectedIndex: IndexPath = IndexPath()
     private var titleLabel: UILabel = UILabel()
     private var birthVisibilityTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
     private var birthVisibilityData = [
@@ -85,7 +85,7 @@ final class BirthVisibilityScreenViewController: UIViewController {
     // MARK: - Supporting Methods
     // Edits the second section depending on what is selected in the first
     private func updateExceptionsSection() {
-        switch selectedIndex?.row {
+        switch selectedIndex.row {
         case 2:
             birthVisibilityData[1] = [(LocalizationManager.shared.localizedString(for: "users_list"))]
         default:
@@ -94,17 +94,15 @@ final class BirthVisibilityScreenViewController: UIViewController {
     }
     
     private func transferRestriction() -> String {
-        if let selectedIndex {
-            switch selectedIndex.row {
-            case 0:
-                return "everyone"
-            case 1:
-                return "only_me"
-            case 2:
-                return "specified"
-            default:
-                break
-            }
+        switch selectedIndex.row {
+        case 0:
+            return "everyone"
+        case 1:
+            return "only_me"
+        case 2:
+            return "specified"
+        default:
+            break
         }
         return "everyone"
     }
@@ -146,7 +144,7 @@ extension BirthVisibilityScreenViewController: UITableViewDelegate, UITableViewD
         if section == 0 {
             return birthVisibilityData[section].count
         } else {
-            return (selectedIndex!.row == 2) ? birthVisibilityData[section].count : 0
+            return (selectedIndex.row == 2) ? birthVisibilityData[section].count : 0
         }
     }
     
@@ -163,7 +161,7 @@ extension BirthVisibilityScreenViewController: UITableViewDelegate, UITableViewD
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ExceptionsCell.cellIdentifier, for: indexPath) as? ExceptionsCell else {
                 return UITableViewCell()
             }
-            if selectedIndex!.row == 2 {
+            if selectedIndex.row == 2 {
                 let item = birthVisibilityData[indexPath.section][indexPath.row]
                 cell.configure(title: item)
             }
@@ -180,10 +178,8 @@ extension BirthVisibilityScreenViewController: UITableViewDelegate, UITableViewD
         case 0:
             label.text = LocalizationManager.shared.localizedString(for: "who_can_see_birth")
         case 1:
-            if let selected = selectedIndex?.row {
-                if selected != 2 {
-                    break
-                }
+            if selectedIndex.row != 2 {
+                break
             }
             label.text = LocalizationManager.shared.localizedString(for: "exceptions")
         default:
