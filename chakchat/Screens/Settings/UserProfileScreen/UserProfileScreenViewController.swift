@@ -14,6 +14,7 @@ final class UserProfileScreenViewController: UIViewController {
         static let arrowName: String = "arrow.left"
         static let iconDefaultName: String = "camera.circle"
         static let iconSize: CGFloat = 100
+        static let borderWidth: CGFloat = 5
         static let iconTop: CGFloat = 10
         static let nameLabelTop: CGFloat = 10
         static let userTableHorizontal: CGFloat = -15
@@ -69,6 +70,10 @@ final class UserProfileScreenViewController: UIViewController {
             let image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
             iconImageView.image = image
             iconImageView.layer.cornerRadius = 50
+        } else {
+            let image = UIProfilePhoto(userData.name, Constants.iconSize, Constants.borderWidth).getPhoto()
+            iconImageView.layer.cornerRadius = 50
+            iconImageView.image = image
         }
     }
     
@@ -85,9 +90,6 @@ final class UserProfileScreenViewController: UIViewController {
         if let url = photo {
             let image = ImageCacheManager.shared.getImage(for: url as NSURL)
             iconImageView.image = image
-            iconImageView.layer.cornerRadius = 50
-        } else {
-            iconImageView.image = UIImage(systemName: Constants.iconDefaultName, withConfiguration: config)
             iconImageView.layer.cornerRadius = 50
         }
     }

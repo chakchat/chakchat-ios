@@ -67,15 +67,8 @@ final class GroupChatProfileViewController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
         
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            let color = UIColor.random()
-            let image = UIImage.imageWithText(
-                text: groupNameLabel.text ?? "",
-                size: CGSize(width: Constants.configSize, height: Constants.configSize),
-                backgroundColor: Colors.backgroundSettings,
-                textColor: color,
-                borderColor: color,
-                borderWidth: Constants.borderWidth
-            )
+            guard let text = groupNameLabel.text else { return }
+            let image = UIProfilePhoto(text, Constants.imageViewSize, Constants.borderWidth).getPhoto()
             iconImageView.image = image
         }
     }
@@ -184,9 +177,7 @@ final class GroupChatProfileViewController: UIViewController {
         iconImageView.layer.masksToBounds = true
         iconImageView.pinCenterX(view)
         iconImageView.pinTop(view.safeAreaLayoutGuide.topAnchor, Constants.imageViewTop)
-        let gearImage = UIImage(systemName: "camera.circle", withConfiguration: config)
         iconImageView.tintColor = Colors.lightOrange
-        iconImageView.image = gearImage
     }
     
     // MARK: - Initials Configuration

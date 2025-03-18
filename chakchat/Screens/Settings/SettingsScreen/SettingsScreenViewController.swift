@@ -14,6 +14,7 @@ final class SettingsScreenViewController: UIViewController {
     // MARK: - Constants
     private enum Constants {
         static let iconImageSize: CGFloat = 80
+        static let borderWidth: CGFloat = 3
         static let defaultProfileImageSymbol: String = "camera.circle"
         static let backArrowSymbol: String = "arrow.left"
         static let iconTop: CGFloat = 10
@@ -33,7 +34,7 @@ final class SettingsScreenViewController: UIViewController {
         static let tableLabelDifferenceToHeader: CGFloat = -10
         static let labelFontSize: CGFloat = 12
         static let spaceBetweenSections: CGFloat = 30
-        static let cornerRadius: CGFloat = 50
+        static let cornerRadius: CGFloat = 40
     }
     
     // MARK: - Properties
@@ -77,10 +78,21 @@ final class SettingsScreenViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .languageDidChange, object: nil)
         configureUI()
     }
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            guard let text = nicknameLabel.text else { return }
+            let image = UIProfilePhoto(text, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+            iconImageView.image = image
+        }
+    }
     
     // MARK: - Public Methods
     func configureUserData(_ data: ProfileSettingsModels.ProfileUserData) {
-        // if user already loaded his data
+        let image = UIProfilePhoto(data.name, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+        iconImageView.image = image
+        
         if let imageURL = data.photo {
             if let image = ImageCacheManager.shared.getImage(for: imageURL as NSURL) {
                 iconImageView.image = image
@@ -112,8 +124,6 @@ final class SettingsScreenViewController: UIViewController {
         if let url = photo {
             iconImageView.image = ImageCacheManager.shared.getImage(for: url as NSURL)
             iconImageView.layer.cornerRadius = 40
-        } else {
-            iconImageView.image = UIImage(systemName: Constants.defaultProfileImageSymbol, withConfiguration: config)
         }
     }
     
@@ -123,7 +133,7 @@ final class SettingsScreenViewController: UIViewController {
         configureSettingsLabel()
         navigationItem.titleView = settingsLabel
         configureBackButton()
-        configureIconImageView(nil)
+        configureIconImageView()
         interactor.loadUserData()
         configureSettingTableView()
     }
@@ -143,7 +153,7 @@ final class SettingsScreenViewController: UIViewController {
         view.addGestureRecognizer(swipeGesture)
     }
 
-    private func configureIconImageView(_ image: UIImage?) {
+    private func configureIconImageView() {
         view.addSubview(iconImageView)
         iconImageView.setHeight(Constants.iconImageSize)
         iconImageView.setWidth(Constants.iconImageSize)
@@ -152,10 +162,7 @@ final class SettingsScreenViewController: UIViewController {
         iconImageView.layer.masksToBounds = true
         iconImageView.pinCenterX(view)
         iconImageView.pinTop(view.safeAreaLayoutGuide.topAnchor, Constants.iconTop)
-        
-        let gearImage = UIImage(systemName: Constants.defaultProfileImageSymbol, withConfiguration: config)
         iconImageView.tintColor = Colors.lightOrange
-        iconImageView.image = image ?? gearImage
     }
     
     private func configureSettingTableView() {

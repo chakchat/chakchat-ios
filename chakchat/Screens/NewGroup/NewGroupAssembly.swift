@@ -14,9 +14,11 @@ enum NewGroupAssembly {
         let presenter = NewGroupPresenter()
         let userService = UserService()
         let groupChatService = GroupChatService()
+        let fileService = FileStorageService()
         let worker = NewGroupWorker(
             userService: userService,
             groupChatService: groupChatService,
+            fileService: fileService,
             keychainManager: context.keychainManager,
             userDefaultsManager: context.userDefaultsManager,
             coreDataManager: context.coreDataManager

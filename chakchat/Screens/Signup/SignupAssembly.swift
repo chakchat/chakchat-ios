@@ -35,7 +35,7 @@ enum SignupAssembly {
         interactor.onRouteToChatScreen = { [weak context, weak coordinator] state in
             context?.state = state
             print(state)
-            coordinator?.finishSignupFlow()
+            coordinator?.setChatsScreen()
         }
         
         return view

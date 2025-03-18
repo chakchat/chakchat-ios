@@ -76,17 +76,17 @@ final class AppCoordinator {
         navigationController.pushViewController(signupVC, animated: true)
     }
     
-    func finishSignupFlow() {
-        let chatVC = CreateChatScreen()
-        mainChatVC = chatVC
-        navigationController.setViewControllers([chatVC], animated: true)
+    func setChatsScreen() {
+        let mainVC = CreateChatsScreen()
+        mainChatVC = mainVC
+        navigationController.setViewControllers([mainVC], animated: true)
     }
     
     func popScreen() {
         navigationController.popViewController(animated: true)
     }
 
-    private func CreateChatScreen() -> UIViewController {
+    private func CreateChatsScreen() -> UIViewController {
         return ChatsAssembly.build(with: mainAppContext, coordinator: self)
     }
     
@@ -160,7 +160,7 @@ final class AppCoordinator {
         if let mainVC = mainChatVC {
             navigationController.setViewControllers([mainVC, newMessageVC], animated: true)
         } else {
-            let mainVC = CreateChatScreen()
+            let mainVC = CreateChatsScreen()
             navigationController.setViewControllers([mainVC, newMessageVC], animated: true)
         }
     }
@@ -173,7 +173,7 @@ final class AppCoordinator {
         if let mainVC = mainChatVC {
             navigationController.setViewControllers([mainVC, chatVC], animated: true)
         } else {
-            let mainVC = CreateChatScreen()
+            let mainVC = CreateChatsScreen()
             navigationController.setViewControllers([mainVC, chatVC], animated: true)
         }
     }
@@ -197,7 +197,7 @@ final class AppCoordinator {
         if let mainVC = mainChatVC {
             navigationController.setViewControllers([mainVC, groupChatVC], animated: true)
         } else {
-            let mainVC = CreateChatScreen()
+            let mainVC = CreateChatsScreen()
             navigationController.setViewControllers([mainVC, groupChatVC], animated: true)
         }
     }

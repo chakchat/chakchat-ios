@@ -16,6 +16,7 @@ final class ProfileSettingsViewController: UIViewController {
     private enum Constants {
         static let defaultProfileImageSymbol: String = "camera.circle"
         static let iconImageSize: CGFloat = 100
+        static let borderWidth: CGFloat = 5
         static let iconImageViewTop: CGFloat = 0
         static let nameTop: CGFloat = 2
         static let usernameTop: CGFloat = 2.5
@@ -58,8 +59,9 @@ final class ProfileSettingsViewController: UIViewController {
     private var imageURL: URL?
     private let isNicknameCorrect = CurrentValueSubject<Bool, Never>(true)
     private let isApplyEnabled = CurrentValueSubject<Bool, Never>(true)
-    private var editMenuInteraction: UIEditMenuInteraction?
+    private var photoMenu: UIMenu = UIMenu(children: [])
     private let clearButton: UIButton = UIButton(type: .system)
+    
     
     // MARK: - Initialization
     init(interactor: ProfileSettingsScreenBusinessLogic) {
@@ -78,6 +80,17 @@ final class ProfileSettingsViewController: UIViewController {
         interactor.loadUserData()
     }
     
+    // MARK: - Changing image color
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            guard let text = nameTextField.getText() else { return }
+            let image = UIProfilePhoto(text, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+            iconImageView.image = image
+        }
+    }
+    
     // MARK: - Public Methods
     func configureUserData(_ userData: ProfileSettingsModels.ProfileUserData) {
         nameTextField.setText(userData.name)
@@ -89,15 +102,40 @@ final class ProfileSettingsViewController: UIViewController {
             selectedDate = dateFormatter.date(from: birth)
             birthTextField.setText(birth)
         }
+        let editAction = UIAction(
+            title: LocalizationManager.shared.localizedString(for: "edit"),
+            image: UIImage(systemName: "pencil")
+        ) { action in
+            self.chooseImage()
+        }
+        let deleteAction = UIAction(
+            title: LocalizationManager.shared.localizedString(for: "delete"),
+            image: UIImage(systemName: "trash"),
+            attributes: .destructive
+        ) { action in
+            self.sendDeleteImageRequest()
+        }
         if let photoURL = userData.photo {
             let image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
             iconImageView.image = image
             iconImageView.layer.cornerRadius = 50
+            photoMenu = UIMenu(children: [editAction, deleteAction])
+            clearButton.menu = photoMenu
+            clearButton.showsMenuAsPrimaryAction = true
+        } else {
+            let image = UIProfilePhoto(userData.name, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+            iconImageView.layer.cornerRadius = 50
+            iconImageView.image = image
+            photoMenu = UIMenu(children: [editAction])
+            clearButton.menu = photoMenu
+            clearButton.showsMenuAsPrimaryAction = true
         }
     }
     
     func deleteImage() {
-        configureIconImageView()
+        guard let text = nameTextField.getText() else { return }
+        let image = UIProfilePhoto(text, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+        iconImageView.image = image
     }
     
     // MARK: - UI Configuration
@@ -122,7 +160,7 @@ final class ProfileSettingsViewController: UIViewController {
         
         bindDynamicCheck()
     }
-    
+
     private func configureCancelButton() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .plain, target: self, action: #selector(cancelButtonPressed))
         navigationItem.leftBarButtonItem?.tintColor = Colors.lightOrange
@@ -144,11 +182,7 @@ final class ProfileSettingsViewController: UIViewController {
         
         iconImageView.pinCenterX(view)
         iconImageView.pinTop(view.safeAreaLayoutGuide.topAnchor, Constants.iconImageViewTop)
-        
-        let config = UIImage.SymbolConfiguration(pointSize: Constants.iconImageSize, weight: .light, scale: .default)
-        let gearImage = UIImage(systemName: Constants.defaultProfileImageSymbol, withConfiguration: config)
         iconImageView.tintColor = Colors.lightOrange
-        iconImageView.image = gearImage
         
         iconImageView.isUserInteractionEnabled = true
     }
@@ -160,25 +194,6 @@ final class ProfileSettingsViewController: UIViewController {
         clearButton.backgroundColor = .clear
         clearButton.layer.cornerRadius = iconImageView.layer.cornerRadius
         clearButton.layer.masksToBounds = true
-
-        let editAction = UIAction(
-            title: LocalizationManager.shared.localizedString(for: "edit"),
-            image: UIImage(systemName: "pencil")
-        ) { action in
-            self.chooseImage()
-        }
-
-        let deleteAction = UIAction(
-            title: LocalizationManager.shared.localizedString(for: "delete"),
-            image: UIImage(systemName: "trash"),
-            attributes: .destructive
-        ) { action in
-            self.sendDeleteImageRequest()
-        }
-
-        let menu = UIMenu(title: "", children: [editAction, deleteAction])
-        clearButton.menu = menu
-        clearButton.showsMenuAsPrimaryAction = true
 
         iconImageView.addSubview(clearButton)
     }
@@ -481,6 +496,18 @@ extension ProfileSettingsViewController : UIImagePickerControllerDelegate, UINav
             iconImageView.image = pickedImage
             iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
         }
+        let deleteAction = UIAction(
+            title: LocalizationManager.shared.localizedString(for: "delete"),
+            image: UIImage(systemName: "trash"),
+            attributes: .destructive
+        ) { action in
+            self.sendDeleteImageRequest()
+        }
+        var updatedChildren = photoMenu.children
+        updatedChildren.append(deleteAction)
+        photoMenu = photoMenu.replacingChildren(updatedChildren)
+        clearButton.menu = photoMenu
+        clearButton.showsMenuAsPrimaryAction = true
         picker.dismiss(animated: true, completion: nil)
     }
     

@@ -127,16 +127,18 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
     
     func deleteProfilePhoto() {
         worker.deleteProfilePhoto() { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(_):
-                let updatePhotoEvent = UpdatePhotoEvent(newPhoto: nil)
-                self.eventPublisher.publish(event: updatePhotoEvent)
-                presenter.deleteImage()
-            case .failure(let failure):
-                _ = errorHandler.handleError(failure)
-                os_log("Failed to delete photo:\n", log: logger, type: .fault)
-                print(failure)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(_):
+                    let updatePhotoEvent = UpdatePhotoEvent(newPhoto: nil)
+                    self.eventPublisher.publish(event: updatePhotoEvent)
+                    self.presenter.deleteImage()
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to delete photo:\n", log: self.logger, type: .fault)
+                    print(failure)
+                }
             }
         }
     }
