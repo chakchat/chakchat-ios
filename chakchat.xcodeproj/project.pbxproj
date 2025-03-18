@@ -36,7 +36,7 @@
 		AA1C0E4B2D43C9A8008E47D8 /* ProfileSettingsProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1C0E4A2D43C9A8008E47D8 /* ProfileSettingsProtocol.swift */; };
 		AA1C0E4D2D43C9B7008E47D8 /* ProfileSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1C0E4C2D43C9B7008E47D8 /* ProfileSettingsViewController.swift */; };
 		AA22CD7B2D65C5A200A7A4F1 /* IdentityServiceEndpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22CD7A2D65C5A200A7A4F1 /* IdentityServiceEndpoints.swift */; };
-		AA2781582D7A0BB00049ACAF /* CreatedPersonalChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781572D7A0BB00049ACAF /* CreatedPersonalChatEvent.swift */; };
+		AA2781582D7A0BB00049ACAF /* CreatedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781572D7A0BB00049ACAF /* CreatedChatEvent.swift */; };
 		AA27815B2D7AE2300049ACAF /* ChatCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27815A2D7AE2300049ACAF /* ChatCell.swift */; };
 		AA27815E2D7DA14B0049ACAF /* GroupChatAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27815D2D7DA14B0049ACAF /* GroupChatAssembly.swift */; };
 		AA2781602D7DA1540049ACAF /* GroupChatInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27815F2D7DA1540049ACAF /* GroupChatInteractor.swift */; };
@@ -337,7 +337,7 @@
 		AA1C0E4A2D43C9A8008E47D8 /* ProfileSettingsProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsProtocol.swift; sourceTree = "<group>"; };
 		AA1C0E4C2D43C9B7008E47D8 /* ProfileSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsViewController.swift; sourceTree = "<group>"; };
 		AA22CD7A2D65C5A200A7A4F1 /* IdentityServiceEndpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityServiceEndpoints.swift; sourceTree = "<group>"; };
-		AA2781572D7A0BB00049ACAF /* CreatedPersonalChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatedPersonalChatEvent.swift; sourceTree = "<group>"; };
+		AA2781572D7A0BB00049ACAF /* CreatedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatedChatEvent.swift; sourceTree = "<group>"; };
 		AA27815A2D7AE2300049ACAF /* ChatCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatCell.swift; sourceTree = "<group>"; };
 		AA27815D2D7DA14B0049ACAF /* GroupChatAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupChatAssembly.swift; sourceTree = "<group>"; };
 		AA27815F2D7DA1540049ACAF /* GroupChatInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupChatInteractor.swift; sourceTree = "<group>"; };
@@ -670,7 +670,7 @@
 		AA2781562D7A0B990049ACAF /* ChatEvents */ = {
 			isa = PBXGroup;
 			children = (
-				AA2781572D7A0BB00049ACAF /* CreatedPersonalChatEvent.swift */,
+				AA2781572D7A0BB00049ACAF /* CreatedChatEvent.swift */,
 				AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */,
 				AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */,
 				AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */,
@@ -1946,7 +1946,7 @@
 				AAB300E02D6F337200BECA3B /* UpdateServiceProtocol.swift in Sources */,
 				AA2781682D7DA1750049ACAF /* GroupChatProtocols.swift in Sources */,
 				E135ED422D4E7D06006CE143 /* UIProfileTextField.swift in Sources */,
-				AA2781582D7A0BB00049ACAF /* CreatedPersonalChatEvent.swift in Sources */,
+				AA2781582D7A0BB00049ACAF /* CreatedChatEvent.swift in Sources */,
 				AA9B62202D2D5F790064CB23 /* StartViewController.swift in Sources */,
 				E1960A6D2D6DE555008E27C0 /* NewGroupWorker.swift in Sources */,
 				AA87FC712D5503A300E8D066 /* UserProfileScreenPresenter.swift in Sources */,

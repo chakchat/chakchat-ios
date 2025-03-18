@@ -15,6 +15,7 @@ final class NewGroupInteractor: NewGroupBusinessLogic {
     private let presenter: NewGroupPresentationLogic
     private let worker: NewGroupWorkerLogic
     private let errorHandler: ErrorHandlerLogic
+    private let eventPublisher: EventPublisherProtocol
     private let logger: OSLog
     var onRouteToGroupChat: ((ChatsModels.GeneralChatModel.ChatData) -> Void)?
     var onRouteToNewMessageScreen: (() -> Void)?
@@ -24,12 +25,14 @@ final class NewGroupInteractor: NewGroupBusinessLogic {
         presenter: NewGroupPresentationLogic,
         worker: NewGroupWorkerLogic,
         logger: OSLog,
-        errorHandler: ErrorHandlerLogic
+        errorHandler: ErrorHandlerLogic,
+        eventPublisher: EventPublisherProtocol
     ) {
         self.presenter = presenter
         self.worker = worker
         self.logger = logger
         self.errorHandler = errorHandler
+        self.eventPublisher = eventPublisher
     }
     
     func createGroupChat(_ name: String, _ description: String?, _ members: [UUID], _ image: UIImage?) {
@@ -40,7 +43,23 @@ final class NewGroupInteractor: NewGroupBusinessLogic {
                 case .success(let data):
                     if let image {
                         self.uploadGroupPhoto(image, data.chatID)
+                        let event = CreatedChatEvent(
+                            chatID: data.chatID,
+                            type: data.type,
+                            members: data.members,
+                            createdAt: data.createdAt,
+                            info: data.info
+                        )
+                        self.eventPublisher.publish(event: event)
                     } else {
+                        let event = CreatedChatEvent(
+                            chatID: data.chatID,
+                            type: data.type,
+                            members: data.members,
+                            createdAt: data.createdAt,
+                            info: data.info
+                        )
+                        self.eventPublisher.publish(event: event)
                         self.routeToGroupChat(data)
                     }
                 case .failure(let failure):
