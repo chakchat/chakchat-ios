@@ -85,7 +85,7 @@ final class BirthVisibilityScreenViewController: UIViewController {
     // MARK: - Supporting Methods
     // Edits the second section depending on what is selected in the first
     private func updateExceptionsSection() {
-        switch selectedIndex?.row {
+        switch selectedIndex.row {
         case 2:
             birthVisibilityData[1] = [(LocalizationManager.shared.localizedString(for: "users_list"))]
         default:
@@ -94,17 +94,15 @@ final class BirthVisibilityScreenViewController: UIViewController {
     }
     
     private func transferRestriction() -> String {
-        if let selectedIndex {
-            switch selectedIndex.row {
-            case 0:
-                return "everyone"
-            case 1:
-                return "only_me"
-            case 2:
-                return "specified"
-            default:
-                break
-            }
+        switch selectedIndex.row {
+        case 0:
+            return "everyone"
+        case 1:
+            return "only_me"
+        case 2:
+            return "specified"
+        default:
+            break
         }
         return "everyone"
     }

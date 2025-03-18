@@ -105,7 +105,7 @@ final class MessageInputView: UIView {
               let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
         
         let keyboardHeight = keyboardFrame.cgRectValue.height
-        bottomConstraint?.constant = -keyboardHeight
+        bottomConstraint.constant = -keyboardHeight
         
         UIView.animate(withDuration: duration) {
             self.superview?.layoutIfNeeded()
@@ -116,7 +116,7 @@ final class MessageInputView: UIView {
     private func keyboardWillHide(notification: NSNotification) {
         guard let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
         
-        bottomConstraint?.constant = 0
+        bottomConstraint.constant = 0
         
         UIView.animate(withDuration: duration) {
             self.superview?.layoutIfNeeded()
