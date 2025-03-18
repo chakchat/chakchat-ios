@@ -27,7 +27,8 @@ enum NewGroupAssembly {
             presenter: presenter,
             worker: worker,
             logger: context.logger,
-            errorHandler: context.errorHandler
+            errorHandler: context.errorHandler, 
+            eventPublisher: context.eventManager
         )
         interactor.onRouteToGroupChat = { [weak coordinator] chatData in
             coordinator?.showGroupChatScreen(chatData)
