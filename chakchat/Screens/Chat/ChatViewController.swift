@@ -50,15 +50,8 @@ final class ChatViewController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
         
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            let color = UIColor.random()
-            let image = UIImage.imageWithText(
-                text: nicknameLabel.text ?? "",
-                size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
-                backgroundColor: Colors.background,
-                textColor: color,
-                borderColor: color,
-                borderWidth: Constants.borderWidth
-            )
+            guard let text = nicknameLabel.text else { return }
+            let image = UIProfilePhoto(text, Constants.navigationItemHeight, Constants.borderWidth).getPhoto()
             iconImageView.image = image
         }
     }

@@ -67,6 +67,7 @@
 		AA75DCBB2D81C71E00775199 /* DeletedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */; };
 		AA75DCBF2D81E42400775199 /* UpdatedGroupInfoEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBE2D81E42400775199 /* UpdatedGroupInfoEvent.swift */; };
 		AA75DCC12D81E43200775199 /* UpdatedGroupPhotoEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCC02D81E43200775199 /* UpdatedGroupPhotoEvent.swift */; };
+		AA75DCC32D89876C00775199 /* UIProfilePhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCC22D89876C00775199 /* UIProfilePhoto.swift */; };
 		AA7BADE12D3F9E570030AC82 /* ChatsScreenAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BADE02D3F9E570030AC82 /* ChatsScreenAssembly.swift */; };
 		AA7BADE32D3F9F050030AC82 /* ChatsScreenInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BADE22D3F9F050030AC82 /* ChatsScreenInteractor.swift */; };
 		AA7BADE52D3F9F220030AC82 /* ChatsScreenProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BADE42D3F9F220030AC82 /* ChatsScreenProtocols.swift */; };
@@ -367,6 +368,7 @@
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBE2D81E42400775199 /* UpdatedGroupInfoEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatedGroupInfoEvent.swift; sourceTree = "<group>"; };
 		AA75DCC02D81E43200775199 /* UpdatedGroupPhotoEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatedGroupPhotoEvent.swift; sourceTree = "<group>"; };
+		AA75DCC22D89876C00775199 /* UIProfilePhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIProfilePhoto.swift; sourceTree = "<group>"; };
 		AA7BADE02D3F9E570030AC82 /* ChatsScreenAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsScreenAssembly.swift; sourceTree = "<group>"; };
 		AA7BADE22D3F9F050030AC82 /* ChatsScreenInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsScreenInteractor.swift; sourceTree = "<group>"; };
 		AA7BADE42D3F9F220030AC82 /* ChatsScreenProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsScreenProtocols.swift; sourceTree = "<group>"; };
@@ -994,6 +996,7 @@
 				E1960A5D2D6CE42C008E27C0 /* UIUsersSearchViewController.swift */,
 				E1960A6E2D6E0286008E27C0 /* UINewGroupTitleLabel.swift */,
 				E1960A812D7C8010008E27C0 /* UIMessageInputView.swift */,
+				AA75DCC22D89876C00775199 /* UIProfilePhoto.swift */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -1892,6 +1895,7 @@
 				E1960A4B2D6BE159008E27C0 /* BlackListInteractor.swift in Sources */,
 				AA7BADFE2D3FCA610030AC82 /* SettingsScreenProtocols.swift in Sources */,
 				AAB300C92D6F0A6D00BECA3B /* PersonalChatService.swift in Sources */,
+				AA75DCC32D89876C00775199 /* UIProfilePhoto.swift in Sources */,
 				AA9B62412D2EC0170064CB23 /* KeychainManager.swift in Sources */,
 				AA2781812D7DE1DA0049ACAF /* GroupProfileEditViewController.swift in Sources */,
 				E1960A822D7C8010008E27C0 /* UIMessageInputView.swift in Sources */,

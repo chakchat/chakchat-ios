@@ -65,15 +65,8 @@ final class UserProfileViewController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
         
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            let color = UIColor.random()
-            let image = UIImage.imageWithText(
-                text: nicknameLabel.text ?? "",
-                size: CGSize(width: Constants.configSize, height: Constants.configSize),
-                backgroundColor: Colors.backgroundSettings,
-                textColor: color,
-                borderColor: color,
-                borderWidth: Constants.borderWidth
-            )
+            guard let text = nicknameLabel.text else { return }
+            let image = UIProfilePhoto(text, Constants.imageViewSize, Constants.borderWidth).getPhoto()
             iconImageView.image = image
         }
     }
@@ -84,15 +77,7 @@ final class UserProfileViewController: UIViewController {
         _ userData: ProfileSettingsModels.ProfileUserData,
         _ profileConfiguration: ProfileConfiguration
     ) {
-        let color = UIColor.random()
-        let image = UIImage.imageWithText(
-            text: userData.name,
-            size: CGSize(width: Constants.configSize, height: Constants.configSize),
-            backgroundColor: Colors.backgroundSettings,
-            textColor: color,
-            borderColor: color,
-            borderWidth: Constants.borderWidth
-        )
+        let image = UIProfilePhoto(userData.name, Constants.imageViewSize, Constants.borderWidth).getPhoto()
         iconImageView.image = image
         if let photoURL = userData.photo {
             iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
@@ -203,9 +188,7 @@ final class UserProfileViewController: UIViewController {
         iconImageView.layer.masksToBounds = true
         iconImageView.pinCenterX(view)
         iconImageView.pinTop(view.safeAreaLayoutGuide.topAnchor, Constants.imageViewTop)
-        let gearImage = UIImage(systemName: "camera.circle", withConfiguration: config)
         iconImageView.tintColor = Colors.lightOrange
-        iconImageView.image = gearImage
     }
     
     private func configureInitials() {
