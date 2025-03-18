@@ -28,7 +28,7 @@ final class MessageInputView: UIView {
     private let textField = UITextField()
     weak var interactor: SendingMessagesProtocol?
     private let sendButton = UIButton()
-    var bottomConstraint: NSLayoutConstraint!
+    var bottomConstraint: NSLayoutConstraint = NSLayoutConstraint()
     
     // MARK: - Initialization
     override init(frame: CGRect) {

@@ -19,7 +19,7 @@ final class OnlineVisibilityScreenViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private var selectedIndex: IndexPath?
+    private var selectedIndex: IndexPath = IndexPath()
     private var titleLabel: UILabel = UILabel()
     private var onlineVisibilityTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
     private var onlineVisibilityData = [
@@ -87,7 +87,7 @@ final class OnlineVisibilityScreenViewController: UIViewController {
     // MARK: - Supporting Methods
     // Edits the second section depending on what is selected in the first.
     private func updateExceptionsSection() {
-        switch selectedIndex?.row {
+        switch selectedIndex.row {
         case 2:
             onlineVisibilityData[1] = [LocalizationManager.shared.localizedString(for: "users_list")]
         default:
@@ -96,17 +96,15 @@ final class OnlineVisibilityScreenViewController: UIViewController {
     }
     
     private func transferRestriction() -> String {
-        if let selectedIndex {
-            switch selectedIndex.row {
-            case 0:
-                return "everyone"
-            case 1:
-                return "only_me"
-            case 2:
-                return "specified"
-            default:
-                break
-            }
+        switch selectedIndex.row {
+        case 0:
+            return "everyone"
+        case 1:
+            return "only_me"
+        case 2:
+            return "specified"
+        default:
+            break
         }
         return "everyone"
     }
@@ -147,7 +145,7 @@ extension OnlineVisibilityScreenViewController: UITableViewDelegate, UITableView
         if section == 0 {
             return onlineVisibilityData[section].count
         } else {
-            return (selectedIndex!.row == 2) ? onlineVisibilityData[section].count : 0
+            return (selectedIndex.row == 2) ? onlineVisibilityData[section].count : 0
         }
     }
 
@@ -164,7 +162,7 @@ extension OnlineVisibilityScreenViewController: UITableViewDelegate, UITableView
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ExceptionsCell.cellIdentifier, for: indexPath) as? ExceptionsCell else {
                 return UITableViewCell()
             }
-            if selectedIndex!.row == 2 {
+            if selectedIndex.row == 2 {
                 let item = onlineVisibilityData[indexPath.section][indexPath.row]
                 cell.configure(title: item)
             }
@@ -181,10 +179,8 @@ extension OnlineVisibilityScreenViewController: UITableViewDelegate, UITableView
         case 0:
             label.text = LocalizationManager.shared.localizedString(for: "who_can_see_online")
         case 1:
-            if let selected = selectedIndex?.row {
-                if selected != 2 {
-                    break
-                }
+            if selectedIndex.row != 2 {
+                break
             }
             label.text = LocalizationManager.shared.localizedString(for: "exceptions")
         default:

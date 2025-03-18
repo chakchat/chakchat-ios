@@ -19,7 +19,7 @@ final class PhoneVisibilityScreenViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private var selectedIndex: IndexPath?
+    private var selectedIndex: IndexPath = IndexPath()
     private var titleLabel: UILabel = UILabel()
     private var phoneVisibilityTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
     private var phoneVisibilityData = [
@@ -88,7 +88,7 @@ final class PhoneVisibilityScreenViewController: UIViewController {
     // MARK: - Supporting Methods
     // Edits the second section depending on what is selected in the first.
     private func updateExceptionsSection() {
-        switch selectedIndex?.row {
+        switch selectedIndex.row {
         case 2:
             phoneVisibilityData[1] = [LocalizationManager.shared.localizedString(for: "users_list")]
         default:
@@ -98,17 +98,15 @@ final class PhoneVisibilityScreenViewController: UIViewController {
     
     // TODO: - probably here i will take id of special users(if current user tapped "specified" option)
     private func transferRestriction() -> String {
-        if let selectedIndex {
-            switch selectedIndex.row {
-            case 0:
-                return "everyone"
-            case 1:
-                return "only_me"
-            case 2:
-                return "specified"
-            default:
-                break
-            }
+        switch selectedIndex.row {
+        case 0:
+            return "everyone"
+        case 1:
+            return "only_me"
+        case 2:
+            return "specified"
+        default:
+            break
         }
         return "everyone"
     }
@@ -149,7 +147,7 @@ extension PhoneVisibilityScreenViewController: UITableViewDelegate, UITableViewD
         if section == 0 {
             return phoneVisibilityData[section].count
         } else {
-            return (selectedIndex!.row == 2) ? phoneVisibilityData[section].count : 0
+            return (selectedIndex.row == 2) ? phoneVisibilityData[section].count : 0
         }
     }
     
@@ -166,7 +164,7 @@ extension PhoneVisibilityScreenViewController: UITableViewDelegate, UITableViewD
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ExceptionsCell.cellIdentifier, for: indexPath) as? ExceptionsCell else {
                 return UITableViewCell()
             }
-            if selectedIndex!.row == 2 {
+            if selectedIndex.row == 2 {
                 let item = phoneVisibilityData[indexPath.section][indexPath.row]
                 cell.configure(title: item)
             }
@@ -183,10 +181,8 @@ extension PhoneVisibilityScreenViewController: UITableViewDelegate, UITableViewD
         case 0:
             label.text = LocalizationManager.shared.localizedString(for: "who_can_see_phone")
         case 1:
-            if let selected = selectedIndex?.row {
-                if selected != 2 {
-                    break
-                }
+            if selectedIndex.row != 2 {
+                break
             }
             label.text = LocalizationManager.shared.localizedString(for: "exceptions")
         default:
