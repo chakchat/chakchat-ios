@@ -14,12 +14,19 @@ final class SignupWorker: SignupWorkerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let userDefautlsManager: UserDefaultsManagerProtocol
     private let identityService: IdentityServiceProtocol
+    private let userService: UserServiceProtocol
     
     // MARK: - Initialization
-    init(keychainManager: KeychainManagerBusinessLogic, userDefautlsManager: UserDefaultsManagerProtocol, identityService: IdentityServiceProtocol) {
+    init(
+        keychainManager: KeychainManagerBusinessLogic,
+        userDefautlsManager: UserDefaultsManagerProtocol,
+        identityService: IdentityServiceProtocol,
+        userService: UserServiceProtocol
+    ) {
         self.keychainManager = keychainManager
         self.userDefautlsManager = userDefautlsManager
         self.identityService = identityService
+        self.userService = userService
     }
     
     // MARK: - Public Methods
@@ -40,13 +47,6 @@ final class SignupWorker: SignupWorkerLogic {
         }
     }
     
-    func getSignupCode() -> UUID? {
-        guard let savedSignupKey = keychainManager.getUUID(key: KeychainManager.keyForSaveSignupCode) else {
-            return nil
-        }
-        return savedSignupKey
-    }
-    
     func saveToken(_ successResponse: SuccessModels.Tokens,
                    completion: @escaping (Result<SignupState, Error>) -> Void) {
         var isSaved = self.keychainManager.save(key: KeychainManager.keyForSaveAccessToken,
@@ -64,5 +64,24 @@ final class SignupWorker: SignupWorkerLogic {
         } else {
             completion(.failure(Keychain.KeychainError.saveError))
         }
+    }
+    
+    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<Bool, any Error>) -> Void) {
+        userService.sendCheckUsernameRequest(username) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let response):
+                completion(.success(response.data))
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func getSignupCode() -> UUID? {
+        guard let savedSignupKey = keychainManager.getUUID(key: KeychainManager.keyForSaveSignupCode) else {
+            return nil
+        }
+        return savedSignupKey
     }
 }

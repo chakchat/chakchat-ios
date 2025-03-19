@@ -53,7 +53,22 @@ final class SignupInteractor: SignupBusinessLogic {
                 self.presenter.showError(errorId)
             }
         }
-       // successTransition(SignupState.onChatsMenu)
+    }
+    
+    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<Bool, any Error>) -> Void) {
+        worker.checkUsernameAvailability(username) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                os_log("This username is available: %@", log: self.logger, type: .default, data as CVarArg)
+                completion(.success(data))
+            case .failure(let failure):
+                os_log("Failed to check username availability", log: self.logger, type: .default)
+                let errorId = self.errorHandler.handleError(failure)
+                print(failure)
+                completion(.failure(failure))
+            }
+        }
     }
     
     // MARK: - Routing

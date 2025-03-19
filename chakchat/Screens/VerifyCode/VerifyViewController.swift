@@ -289,7 +289,14 @@ final class VerifyViewController: UIViewController {
     }
     
     private func startCountdown() {
-        countdownTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateLabel), userInfo: nil, repeats: true)
+        countdownTimer = Timer(
+            timeInterval: 1.0,
+            target: self,
+            selector: #selector(updateLabel),
+            userInfo: nil,
+            repeats: true
+        )
+        RunLoop.main.add(countdownTimer ?? Timer(), forMode: .common)
     }
     
     // MARK: - Actions

@@ -10,7 +10,12 @@ import Foundation
 // MARK: - Signup Protocols
 protocol SignupBusinessLogic {
     func sendSignupRequest(_ name: String, _ username: String)
+    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<Bool, Error>) -> Void)
     func successTransition(_ state: SignupState)
+}
+
+protocol SignupPresentationLogic {
+    func showError(_ error: ErrorId)
 }
 
 protocol SignupWorkerLogic {
@@ -18,8 +23,7 @@ protocol SignupWorkerLogic {
                      completion: @escaping (Result<SignupState, Error>) -> Void)
     
     func getSignupCode() -> UUID?
+    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
-protocol SignupPresentationLogic {
-    func showError(_ error: ErrorId)
-}
+
