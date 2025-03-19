@@ -19,6 +19,9 @@ final class UIProfileTextField : UIView {
         static let lineBottom: CGFloat = 0
         static let lineTop: CGFloat = 9
         static let lineHeight: CGFloat = 0.5
+        static let paddingX: CGFloat = 0
+        static let paddingY: CGFloat = 0
+        static let paddingWidth: CGFloat = 40
     }
     
     // MARK: - Properties
@@ -81,6 +84,17 @@ final class UIProfileTextField : UIView {
         textField.autocorrectionType = .no
         textField.spellCheckingType = .no
         textField.autocapitalizationType = .none
+        
+        let rightPaddingView = UIView(
+            frame: CGRect(
+                x: Constants.paddingX,
+                y: Constants.paddingY,
+                width: Constants.paddingWidth,
+                height: textField.frame.height
+            )
+        )
+        textField.rightView = rightPaddingView
+        textField.rightViewMode = .always
     }
     
     private func configureBottomLine() {
