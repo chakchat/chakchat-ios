@@ -21,6 +21,8 @@ final class NewGroupViewController: UIViewController {
         static let tableHorizontal: CGFloat = 0
         static let imageViewSize: CGFloat = 90
         static let imageBorderWidth: CGFloat = 10
+        static let groupTextFieldWidth: CGFloat = 400
+        static let maxGroupNameLength: Int = 50
     }
     
     // MARK: - Properties
@@ -37,6 +39,7 @@ final class NewGroupViewController: UIViewController {
     private let groupLabel: UILabel = UILabel()
     private let groupTextField: UITextField = UITextField()
     private let messageLabel: UILabel = UILabel()
+    private var groupTextFieldWidthConstraint: NSLayoutConstraint = NSLayoutConstraint()
     
     // MARK: - Initialization
     init(interactor: NewGroupBusinessLogic) {
@@ -167,14 +170,12 @@ final class NewGroupViewController: UIViewController {
         view.addSubview(groupTextField)
         groupTextField.pinTop(iconImageView.bottomAnchor, 10)
         groupTextField.pinCenterX(view.centerXAnchor)
-        groupTextField.sizeToFit()
-        groupTextField.placeholder = LocalizationManager.shared.localizedString(for: "group_name")
+        groupTextField.delegate = self
         groupTextField.font = Fonts.systemR18
         groupTextField.autocorrectionType = .no
         groupTextField.spellCheckingType = .no
         groupTextField.autocapitalizationType = .none
         groupTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        
         
         let underlineLayer = UIView()
         underlineLayer.setHeight(1)
@@ -183,6 +184,12 @@ final class NewGroupViewController: UIViewController {
         underlineLayer.pinBottom(groupTextField.bottomAnchor, 0)
         underlineLayer.pinLeft(groupTextField.leadingAnchor, 0)
         underlineLayer.pinRight(groupTextField.trailingAnchor, 0)
+        
+        let placeholder = LocalizationManager.shared.localizedString(for: "group_name")
+        let initialWidth = calculateWidth(for: placeholder)
+        groupTextField.placeholder = placeholder
+        groupTextFieldWidthConstraint = groupTextField.widthAnchor.constraint(equalToConstant: initialWidth)
+        groupTextFieldWidthConstraint.isActive = true
     }
     
     private func configureErrorMessage() {
@@ -191,7 +198,7 @@ final class NewGroupViewController: UIViewController {
         messageLabel.textColor = .red
         messageLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         messageLabel.textAlignment = .center
-        messageLabel.backgroundColor = .white
+        messageLabel.backgroundColor = Colors.background
         messageLabel.layer.cornerRadius = 10
         messageLabel.layer.masksToBounds = true
         messageLabel.alpha = 0
@@ -231,6 +238,16 @@ final class NewGroupViewController: UIViewController {
         tableView.reloadData()
         searchController.isActive = false
     }
+    
+    private func updateTextFieldWidth(for text: String) {
+        let placeholderText = LocalizationManager.shared.localizedString(for: "group_name")
+        let calculatedWidth = max(calculateTextWidth(for: text), calculateTextWidth(for: placeholderText))
+        let finalWidth = min(calculatedWidth, Constants.groupTextFieldWidth)
+        
+        groupTextFieldWidthConstraint.constant = finalWidth
+        view.layoutIfNeeded()
+    }
+
     
     // MARK: - Actions
     @objc
@@ -280,7 +297,6 @@ final class NewGroupViewController: UIViewController {
     
     @objc
     private func textFieldDidChange(_ textField: UITextField) {
-        // updating textAligment
         DispatchQueue.main.async {
             let isEmpty = textField.text?.isEmpty == true
             textField.textAlignment = isEmpty ? .left : .center
@@ -289,6 +305,8 @@ final class NewGroupViewController: UIViewController {
                 textField.text = " "
                 textField.text = ""
             }
+            
+            self.updateTextFieldWidth(for: textField.text ?? "")
         }
     }
 
@@ -356,5 +374,31 @@ extension NewGroupViewController : UIImagePickerControllerDelegate, UINavigation
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+}
+
+extension NewGroupViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = textField.text ?? ""
+        var newText = (currentText as NSString).replacingCharacters(in: range, with: string)
+        
+        let result = newText.count <= Constants.maxGroupNameLength
+        if !result {
+            newText = String(newText.prefix(Constants.maxGroupNameLength))
+        }
+        
+        updateTextFieldWidth(for: newText)
+        
+        return result
+    }
+    
+    private func calculateWidth(for text: String) -> CGFloat {
+        return min(max(calculateTextWidth(for: text), calculateTextWidth(for: "Group name")), Constants.groupTextFieldWidth)
+    }
+    
+    private func calculateTextWidth(for text: String) -> CGFloat {
+        let attributes = [NSAttributedString.Key.font: groupTextField.font ?? Fonts.systemR18]
+        let size = (text as NSString).size(withAttributes: attributes)
+        return size.width + 10
     }
 }

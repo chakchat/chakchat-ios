@@ -21,6 +21,7 @@ final class GroupProfileEditViewController: UIViewController {
         static let fieldsTrailing: CGFloat = 0
         static let defaultText: String = "default"
         static let borderWidth: CGFloat = 5
+        static let maxGroupNameLength: Int = 50
     }
     
     // MARK: - Properties
@@ -120,6 +121,7 @@ final class GroupProfileEditViewController: UIViewController {
         groupNameTextField.pinLeft(view.leadingAnchor, Constants.fieldsLeading)
         groupNameTextField.pinRight(view.trailingAnchor, Constants.fieldsTrailing)
         groupNameTextField.setText(LocalizationManager.shared.localizedString(for: "error"))
+        groupNameTextField.textField.delegate = self
     }
     
     // MARK: - Username Text Field Configuration
@@ -174,5 +176,19 @@ extension GroupProfileEditViewController : UIImagePickerControllerDelegate, UINa
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+}
+
+extension GroupProfileEditViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = textField.text ?? ""
+        var newText = (currentText as NSString).replacingCharacters(in: range, with: string)
+        
+        let result = newText.count <= Constants.maxGroupNameLength
+        if !result {
+            newText = String(newText.prefix(Constants.maxGroupNameLength))
+        }
+        
+        return result
     }
 }
