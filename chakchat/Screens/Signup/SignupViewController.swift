@@ -58,13 +58,13 @@ final class SignupViewController: UIViewController {
     // MARK: - Properties
     private let interactor: SignupBusinessLogic
 
-    private lazy var chakchatStackView: UIChakChatStackView = UIChakChatStackView()
-    private lazy var nameTextField: UITextField = UITextField()
-    private lazy var usernameTextField: UITextField = UITextField()
-    private lazy var sendGradientButton: UIGradientButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "create_account"))
+    private var chakchatStackView: UIChakChatStackView = UIChakChatStackView()
+    private var nameTextField: UITextField = UITextField()
+    private var usernameTextField: UITextField = UITextField()
+    private var sendGradientButton: UIGradientButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "create_account"))
     private var nameIndicator: UIImageView = UIImageView()
     private var usernameIndicator: UIImageView = UIImageView()
-    private lazy var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
+    private var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Lifecycle

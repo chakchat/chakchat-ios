@@ -25,9 +25,9 @@ final class ChatsScreenViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private lazy var titleLabel: UILabel = UILabel()
-    private lazy var settingButton: UIButton = UIButton(type: .system)
-    private lazy var newChatButton: UIButton = UIButton(type: .system)
+    private var titleLabel: UILabel = UILabel()
+    private var settingButton: UIButton = UIButton(type: .system)
+    private var newChatButton: UIButton = UIButton(type: .system)
     private let chatsTableView: UITableView = UITableView(frame: .zero, style: .insetGrouped)
     private var chatsData: [ChatsModels.GeneralChatModel.ChatData]? = []
     private lazy var searchController: UISearchController = UISearchController()

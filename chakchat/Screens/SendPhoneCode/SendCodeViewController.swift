@@ -51,13 +51,13 @@ final class SendCodeViewController: UIViewController {
     
     // MARK: - Properties
     private var interactor: SendCodeBusinessLogic
-    private lazy var chakchatStackView: UIChakChatStackView = UIChakChatStackView()
-    private lazy var inputNumberTextField: UIPhoneNumberTextField = UIPhoneNumberTextField()
-    private lazy var sendGradientButton: UIGradientButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "send_code"))
-    private lazy var shortNumberLabel: UILabel = UILabel()
-    private lazy var descriptionLabel: UILabel = UILabel()
-    private lazy var termsLabel: UILabel = UILabel()
-    private lazy var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
+    private var chakchatStackView: UIChakChatStackView = UIChakChatStackView()
+    private var inputNumberTextField: UIPhoneNumberTextField = UIPhoneNumberTextField()
+    private var sendGradientButton: UIGradientButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "send_code"))
+    private var shortNumberLabel: UILabel = UILabel()
+    private var descriptionLabel: UILabel = UILabel()
+    private var termsLabel: UILabel = UILabel()
+    private var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
     private let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
     
     private var isPhoneNubmerInputValid: Bool = false

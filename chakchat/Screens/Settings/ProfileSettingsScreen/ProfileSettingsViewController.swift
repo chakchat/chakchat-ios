@@ -42,7 +42,7 @@ final class ProfileSettingsViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private lazy var iconImageView: UIImageView = UIImageView()
+    private var iconImageView: UIImageView = UIImageView()
     private var nameTextField: UIProfileTextField = UIProfileTextField(title: "name", placeholder: "name", isEditable: true)
     private var usernameTextField: UIProfileTextField = UIProfileTextField(title: "username", placeholder: "username", isEditable: true)
     private var phoneTextField: UIProfileTextField = UIProfileTextField(title: "phone", placeholder: "phone", isEditable: false)

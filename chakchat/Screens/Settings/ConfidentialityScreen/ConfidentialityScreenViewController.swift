@@ -21,7 +21,7 @@ final class ConfidentialityScreenViewController: UIViewController {
     // TODO: change values in confidentilitySection
     // MARK: - Properties
     private var titleLabel: UILabel = UILabel()
-    private lazy var confidentialitySettingsTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
+    private var confidentialitySettingsTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
     private var confidentilitySection = [
         (LocalizationManager.shared.localizedString(for: "phone_number"), LocalizationManager.shared.localizedString(for: "everyone")),
         (LocalizationManager.shared.localizedString(for: "date_of_birth"), LocalizationManager.shared.localizedString(for: "everyone")),
