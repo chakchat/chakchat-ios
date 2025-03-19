@@ -63,7 +63,6 @@ final class ShimmerView: UIView {
         let animation = addAnimation()
         
         gradientLayer.cornerRadius = self.frame.width / 2
-        print(self.frame.width / 2)
         gradientLayer.add(animation, forKey: animation.keyPath)
     }
 }

@@ -84,7 +84,7 @@ final class NewGroupWorker: NewGroupWorkerLogic {
     func uploadImage(_ fileData: Data, _ fileName: String, _ mimeType: String, completion: @escaping (Result<SuccessModels.UploadResponse, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {return}
         fileService.sendFileUploadRequest(fileData, fileName, mimeType, accessToken) { [weak self] result in
-            guard let self = self else { return }
+            guard self != nil else { return }
             switch result {
             case .success(let response):
                 completion(.success(response.data))

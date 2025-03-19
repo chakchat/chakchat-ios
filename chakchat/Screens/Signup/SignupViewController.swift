@@ -24,7 +24,8 @@ final class SignupViewController: UIViewController {
         
         static let namePaddingX: CGFloat = 0
         static let namePaddingY: CGFloat = 0
-        static let namePaddingWidth: CGFloat = 10
+        static let nameLeftPaddingWidth: CGFloat = 10
+        static let nameRightPaddingWidth: CGFloat = 40
         static let nameTextFieldTop: CGFloat = 40
         static let nameTextFieldHeight: CGFloat = 50
         static let nameTextFieldWidth: CGFloat = 300
@@ -58,13 +59,13 @@ final class SignupViewController: UIViewController {
     // MARK: - Properties
     private let interactor: SignupBusinessLogic
 
-    private lazy var chakchatStackView: UIChakChatStackView = UIChakChatStackView()
-    private lazy var nameTextField: UITextField = UITextField()
-    private lazy var usernameTextField: UITextField = UITextField()
-    private lazy var sendGradientButton: UIGradientButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "create_account"))
+    private var chakchatStackView: UIChakChatStackView = UIChakChatStackView()
+    private var nameTextField: UITextField = UITextField()
+    private var usernameTextField: UITextField = UITextField()
+    private var sendGradientButton: UIGradientButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "create_account"))
     private var nameIndicator: UIImageView = UIImageView()
     private var usernameIndicator: UIImageView = UIImageView()
-    private lazy var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
+    private var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Lifecycle
@@ -89,8 +90,6 @@ final class SignupViewController: UIViewController {
         configureUI()
     }
     
-    // MARK: - ViewWillAppear Overriding
-    // Subscribing to Keyboard Notifications
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
@@ -98,8 +97,6 @@ final class SignupViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
-    // MARK: - ViewWillDisappear Overriding
-    // Unubscribing to Keyboard Notifications
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
@@ -137,11 +134,19 @@ final class SignupViewController: UIViewController {
         nameTextField.addSubview(nameIndicator)
         nameTextField.borderStyle = UITextField.BorderStyle.roundedRect
         nameTextField.placeholder = LocalizationManager.shared.localizedString(for: "name")
-        let paddingView = UIView(
+        let leftPaddingView = UIView(
             frame: CGRect(
                 x: Constants.namePaddingX,
                 y: Constants.namePaddingY,
-                width: Constants.namePaddingWidth,
+                width: Constants.nameLeftPaddingWidth,
+                height: nameTextField.frame.height
+            )
+        )
+        let rightPaddingView = UIView(
+            frame: CGRect(
+                x: Constants.namePaddingX,
+                y: Constants.namePaddingY,
+                width: Constants.nameRightPaddingWidth,
                 height: nameTextField.frame.height
             )
         )
@@ -150,7 +155,9 @@ final class SignupViewController: UIViewController {
         nameTextField.layer.cornerRadius = Constants.borderCornerRadius
         nameTextField.layer.borderWidth = Constants.borderWidth
         nameTextField.layer.borderColor = UIColor.gray.cgColor
-        nameTextField.leftView = paddingView
+        nameTextField.leftView = leftPaddingView
+        nameTextField.rightView = rightPaddingView
+        nameTextField.rightViewMode = .always
         nameTextField.leftViewMode = .always
         nameTextField.delegate = self
         nameTextField.pinTop(chakchatStackView.bottomAnchor, Constants.nameTextFieldTop)
@@ -171,11 +178,19 @@ final class SignupViewController: UIViewController {
         usernameTextField.addSubview(usernameIndicator)
         usernameTextField.borderStyle = UITextField.BorderStyle.roundedRect
         usernameTextField.placeholder = LocalizationManager.shared.localizedString(for: "username")
-        let paddingView = UIView(
+        let leftPaddingView = UIView(
             frame: CGRect(
                 x: Constants.usernamePaddingX,
                 y: Constants.usernamePaddingY,
                 width: Constants.usernamePaddingWidth,
+                height: usernameTextField.frame.height
+            )
+        )
+        let rightPaddingView = UIView(
+            frame: CGRect(
+                x: Constants.usernamePaddingX,
+                y: Constants.usernamePaddingY,
+                width: Constants.nameRightPaddingWidth,
                 height: usernameTextField.frame.height
             )
         )
@@ -185,8 +200,10 @@ final class SignupViewController: UIViewController {
         usernameTextField.layer.borderWidth = Constants.borderWidth
         usernameTextField.layer.borderColor = UIColor.gray.cgColor
         
-        usernameTextField.leftView = paddingView
+        usernameTextField.leftView = leftPaddingView
+        usernameTextField.rightView = rightPaddingView
         usernameTextField.leftViewMode = .always
+        usernameTextField.rightViewMode = .always
         usernameTextField.delegate = self
         usernameTextField.pinTop(nameTextField.bottomAnchor, Constants.usernameTextFieldTop)
         usernameTextField.pinCenterX(view)

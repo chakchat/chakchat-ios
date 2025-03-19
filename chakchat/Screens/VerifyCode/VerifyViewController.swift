@@ -88,9 +88,7 @@ final class VerifyViewController: UIViewController {
         
         configureUI()
     }
-    
-    // MARK: - ViewWillAppear Overriding
-    // Subscribing to Keyboard Notifications
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
@@ -98,8 +96,6 @@ final class VerifyViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
-    // MARK: - ViewWillDisappear Overriding
-    // Unubscribing to Keyboard Notifications
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
@@ -122,6 +118,7 @@ final class VerifyViewController: UIViewController {
         if message != nil {
             errorLabel.showError(message)
             if message == "Incorrect code" {
+                vibrateOnError()
                 incorrectCode()
             }
         }
@@ -153,9 +150,15 @@ final class VerifyViewController: UIViewController {
         }
     }
     
+    private func vibrateOnError() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+    }
+    
     // MARK: - UI Configuration
     private func configureUI() {
         configureBackButton()
+        configureSwipeGesture()
         configureChakChatStackView()
         configureInputHintLabel()
         interactor.getPhone()
@@ -169,7 +172,9 @@ final class VerifyViewController: UIViewController {
     private func configureBackButton() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: Constants.backButtonName), style: .plain, target: self, action: #selector(backButtonPressed))
         navigationItem.leftBarButtonItem?.tintColor = Colors.text
-        // Adding returning to previous screen with swipe.
+    }
+    
+    private func configureSwipeGesture() {
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(backButtonPressed))
         swipeGesture.direction = .right
         view.addGestureRecognizer(swipeGesture)
@@ -263,15 +268,6 @@ final class VerifyViewController: UIViewController {
     }
     
     // MARK: - Supporting Methods
-    private func areAllTextFieldsFilled() -> Bool {
-        for field in textFields {
-            if field.text?.isEmpty == true {
-                return false
-            }
-        }
-        return true
-    }
-    
     private func getCodeFromTextFields() -> String {
         var code: String = ""
         
@@ -308,7 +304,7 @@ final class VerifyViewController: UIViewController {
     }
     
     @objc
-    func keyboardWillShow(notification: NSNotification) {
+    private func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
             return
@@ -327,16 +323,18 @@ final class VerifyViewController: UIViewController {
             }
         }
     }
+    
+    
 
     @objc
-    func keyboardWillHide(notification: NSNotification) {
+    private func keyboardWillHide(notification: NSNotification) {
         if self.view.frame.origin.y != 0 {
             self.view.frame.origin.y = 0
         }
     }
     
     @objc
-    func updateLabel() {
+    private func updateLabel() {
         remainingTime -= 1
         if remainingTime > 0 {
             timerLabel.text = timeLabelText + "\n\(formatTime(Int(remainingTime)))"
@@ -347,7 +345,7 @@ final class VerifyViewController: UIViewController {
     }
 
     @objc
-    func hideLabel() {
+    private func hideLabel() {
         UIView.animate(withDuration: 0.5, animations: {
             self.timerLabel.alpha = 0.0
         }) { _ in
@@ -392,75 +390,22 @@ final class VerifyViewController: UIViewController {
 extension VerifyViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
-        let allowedCharacters = CharacterSet.decimalDigits
-        let characterSet = CharacterSet(charactersIn: string)
+        if !isOnlyDigitsInString(string)
+            { return false }
         
-        // If there are not only digits, don't paste it.
-        if !allowedCharacters.isSuperset(of: characterSet) {
-            return false
-        }
-        
-        // If the text is entering (from clipboard for example).
         if string.count > 1 {
-            // Clear all fields.
-            for field in textFields {
-                field.text = ""
-            }
-            
-            // Put one character in one field.
-            for (index, char) in string.enumerated() {
-                if index < textFields.count {
-                    textFields[index].text = String(char)
-                }
-            }
-            
-            // If all characters are set, go to last field.
-            if string.count <= textFields.count {
-                textFields[string.count - 1].becomeFirstResponder()
-            } else {
-                textFields.last?.becomeFirstResponder()
-            }
-            
-            if areAllTextFieldsFilled() {
-                let code = getCodeFromTextFields()
-                interactor.sendVerificationRequest(code)
-            }
-            
+            pasteString(string)
             return false
         }
         
-        // If we set a single character.
-        guard let _ = textField.text, string.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil || string.isEmpty else {
+        if !isInputDigitsOrDeleting(textField, string) {
             return false
         }
         
-        if !string.isEmpty {
-            textField.text = string
-        }
-        
-        // Go to next field if there is a character in the current.
-        let nextTag = textField.tag + 1
-        if !string.isEmpty, nextTag < textFields.count {
-            textFields[nextTag].becomeFirstResponder()
-        }
-        
-        // Chack if all fields are full and send request to server.
-        if areAllTextFieldsFilled() {
-            let code = getCodeFromTextFields()
-            interactor.sendVerificationRequest(code)
-        } else {
-            print("Fill all fields")
-        }
-        
-        // Deleting character.
         if string.isEmpty {
-            if textField.tag > 0 { // If it isn't first cell.
-                textFields[textField.tag].text = "" // Clear current cell.
-                let prevTag = textField.tag - 1 // Go to previous cell.
-                textFields[prevTag].becomeFirstResponder()
-            } else if textField.tag == 0 { // If we are in first cell.
-                textFields[textField.tag].text = "" // Clear the cell.
-            }
+            handleDelete(textField)
+        } else {
+            handleInput(textField, string)
         }
         
         return false
@@ -468,6 +413,102 @@ extension VerifyViewController: UITextFieldDelegate {
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.selectedTextRange = textField.textRange(from: textField.endOfDocument, to: textField.endOfDocument)
+    }
+    
+    private func pasteString(_ string: String) {
+        
+        for field in textFields {
+            field.text = ""
+        }
+        
+        putOneCharacterInOneField(string)
+        setLastTextFieldAsResponder(string)
+        
+        if areAllTextFieldsFilled() {
+            sendRequestToInteractor()
+        }
+    }
+    
+    private func handleDelete(_ textField: UITextField) {
+        if textField.tag > 0 {
+            clearCell(textField.tag)
+            setPreviousTextFieldAsResponder(textField)
+        } else if textField.tag == 0 {
+            clearCell(textField.tag)
+        }
+    }
+    
+    private func isInputDigitsOrDeleting(_ textField: UITextField, _ string: String) -> Bool {
+        guard let _ = textField.text, string.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil || string.isEmpty else {
+            return false
+        }
+        return true
+    }
+    
+    private func handleInput(_ textField: UITextField, _ string: String) {
+        textField.text = string
+        
+        moveToNextTextField(textField)
+        
+        if areAllTextFieldsFilled() {
+            sendRequestToInteractor()
+        }
+    }
+    
+    private func moveToNextTextField(_ textField: UITextField) {
+        let nextTag = textField.tag + 1
+        if nextTag < textFields.count {
+            textFields[nextTag].becomeFirstResponder()
+        }
+    }
+    
+    private func clearCell(_ textFieldTag: Int) {
+        textFields[textFieldTag].text = ""
+    }
+    
+    private func setPreviousTextFieldAsResponder(_ textField: UITextField) {
+        let prevTag = textField.tag - 1
+        textFields[prevTag].becomeFirstResponder()
+    }
+    
+    private func isOnlyDigitsInString(_ string: String) -> Bool {
+        let allowedCharacters = CharacterSet.decimalDigits
+        let characterSet = CharacterSet(charactersIn: string)
+        
+        if !allowedCharacters.isSuperset(of: characterSet) {
+            return false
+        }
+        return true
+    }
+    
+    private func putOneCharacterInOneField(_ string: String) {
+        for (index, char) in string.enumerated() {
+            if index < textFields.count {
+                textFields[index].text = String(char)
+            }
+        }
+    }
+    
+    private func areAllTextFieldsFilled() -> Bool {
+        for field in textFields {
+            if field.text?.isEmpty == true {
+                return false
+            }
+        }
+        return true
+    }
+    
+    private func setLastTextFieldAsResponder(_ string: String) {
+        if string.count <= textFields.count {
+            textFields[string.count - 1].becomeFirstResponder()
+        } else {
+            textFields.last?.becomeFirstResponder()
+        }
+    }
+    
+    private func sendRequestToInteractor() {
+        let code = getCodeFromTextFields()
+        interactor.sendVerificationRequest(code)
     }
 }
 

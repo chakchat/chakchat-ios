@@ -12,7 +12,7 @@ import UIKit
 final class UIChakChatStackView: UIStackView {
     
     // MARK: - Properties
-    private lazy var chakLabel: UILabel = {
+    private var chakLabel: UILabel = {
         let label = UILabel()
         label.text = UIConstants.chakLabelText
         label.font = UIConstants.chakchatFont
@@ -21,7 +21,7 @@ final class UIChakChatStackView: UIStackView {
         return label
     }()
     
-    private lazy var chatLabel: UILabel = {
+    private var chatLabel: UILabel = {
         let label = UILabel()
         label.text = UIConstants.chatLabelText
         label.font = UIConstants.chakchatFont

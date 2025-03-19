@@ -24,12 +24,12 @@ final class StartViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private lazy var startMessengerButton: UIButton = UIButton(type: .system)
-    private lazy var chakLabel: UILabel = UILabel()
-    private lazy var chatLabel: UILabel = UILabel()
-    private lazy var tapLabel: UILabel = UILabel()
+    private var startMessengerButton: UIButton = UIButton(type: .system)
+    private var chakLabel: UILabel = UILabel()
+    private var chatLabel: UILabel = UILabel()
+    private var tapLabel: UILabel = UILabel()
     private lazy var chakchatStackView = UIStackView(arrangedSubviews: [chakLabel, chatLabel])
-    private lazy var gradientBackgroundLayer: CAGradientLayer = CAGradientLayer()
+    private var gradientBackgroundLayer: CAGradientLayer = CAGradientLayer()
     var onRouteToSendCodeScreen: ((SignupState) -> Void)?
     
     // MARK: - Lifecycle

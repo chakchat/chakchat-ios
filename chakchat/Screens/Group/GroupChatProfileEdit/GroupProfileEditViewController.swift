@@ -24,7 +24,7 @@ final class GroupProfileEditViewController: UIViewController {
     }
     
     // MARK: - Properties
-    private lazy var iconImageView: UIImageView = UIImageView()
+    private var iconImageView: UIImageView = UIImageView()
     private var groupNameTextField: UIProfileTextField = UIProfileTextField(title: "Name", placeholder: "Name", isEditable: true)
     private var groupDescriptionTextField: UIProfileTextField = UIProfileTextField(title: "Description", placeholder: "Description", isEditable: true)
     let interactor: GroupProfileEditBusinessLogic
