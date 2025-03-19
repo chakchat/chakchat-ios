@@ -263,15 +263,6 @@ final class VerifyViewController: UIViewController {
     }
     
     // MARK: - Supporting Methods
-    private func areAllTextFieldsFilled() -> Bool {
-        for field in textFields {
-            if field.text?.isEmpty == true {
-                return false
-            }
-        }
-        return true
-    }
-    
     private func getCodeFromTextFields() -> String {
         var code: String = ""
         
@@ -392,75 +383,22 @@ final class VerifyViewController: UIViewController {
 extension VerifyViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
-        let allowedCharacters = CharacterSet.decimalDigits
-        let characterSet = CharacterSet(charactersIn: string)
+        if !isOnlyDigitsInString(string)
+            { return false }
         
-        // If there are not only digits, don't paste it.
-        if !allowedCharacters.isSuperset(of: characterSet) {
-            return false
-        }
-        
-        // If the text is entering (from clipboard for example).
         if string.count > 1 {
-            // Clear all fields.
-            for field in textFields {
-                field.text = ""
-            }
-            
-            // Put one character in one field.
-            for (index, char) in string.enumerated() {
-                if index < textFields.count {
-                    textFields[index].text = String(char)
-                }
-            }
-            
-            // If all characters are set, go to last field.
-            if string.count <= textFields.count {
-                textFields[string.count - 1].becomeFirstResponder()
-            } else {
-                textFields.last?.becomeFirstResponder()
-            }
-            
-            if areAllTextFieldsFilled() {
-                let code = getCodeFromTextFields()
-                interactor.sendVerificationRequest(code)
-            }
-            
+            pasteString(string)
             return false
         }
         
-        // If we set a single character.
-        guard let _ = textField.text, string.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil || string.isEmpty else {
+        if !isInputDigitsOrDeleting(textField, string) {
             return false
         }
         
-        if !string.isEmpty {
-            textField.text = string
-        }
-        
-        // Go to next field if there is a character in the current.
-        let nextTag = textField.tag + 1
-        if !string.isEmpty, nextTag < textFields.count {
-            textFields[nextTag].becomeFirstResponder()
-        }
-        
-        // Chack if all fields are full and send request to server.
-        if areAllTextFieldsFilled() {
-            let code = getCodeFromTextFields()
-            interactor.sendVerificationRequest(code)
-        } else {
-            print("Fill all fields")
-        }
-        
-        // Deleting character.
         if string.isEmpty {
-            if textField.tag > 0 { // If it isn't first cell.
-                textFields[textField.tag].text = "" // Clear current cell.
-                let prevTag = textField.tag - 1 // Go to previous cell.
-                textFields[prevTag].becomeFirstResponder()
-            } else if textField.tag == 0 { // If we are in first cell.
-                textFields[textField.tag].text = "" // Clear the cell.
-            }
+            handleDelete(textField)
+        } else {
+            handleInput(textField, string)
         }
         
         return false
@@ -468,6 +406,102 @@ extension VerifyViewController: UITextFieldDelegate {
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         textField.selectedTextRange = textField.textRange(from: textField.endOfDocument, to: textField.endOfDocument)
+    }
+    
+    private func pasteString(_ string: String) {
+        
+        for field in textFields {
+            field.text = ""
+        }
+        
+        putOneCharacterInOneField(string)
+        setLastTextFieldAsResponder(string)
+        
+        if areAllTextFieldsFilled() {
+            sendRequestToInteractor()
+        }
+    }
+    
+    private func handleDelete(_ textField: UITextField) {
+        if textField.tag > 0 {
+            clearCell(textField.tag)
+            setPreviousTextFieldAsResponder(textField)
+        } else if textField.tag == 0 {
+            clearCell(textField.tag)
+        }
+    }
+    
+    private func isInputDigitsOrDeleting(_ textField: UITextField, _ string: String) -> Bool {
+        guard let _ = textField.text, string.rangeOfCharacter(from: CharacterSet.decimalDigits) != nil || string.isEmpty else {
+            return false
+        }
+        return true
+    }
+    
+    private func handleInput(_ textField: UITextField, _ string: String) {
+        textField.text = string
+        
+        moveToNextTextField(textField)
+        
+        if areAllTextFieldsFilled() {
+            sendRequestToInteractor()
+        }
+    }
+    
+    private func moveToNextTextField(_ textField: UITextField) {
+        let nextTag = textField.tag + 1
+        if nextTag < textFields.count {
+            textFields[nextTag].becomeFirstResponder()
+        }
+    }
+    
+    private func clearCell(_ textFieldTag: Int) {
+        textFields[textFieldTag].text = ""
+    }
+    
+    private func setPreviousTextFieldAsResponder(_ textField: UITextField) {
+        let prevTag = textField.tag - 1
+        textFields[prevTag].becomeFirstResponder()
+    }
+    
+    private func isOnlyDigitsInString(_ string: String) -> Bool {
+        let allowedCharacters = CharacterSet.decimalDigits
+        let characterSet = CharacterSet(charactersIn: string)
+        
+        if !allowedCharacters.isSuperset(of: characterSet) {
+            return false
+        }
+        return true
+    }
+    
+    private func putOneCharacterInOneField(_ string: String) {
+        for (index, char) in string.enumerated() {
+            if index < textFields.count {
+                textFields[index].text = String(char)
+            }
+        }
+    }
+    
+    private func areAllTextFieldsFilled() -> Bool {
+        for field in textFields {
+            if field.text?.isEmpty == true {
+                return false
+            }
+        }
+        return true
+    }
+    
+    private func setLastTextFieldAsResponder(_ string: String) {
+        if string.count <= textFields.count {
+            textFields[string.count - 1].becomeFirstResponder()
+        } else {
+            textFields.last?.becomeFirstResponder()
+        }
+    }
+    
+    private func sendRequestToInteractor() {
+        let code = getCodeFromTextFields()
+        interactor.sendVerificationRequest(code)
     }
 }
 

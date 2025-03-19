@@ -57,7 +57,6 @@ extension UIImage {
     private static func getInitials(from text: String) -> String {
         let words = text.uppercased().components(separatedBy: " ")
         let initials = words.prefix(2).compactMap { $0.first }
-        print(String(initials))
         return String(initials)
     }
 }
