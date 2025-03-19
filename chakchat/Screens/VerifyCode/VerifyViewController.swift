@@ -122,6 +122,7 @@ final class VerifyViewController: UIViewController {
         if message != nil {
             errorLabel.showError(message)
             if message == "Incorrect code" {
+                vibrateOnError()
                 incorrectCode()
             }
         }
@@ -153,9 +154,15 @@ final class VerifyViewController: UIViewController {
         }
     }
     
+    private func vibrateOnError() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+    }
+    
     // MARK: - UI Configuration
     private func configureUI() {
         configureBackButton()
+        configureSwipeGesture()
         configureChakChatStackView()
         configureInputHintLabel()
         interactor.getPhone()
@@ -169,7 +176,9 @@ final class VerifyViewController: UIViewController {
     private func configureBackButton() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: Constants.backButtonName), style: .plain, target: self, action: #selector(backButtonPressed))
         navigationItem.leftBarButtonItem?.tintColor = Colors.text
-        // Adding returning to previous screen with swipe.
+    }
+    
+    private func configureSwipeGesture() {
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(backButtonPressed))
         swipeGesture.direction = .right
         view.addGestureRecognizer(swipeGesture)
