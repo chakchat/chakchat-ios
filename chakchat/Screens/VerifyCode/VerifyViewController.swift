@@ -88,9 +88,7 @@ final class VerifyViewController: UIViewController {
         
         configureUI()
     }
-    
-    // MARK: - ViewWillAppear Overriding
-    // Subscribing to Keyboard Notifications
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
@@ -98,8 +96,6 @@ final class VerifyViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
-    // MARK: - ViewWillDisappear Overriding
-    // Unubscribing to Keyboard Notifications
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
@@ -308,7 +304,7 @@ final class VerifyViewController: UIViewController {
     }
     
     @objc
-    func keyboardWillShow(notification: NSNotification) {
+    private func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
             return
@@ -327,16 +323,18 @@ final class VerifyViewController: UIViewController {
             }
         }
     }
+    
+    
 
     @objc
-    func keyboardWillHide(notification: NSNotification) {
+    private func keyboardWillHide(notification: NSNotification) {
         if self.view.frame.origin.y != 0 {
             self.view.frame.origin.y = 0
         }
     }
     
     @objc
-    func updateLabel() {
+    private func updateLabel() {
         remainingTime -= 1
         if remainingTime > 0 {
             timerLabel.text = timeLabelText + "\n\(formatTime(Int(remainingTime)))"
@@ -347,7 +345,7 @@ final class VerifyViewController: UIViewController {
     }
 
     @objc
-    func hideLabel() {
+    private func hideLabel() {
         UIView.animate(withDuration: 0.5, animations: {
             self.timerLabel.alpha = 0.0
         }) { _ in
