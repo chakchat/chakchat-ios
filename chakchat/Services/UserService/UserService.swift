@@ -23,6 +23,16 @@ final class UserService: UserServiceProtocol {
         Sender.send(endpoint: endpoint, method: .get, headers: headers, completion: completion)
     }
     
+    func sendCheckUsernameRequest(_ username: String, completion: @escaping (Result<SuccessResponse<Bool>, any Error>) -> Void) {
+        let endpoint = "\(UserServiceEndpoints.usernameAvailability.rawValue)\(username)"
+        
+        let headers = [
+            "Content-Type": "application/json"
+        ]
+        
+        Sender.send(endpoint: endpoint, method: .get, headers: headers, completion: completion)
+    }
+    
     func sendGetMeRequest(_ accessToken: String, completion: @escaping (Result<SuccessResponse<ProfileSettingsModels.ProfileUserData>, any Error>) -> Void) {
         let endpoint = UserServiceEndpoints.me.rawValue
         
