@@ -16,6 +16,8 @@ protocol UserServiceProtocol {
     
     func sendGetUsernameRequest(_ username: String, _ accessToken: String, completion: @escaping (Result<SuccessResponse<ProfileSettingsModels.ProfileUserData>, any Error>) -> Void)
     
+    func sendCheckUsernameRequest(_ username: String, completion: @escaping (Result<SuccessResponse<Bool>, Error>) -> Void)
+    
     func sendGetMeRequest(_ accessToken: String, completion: @escaping (Result<SuccessResponse<ProfileSettingsModels.ProfileUserData>, Error>) -> Void)
     
     func sendPutMeRequest(_ request: ProfileSettingsModels.ChangeableProfileUserData,

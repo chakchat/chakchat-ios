@@ -66,6 +66,7 @@ final class SignupViewController: UIViewController {
     private var nameIndicator: UIImageView = UIImageView()
     private var usernameIndicator: UIImageView = UIImageView()
     private var errorLabel: UIErrorLabel = UIErrorLabel(width: Constants.maxWidth, numberOfLines: Constants.numberOfLines)
+    private let activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Lifecycle
@@ -216,6 +217,12 @@ final class SignupViewController: UIViewController {
         usernameTextField.autocorrectionType = .no
         usernameTextField.spellCheckingType = .no
         usernameTextField.autocapitalizationType = .none
+        usernameTextField.addSubview(activityIndicator)
+        
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.stopAnimating()
+        activityIndicator.pinCenterY(usernameTextField)
+        activityIndicator.pinRight(usernameTextField.trailingAnchor, 20)
     }
     
     private func configureInputButton() {
@@ -251,55 +258,90 @@ final class SignupViewController: UIViewController {
     private func bindDynamicCheck() {
         let validator = SignupDataValidator()
         let nicknamePublisher = nameTextField.textPublisher
-        let usernamePublishsr = usernameTextField.textPublisher
+        let usernamePublisher = usernameTextField.textPublisher
         
         let isNameInputValid = nicknamePublisher
-            .map { text in
-                return validator.validateName(text)
+            .map { validator.validateName($0) }
+        
+        let isUsernameInputValid = usernamePublisher
+            .map { validator.validateUsername($0) }
+        
+        let isUsernameAvailable = usernamePublisher
+            .debounce(for: 0.5, scheduler: DispatchQueue.main)
+            .removeDuplicates()
+            .flatMap { username in
+                
+                self.activityIndicator.startAnimating()
+                self.usernameIndicator.isHidden = true
+                
+                return Future<Bool, Error> { promise in
+                    self.interactor.checkUsernameAvailability(username) { result in
+                        promise(result)
+                    }
+                }
+                .catch { _ in Just(false) }
+                .handleEvents(receiveCompletion: { _ in
+                    DispatchQueue.main.async {
+                        self.activityIndicator.stopAnimating()
+                        self.usernameIndicator.isHidden = false
+                    }
+                })
+                .prepend(false)
             }
-        let isUsernameInputValid = usernamePublishsr
-            .map { text in
-                return validator.validateUsername(text)
-            }
+            .eraseToAnyPublisher()
         
         isNameInputValid
             .sink { [weak self] isValid in
-                self?.nameIndicator.image = isValid 
-                ? UIImage(systemName: "checkmark.circle.fill")
-                : UIImage(systemName: "xmark.circle.fill")
-                
-                self?.nameTextField.layer.borderColor = isValid
-                ? CGColor(red: 0, green: 255, blue: 0, alpha: 1)
-                : CGColor(red: 255, green: 0, blue: 0, alpha: 1)
-                
-                self?.nameIndicator.tintColor = isValid
-                ? .systemGreen
-                : .systemRed
-    
-            }.store(in: &cancellables)
-        
-        isUsernameInputValid
-            .sink { [weak self] isValid in
-                self?.usernameIndicator.image = isValid
-                ? UIImage(systemName: "checkmark.circle.fill")
-                : UIImage(systemName: "xmark.circle.fill")
-                
-                self?.usernameIndicator.tintColor = isValid
-                ? .systemGreen
-                : .systemRed
-                
-                self?.usernameTextField.layer.borderColor = isValid
-                ? CGColor(red: 0, green: 255, blue: 0, alpha: 1)
-                : CGColor(red: 255, green: 0, blue: 0, alpha: 1)
-            }.store(in: &cancellables)
-        
-        Publishers.CombineLatest(isNameInputValid, isUsernameInputValid)
-            .map { $0 && $1 }
-            .sink { [weak self] isEnabled in
-                self?.sendGradientButton.isEnabled = isEnabled
-                self?.sendGradientButton.alpha = isEnabled ? 1 : 0.5
+                self?.updateNameUI(isValid: isValid)
             }
             .store(in: &cancellables)
+        
+        Publishers.CombineLatest(isUsernameInputValid, isUsernameAvailable)
+            .sink { [weak self] (isFormatValid, isAvailable) in
+                let isValid = isFormatValid && isAvailable
+                DispatchQueue.main.async {
+                    self?.updateUsernameUI(isValid: isValid)
+                }
+            }
+            .store(in: &cancellables)
+        Publishers.CombineLatest3(isNameInputValid, isUsernameInputValid, isUsernameAvailable)
+            .map { $0 && $1 && $2 }
+            .sink { [weak self] isEnabled in
+                DispatchQueue.main.async {
+                    self?.sendGradientButton.isEnabled = isEnabled
+                    self?.sendGradientButton.alpha = isEnabled ? 1 : 0.5
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - UI Helpers
+    private func updateNameUI(isValid: Bool) {
+        nameIndicator.image = isValid
+            ? UIImage(systemName: "checkmark.circle.fill")
+            : UIImage(systemName: "xmark.circle.fill")
+        
+        nameTextField.layer.borderColor = isValid
+            ? UIColor.systemGreen.cgColor
+            : UIColor.systemRed.cgColor
+        
+        nameIndicator.tintColor = isValid
+            ? .systemGreen
+            : .systemRed
+    }
+
+    private func updateUsernameUI(isValid: Bool) {
+        usernameIndicator.image = isValid
+            ? UIImage(systemName: "checkmark.circle.fill")
+            : UIImage(systemName: "xmark.circle.fill")
+        
+        usernameTextField.layer.borderColor = isValid
+            ? UIColor.systemGreen.cgColor
+            : UIColor.systemRed.cgColor
+        
+        usernameIndicator.tintColor = isValid
+            ? .systemGreen
+            : .systemRed
     }
     
     // MARK: - Actions

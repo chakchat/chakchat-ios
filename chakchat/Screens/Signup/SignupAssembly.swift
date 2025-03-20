@@ -14,11 +14,13 @@ enum SignupAssembly {
     static func build(with context: SignupContextProtocol, coordinator: AppCoordinator) -> UIViewController {
         let presenter = SignupPresenter()
         let identityService = IdentityService()
+        let userService = UserService()
         
         let worker = SignupWorker(
             keychainManager: context.keychainManager,
             userDefautlsManager: context.userDefaultsManager,
-            identityService: identityService
+            identityService: identityService,
+            userService: userService
         )
         
         let interactor = SignupInteractor(
