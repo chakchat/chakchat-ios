@@ -223,8 +223,6 @@ final class GroupChatProfileViewController: UIViewController {
         userDataTable.pinTop(buttonStackView.bottomAnchor, 10)
         userDataTable.register(UISearchControllerCell.self, forCellReuseIdentifier: UISearchControllerCell.cellIdentifier)
         userDataTable.backgroundColor = view.backgroundColor
-        userDataTable.rowHeight = UITableView.automaticDimension
-        userDataTable.estimatedRowHeight = 60
     }
     
     private func configureSearchController() {
@@ -357,6 +355,10 @@ extension GroupChatProfileViewController: UITableViewDelegate, UITableViewDataSo
             )
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
     }
 }
 
