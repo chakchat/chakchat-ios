@@ -13,6 +13,7 @@ final class GroupProfileEditViewController: UIViewController {
     private enum Constants {
         static let defaultProfileImageSymbol: String = "camera.circle"
         static let iconImageSize: CGFloat = 100
+        static let cornerRadius: CGFloat = 50
         static let iconImageViewTop: CGFloat = 0
         static let nameTop: CGFloat = 2
         static let usernameTop: CGFloat = 2.5
@@ -61,7 +62,7 @@ final class GroupProfileEditViewController: UIViewController {
         if let photoURL = chatData.photoURL {
             let image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
             iconImageView.image = image
-            iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
+            iconImageView.layer.cornerRadius = Constants.cornerRadius
         }
     }
     
@@ -100,7 +101,7 @@ final class GroupProfileEditViewController: UIViewController {
         iconImageView.setHeight(Constants.iconImageSize)
         iconImageView.setWidth(Constants.iconImageSize)
         iconImageView.contentMode = .scaleAspectFill
-        iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
+        iconImageView.layer.cornerRadius = Constants.cornerRadius
         iconImageView.layer.masksToBounds = true
         
         iconImageView.pinCenterX(view)
