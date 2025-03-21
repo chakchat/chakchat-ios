@@ -67,6 +67,14 @@ final class ChatsScreenViewController: UIViewController {
         shouldAnimateChatsTableView = false
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            chatsTableView.reloadData()
+        }
+    }
+    
     // MARK: - Public Methods
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {
         chatsData = allChatsData.chats
@@ -247,6 +255,7 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                     case .success(let chatInfo):
                         cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName)
                         cell.backgroundColor = .clear
+                        cell.selectionStyle = .none
                     case .failure(let failure):
                         self.interactor.handleError(failure)
                     }

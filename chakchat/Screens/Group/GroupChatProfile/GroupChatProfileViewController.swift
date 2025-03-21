@@ -80,9 +80,7 @@ final class GroupChatProfileViewController: UIViewController {
             let image = UIImage.imageWithText(
                 text: groupInfo.name,
                 size: CGSize(width: Constants.configSize, height: Constants.configSize),
-                backgroundColor: Colors.backgroundSettings,
-                textColor: color,
-                borderColor: color,
+                color: color,
                 borderWidth: Constants.borderWidth
             )
             iconImageView.image = image
@@ -129,9 +127,7 @@ final class GroupChatProfileViewController: UIViewController {
             let image = UIImage.imageWithText(
                 text: groupName,
                 size: CGSize(width: Constants.configSize, height: Constants.configSize),
-                backgroundColor: Colors.backgroundSettings,
-                textColor: color,
-                borderColor: color,
+                color: color,
                 borderWidth: Constants.borderWidth
             )
             iconImageView.image = image
@@ -223,8 +219,6 @@ final class GroupChatProfileViewController: UIViewController {
         userDataTable.pinTop(buttonStackView.bottomAnchor, 10)
         userDataTable.register(UISearchControllerCell.self, forCellReuseIdentifier: UISearchControllerCell.cellIdentifier)
         userDataTable.backgroundColor = view.backgroundColor
-        userDataTable.rowHeight = UITableView.automaticDimension
-        userDataTable.estimatedRowHeight = 60
     }
     
     private func configureSearchController() {
@@ -357,6 +351,10 @@ extension GroupChatProfileViewController: UITableViewDelegate, UITableViewDataSo
             )
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
     }
 }
 

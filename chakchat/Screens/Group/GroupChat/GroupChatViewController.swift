@@ -45,6 +45,11 @@ final class GroupChatViewController: UIViewController {
         interactor.passChatData()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        interactor.passChatData()
+    }
+    
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
@@ -62,9 +67,7 @@ final class GroupChatViewController: UIViewController {
             let image = UIImage.imageWithText(
                 text: groupInfo.name,
                 size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
-                backgroundColor: Colors.background,
-                textColor: color,
-                borderColor: color,
+                color: color,
                 borderWidth: Constants.borderWidth
             )
             iconImageView.image = image

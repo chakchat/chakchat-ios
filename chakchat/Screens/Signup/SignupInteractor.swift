@@ -64,7 +64,7 @@ final class SignupInteractor: SignupBusinessLogic {
                 completion(.success(data))
             case .failure(let failure):
                 os_log("Failed to check username availability", log: self.logger, type: .default)
-                let errorId = self.errorHandler.handleError(failure)
+                _ = self.errorHandler.handleError(failure)
                 print(failure)
                 completion(.failure(failure))
             }

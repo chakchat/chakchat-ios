@@ -14,9 +14,7 @@ extension UIImage {
     static func imageWithText(
         text: String,
         size: CGSize,
-        backgroundColor: UIColor,
-        textColor: UIColor,
-        borderColor: UIColor,
+        color: UIColor,
         borderWidth: CGFloat
     ) -> UIImage? {
         let renderer = UIGraphicsImageRenderer(size: size)
@@ -25,16 +23,16 @@ extension UIImage {
             let rect = CGRect(origin: .zero, size: size)
             let path = UIBezierPath(ovalIn: rect)
             
-            backgroundColor.setFill()
+            color.setFill()
             path.fill()
             
-            borderColor.setStroke()
+            color.setStroke()
             path.lineWidth = borderWidth
             path.stroke()
             
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: size.height / 2, weight: .bold),
-                .foregroundColor: textColor
+                .foregroundColor: Colors.background
             ]
             
             let initials = getInitials(from: text)

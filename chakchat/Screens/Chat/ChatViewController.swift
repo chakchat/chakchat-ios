@@ -63,9 +63,7 @@ final class ChatViewController: UIViewController {
         let image = UIImage.imageWithText(
             text: userData.name,
             size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
-            backgroundColor: Colors.background,
-            textColor: color,
-            borderColor: color,
+            color: color,
             borderWidth: Constants.borderWidth
         )
         iconImageView.image = image

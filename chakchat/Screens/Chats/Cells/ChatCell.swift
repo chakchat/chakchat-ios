@@ -53,9 +53,7 @@ final class ChatCell: UITableViewCell {
             let image = UIImage.imageWithText(
                 text: LocalizationManager.shared.localizedString(for: name),
                 size: CGSize(width: Constants.size, height: Constants.size),
-                backgroundColor: Colors.background,
-                textColor: color,
-                borderColor: color,
+                color: color,
                 borderWidth: Constants.borderWidth
             )
             
