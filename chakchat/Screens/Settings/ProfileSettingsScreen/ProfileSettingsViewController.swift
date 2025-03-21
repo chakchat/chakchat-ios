@@ -503,11 +503,13 @@ extension ProfileSettingsViewController : UIImagePickerControllerDelegate, UINav
         ) { action in
             self.sendDeleteImageRequest()
         }
-        var updatedChildren = photoMenu.children
-        updatedChildren.append(deleteAction)
-        photoMenu = photoMenu.replacingChildren(updatedChildren)
-        clearButton.menu = photoMenu
-        clearButton.showsMenuAsPrimaryAction = true
+        if photoMenu.children.count == 1 {
+            var updatedChildren = photoMenu.children
+            updatedChildren.append(deleteAction)
+            photoMenu = photoMenu.replacingChildren(updatedChildren)
+            clearButton.menu = photoMenu
+            clearButton.showsMenuAsPrimaryAction = true
+        }
         picker.dismiss(animated: true, completion: nil)
     }
     
