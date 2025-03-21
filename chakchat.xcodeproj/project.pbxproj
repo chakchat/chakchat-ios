@@ -227,6 +227,7 @@
 		AAB3026F2D7615BE00BECA3B /* ChatPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB3026E2D7615BE00BECA3B /* ChatPresenter.swift */; };
 		AAB302712D7615C700BECA3B /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB302702D7615C700BECA3B /* ChatViewController.swift */; };
 		AAB302732D7615CF00BECA3B /* ChatProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB302722D7615CF00BECA3B /* ChatProtocols.swift */; };
+		E10019002D8DB5A7001DA208 /* UINewChatAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */; };
 		E11D350B2D40009F00A698EA /* UIErrorLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350A2D40009F00A698EA /* UIErrorLabel.swift */; };
 		E11D350D2D409DB000A698EA /* UIFont+LoadCustomFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350C2D409DB000A698EA /* UIFont+LoadCustomFont.swift */; };
 		E11D350F2D40C3F400A698EA /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350E2D40C3F400A698EA /* Colors.swift */; };
@@ -532,6 +533,7 @@
 		AAB3026E2D7615BE00BECA3B /* ChatPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPresenter.swift; sourceTree = "<group>"; };
 		AAB302702D7615C700BECA3B /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		AAB302722D7615CF00BECA3B /* ChatProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatProtocols.swift; sourceTree = "<group>"; };
+		E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINewChatAlert.swift; sourceTree = "<group>"; };
 		E11D350A2D40009F00A698EA /* UIErrorLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIErrorLabel.swift; sourceTree = "<group>"; };
 		E11D350C2D409DB000A698EA /* UIFont+LoadCustomFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+LoadCustomFont.swift"; sourceTree = "<group>"; };
 		E11D350E2D40C3F400A698EA /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -997,6 +999,7 @@
 				E1960A6E2D6E0286008E27C0 /* UINewGroupTitleLabel.swift */,
 				E1960A812D7C8010008E27C0 /* UIMessageInputView.swift */,
 				AA75DCC22D89876C00775199 /* UIProfilePhoto.swift */,
+				E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -1815,6 +1818,7 @@
 				AA84F0072D4912E500678ABA /* ConfidentialityScreenProtocols.swift in Sources */,
 				E1960A102D6A2BD8008E27C0 /* AppThemeInteractor.swift in Sources */,
 				AA7BADE92D3F9FDF0030AC82 /* ChatsScreenViewController.swift in Sources */,
+				E10019002D8DB5A7001DA208 /* UINewChatAlert.swift in Sources */,
 				AA84F0572D4D0C7100678ABA /* NotificationScreenModels.swift in Sources */,
 				AAB300E52D6F4F0300BECA3B /* SecretUpdateServiceProtocol.swift in Sources */,
 				AA07A6732D5C898B00CFE124 /* UserServiceProtocols.swift in Sources */,

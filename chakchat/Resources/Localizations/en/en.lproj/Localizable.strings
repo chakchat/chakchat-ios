@@ -95,4 +95,7 @@
 "edit" = "Edit";
 "delete" = "Delete";
 "at_least_one" = "Choose at least one member";
-
+"alert_chat_title" = "No messages yet...";
+"alert_chat" = "Send a message to start a conversation.";
+"alert_group_title" = "There are no messages in the group yet...";
+"alert_group" = "• Up to 1000 people\n• General chat history\n• Possibility to create a group secret chat";
