@@ -255,6 +255,7 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                     case .success(let chatInfo):
                         cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName)
                         cell.backgroundColor = .clear
+                        cell.selectionStyle = .none
                     case .failure(let failure):
                         self.interactor.handleError(failure)
                     }
