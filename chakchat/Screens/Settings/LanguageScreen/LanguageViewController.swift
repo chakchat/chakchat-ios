@@ -69,7 +69,7 @@ final class LanguageViewController: UIViewController {
     
     private func configureTitleLabel() {
         view.addSubview(titleLabel)
-        titleLabel.font = Fonts.systemB24
+        titleLabel.font = Fonts.systemB20
         titleLabel.text = Constants.headerText
         titleLabel.textAlignment = .center
     }

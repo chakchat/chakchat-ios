@@ -78,7 +78,7 @@ final class NewMessageViewController: UIViewController {
     
     private func configureTitleLabel() {
         view.addSubview(titleLabel)
-        titleLabel.font = Fonts.systemB24
+        titleLabel.font = Fonts.systemB20
         titleLabel.text = LocalizationManager.shared.localizedString(for: "new_message")
         titleLabel.textAlignment = .center
     }

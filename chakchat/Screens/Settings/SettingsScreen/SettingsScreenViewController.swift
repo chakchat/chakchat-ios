@@ -140,7 +140,7 @@ final class SettingsScreenViewController: UIViewController {
     
     private func configureSettingsLabel() {
         view.addSubview(settingsLabel)
-        settingsLabel.font = Fonts.systemB24
+        settingsLabel.font = Fonts.systemB20
         settingsLabel.text = LocalizationManager.shared.localizedString(for: "settings")
     }
 

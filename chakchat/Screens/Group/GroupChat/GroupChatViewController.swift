@@ -27,6 +27,7 @@ final class GroupChatViewController: UIViewController {
     private let iconImageView: UIImageView = UIImageView()
     private let groupNameLabel: UILabel = UILabel()
     private var tapGesture: UITapGestureRecognizer?
+    private let newChatAlert: UINewChatAlert = UINewChatAlert()
     
     // MARK: - Initialization
     init(interactor: GroupChatBusinessLogic) {
@@ -83,6 +84,7 @@ final class GroupChatViewController: UIViewController {
         configureIconImageView()
         configureNicknameLabel()
         configureMessageView()
+        configureNewChatAlert()
     }
     
     private func configureBackButton() {
@@ -139,6 +141,16 @@ final class GroupChatViewController: UIViewController {
             constant: Constants.messageInputViewBottom
         )
         messageInputView.bottomConstraint.isActive = true
+    }
+    
+    private func configureNewChatAlert() {
+        newChatAlert.configure(title: LocalizationManager.shared.localizedString(for: "alert_group_title"),
+                             message: LocalizationManager.shared.localizedString(for: "alert_group"))
+        view.addSubview(newChatAlert)
+        
+        newChatAlert.pinCenterX(view)
+        newChatAlert.pinCenterY(view)
+        newChatAlert.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.8).isActive = true
     }
     
     @objc private func handleTitleTap() {
