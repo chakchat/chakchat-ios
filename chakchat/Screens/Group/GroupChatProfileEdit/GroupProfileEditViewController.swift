@@ -29,7 +29,10 @@ final class GroupProfileEditViewController: UIViewController {
     private var iconImageView: UIImageView = UIImageView()
     private var groupNameTextField: UIProfileTextField = UIProfileTextField(title: "Name", placeholder: "Name", isEditable: true)
     private var groupDescriptionTextField: UIProfileTextField = UIProfileTextField(title: "Description", placeholder: "Description", isEditable: true)
-    let interactor: GroupProfileEditBusinessLogic
+    private let interactor: GroupProfileEditBusinessLogic
+    private let clearButton: UIButton = UIButton(type: .system)
+    private var photoMenu: UIMenu = UIMenu(children: [])
+    private var isImageSet: Bool = false
     
     // MARK: - Initialization
     init(interactor: GroupProfileEditBusinessLogic) {
@@ -44,6 +47,11 @@ final class GroupProfileEditViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        interactor.passChatData()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         interactor.passChatData()
     }
     
@@ -74,7 +82,8 @@ final class GroupProfileEditViewController: UIViewController {
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
         
-        configureIconImageView(nil)
+        configureIconImageView()
+        configureClearButtonOnImage()
         configureNameTextField()
         configureUsernameTextField()
         
@@ -82,21 +91,18 @@ final class GroupProfileEditViewController: UIViewController {
         configureApplyButton()
     }
     
-    // MARK: - Cancel Button Configuration
     private func configureCancelButton() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .plain, target: self, action: #selector(cancelButtonPressed))
         navigationItem.leftBarButtonItem?.tintColor = Colors.lightOrange
     }
     
-    // MARK: - Apply Button Configuration
     private func configureApplyButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: LocalizationManager.shared.localizedString(for: "apply"), style: .plain, target: self, action: #selector(applyButtonPressed))
         navigationItem.rightBarButtonItem?.tintColor = Colors.lightOrange
         navigationItem.rightBarButtonItem?.isEnabled = true
     }
     
-    // MARK: - Icon ImageView Configuration
-    private func configureIconImageView(_ image: UIImage?) {
+    private func configureIconImageView() {
         view.addSubview(iconImageView)
         iconImageView.setHeight(Constants.iconImageSize)
         iconImageView.setWidth(Constants.iconImageSize)
@@ -109,11 +115,9 @@ final class GroupProfileEditViewController: UIViewController {
         
         iconImageView.tintColor = Colors.lightOrange
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(iconImageViewTapped))
-        iconImageView.addGestureRecognizer(tapGesture)
+        iconImageView.isUserInteractionEnabled = true
     }
     
-    // MARK: - Name Text Field Configuration
     private func configureNameTextField() {
         view.addSubview(groupNameTextField)
         groupNameTextField.pinTop(iconImageView.bottomAnchor, Constants.nameTop)
@@ -123,13 +127,58 @@ final class GroupProfileEditViewController: UIViewController {
         groupNameTextField.textField.delegate = self
     }
     
-    // MARK: - Username Text Field Configuration
     private func configureUsernameTextField() {
         view.addSubview(groupDescriptionTextField)
         groupDescriptionTextField.pinTop(groupNameTextField.bottomAnchor, Constants.usernameTop)
         groupDescriptionTextField.pinLeft(view.leadingAnchor, Constants.fieldsLeading)
         groupDescriptionTextField.pinRight(view.trailingAnchor, Constants.fieldsTrailing)
         groupDescriptionTextField.setText(LocalizationManager.shared.localizedString(for: "error"))
+    }
+    
+    private func configureClearButtonOnImage() {
+        iconImageView.layoutIfNeeded()
+
+        clearButton.frame = iconImageView.bounds
+        clearButton.backgroundColor = .clear
+        clearButton.layer.cornerRadius = iconImageView.layer.cornerRadius
+        clearButton.layer.masksToBounds = true
+
+        iconImageView.addSubview(clearButton)
+        
+        let editAction = UIAction(
+            title: LocalizationManager.shared.localizedString(for: "edit"),
+            image: UIImage(systemName: "pencil")
+        ) { action in
+            self.chooseImage()
+        }
+        photoMenu = UIMenu(children: [editAction])
+        clearButton.menu = photoMenu
+        clearButton.showsMenuAsPrimaryAction = true
+    }
+    
+    private func chooseImage() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.allowsEditing = true
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    private func sendDeleteImage() {
+        guard iconImageView.image != nil else {
+            return
+        }
+        configureIconImageView()
+        let color = UIColor.random()
+        let image = UIImage.imageWithText(
+            text: groupNameTextField.getText() ?? "",
+            size: CGSize(width: Constants.iconImageSize, height: Constants.iconImageSize),
+            color: color,
+            borderWidth: Constants.borderWidth
+        )
+        iconImageView.image = image
+        configureClearButtonOnImage()
+        isImageSet = false
     }
     
     // MARK: - Actions
@@ -143,18 +192,9 @@ final class GroupProfileEditViewController: UIViewController {
         if let name = groupNameTextField.getText() {
             interactor.updateChat(name, groupDescriptionTextField.getText())
         }
-        if let image = iconImageView.image {
+        if isImageSet, let image = iconImageView.image {
             interactor.updateGroupPhoto(image)
         }
-    }
-    
-    @objc
-    private func iconImageViewTapped() {
-        let imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
-        imagePicker.sourceType = .photoLibrary
-        imagePicker.allowsEditing = true
-        present(imagePicker, animated: true, completion: nil)
     }
     
     @objc
@@ -169,6 +209,21 @@ extension GroupProfileEditViewController : UIImagePickerControllerDelegate, UINa
         if let pickedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             iconImageView.image = pickedImage
             iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
+            isImageSet = true
+        }
+        let deleteAction = UIAction(
+            title: LocalizationManager.shared.localizedString(for: "delete"),
+            image: UIImage(systemName: "trash"),
+            attributes: .destructive
+        ) { action in
+            self.sendDeleteImage()
+        }
+        if photoMenu.children.count == 1 {
+            var updatedChildren = photoMenu.children
+            updatedChildren.append(deleteAction)
+            photoMenu = photoMenu.replacingChildren(updatedChildren)
+            clearButton.menu = photoMenu
+            clearButton.showsMenuAsPrimaryAction = true
         }
         picker.dismiss(animated: true, completion: nil)
     }
