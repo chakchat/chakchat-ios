@@ -64,7 +64,7 @@ final class NotificationScreenViewController: UIViewController {
     
     private func configureTitleLabel() {
         view.addSubview(titleLabel)
-        titleLabel.font = Fonts.systemB24
+        titleLabel.font = Fonts.systemB20
         titleLabel.text = LocalizationManager.shared.localizedString(for: "notifications")
         titleLabel.textAlignment = .center
     }

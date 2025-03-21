@@ -17,7 +17,7 @@ final class ChatsScreenViewController: UIViewController {
         static let searchPlaceholder: String = LocalizationManager.shared.localizedString(for: "search")
         static let headerText: String = LocalizationManager.shared.localizedString(for: "chats")
         
-        static let symbolSize: CGFloat = 30
+        static let symbolSize: CGFloat = 25
         static let settingsName: String = "gearshape"
         static let plusName: String = "plus"
         static let chatsTableStartTop: CGFloat = -10
@@ -97,7 +97,7 @@ final class ChatsScreenViewController: UIViewController {
     
     private func configureTitleLabel() {
         view.addSubview(titleLabel)
-        titleLabel.font = Fonts.systemB24
+        titleLabel.font = Fonts.systemB20
         titleLabel.text = Constants.headerText
         navigationItem.titleView = titleLabel
     }
