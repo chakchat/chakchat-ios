@@ -80,9 +80,7 @@ final class GroupChatProfileViewController: UIViewController {
             let image = UIImage.imageWithText(
                 text: groupInfo.name,
                 size: CGSize(width: Constants.configSize, height: Constants.configSize),
-                backgroundColor: Colors.backgroundSettings,
-                textColor: color,
-                borderColor: color,
+                color: color,
                 borderWidth: Constants.borderWidth
             )
             iconImageView.image = image
@@ -129,9 +127,7 @@ final class GroupChatProfileViewController: UIViewController {
             let image = UIImage.imageWithText(
                 text: groupName,
                 size: CGSize(width: Constants.configSize, height: Constants.configSize),
-                backgroundColor: Colors.backgroundSettings,
-                textColor: color,
-                borderColor: color,
+                color: color,
                 borderWidth: Constants.borderWidth
             )
             iconImageView.image = image

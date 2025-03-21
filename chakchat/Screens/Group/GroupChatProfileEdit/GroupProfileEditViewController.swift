@@ -52,9 +52,7 @@ final class GroupProfileEditViewController: UIViewController {
         let image = UIImage.imageWithText(
             text: chatData.name,
             size: CGSize(width: Constants.iconImageSize, height: Constants.iconImageSize),
-            backgroundColor: Colors.backgroundSettings,
-            textColor: color,
-            borderColor: color,
+            color: color,
             borderWidth: Constants.borderWidth
         )
         iconImageView.image = image

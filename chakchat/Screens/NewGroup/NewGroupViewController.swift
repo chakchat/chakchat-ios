@@ -38,7 +38,6 @@ final class NewGroupViewController: UIViewController {
     private var iconImageView: UIImageView = UIImageView()
     private let groupLabel: UILabel = UILabel()
     private let groupTextField: UITextField = UITextField()
-    private let messageLabel: UILabel = UILabel()
     private var groupTextFieldWidthConstraint: NSLayoutConstraint = NSLayoutConstraint()
     private var isImageSet: Bool = false
     private let clearButton: UIButton = UIButton(type: .system)
@@ -87,7 +86,6 @@ final class NewGroupViewController: UIViewController {
         configureClearButtonOnImage()
         configureGroupTextFiled()
         configureTableView()
-        configureErrorMessage()
     }
     
     private func configureBackButton() {
@@ -148,12 +146,11 @@ final class NewGroupViewController: UIViewController {
     }
     
     private func configureIconImageView(title: String = "new_group") {
+        let color = UIColor.random()
         let image = UIImage.imageWithText(
             text: LocalizationManager.shared.localizedString(for: title),
             size: CGSize(width: Constants.imageViewSize, height: Constants.imageViewSize),
-            backgroundColor: Colors.background,
-            textColor: Colors.lightOrange,
-            borderColor: Colors.lightOrange,
+            color: color,
             borderWidth: Constants.imageBorderWidth
         )
         
@@ -192,22 +189,6 @@ final class NewGroupViewController: UIViewController {
         groupTextField.placeholder = placeholder
         groupTextFieldWidthConstraint = groupTextField.widthAnchor.constraint(equalToConstant: initialWidth)
         groupTextFieldWidthConstraint.isActive = true
-    }
-    
-    private func configureErrorMessage() {
-        view.addSubview(messageLabel)
-        messageLabel.text = LocalizationManager.shared.localizedString(for: "at_least_one")
-        messageLabel.textColor = .red
-        messageLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-        messageLabel.textAlignment = .center
-        messageLabel.backgroundColor = Colors.background
-        messageLabel.layer.cornerRadius = 10
-        messageLabel.layer.masksToBounds = true
-        messageLabel.alpha = 0
-        messageLabel.pinTop(view, 250)
-        messageLabel.pinCenterX(view)
-        messageLabel.setWidth(350)
-        messageLabel.setHeight(50)
     }
     
     private func configureClearButtonOnImage() {
@@ -302,23 +283,7 @@ final class NewGroupViewController: UIViewController {
             return
         }
         let members = users.map { $0.id }
-        if members.count == 0 {
-            showErrorMessage()
-            return
-        }
         interactor.createGroupChat(name, nil, members, isImageSet ? iconImageView.image : nil)
-    }
-    
-    private func showErrorMessage() {
-        UIView.animate(withDuration: 0.25, animations: {
-            self.messageLabel.alpha = 1
-        }) { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                UIView.animate(withDuration: 0.25) {
-                    self.messageLabel.alpha = 0
-                }
-            }
-        }
     }
     
     @objc

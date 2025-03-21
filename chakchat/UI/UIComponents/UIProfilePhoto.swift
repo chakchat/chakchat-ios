@@ -16,9 +16,7 @@ final class UIProfilePhoto: UIView {
         self.image = UIImage.imageWithText(
             text: LocalizationManager.shared.localizedString(for: text),
             size: CGSize(width: size, height: size),
-            backgroundColor: Colors.backgroundSettings,
-            textColor: color,
-            borderColor: color,
+            color: color,
             borderWidth: borderWidth
         ) ?? UIImage()
         super.init(frame: .zero)
