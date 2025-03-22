@@ -74,7 +74,7 @@ final class UserService: UserServiceProtocol {
     
     func sendPutRestrictionRequest(_ request: ConfidentialitySettingsModels.ConfidentialityUserData,
                                    _ accessToken: String,
-                                   completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void) {
+                                   completion: @escaping (Result<SuccessResponse<ConfidentialitySettingsModels.ConfidentialityUserData>, any Error>) -> Void) {
         let endpoint = UserServiceEndpoints.meRestrictions.rawValue
         
         let body = try? JSONEncoder().encode(request)

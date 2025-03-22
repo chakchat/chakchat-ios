@@ -36,7 +36,7 @@ protocol UserServiceProtocol {
     
     func sendPutRestrictionRequest(_ request: ConfidentialitySettingsModels.ConfidentialityUserData,
                                    _ accessToken: String,
-                                   completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void)
+                                   completion: @escaping (Result<SuccessResponse<ConfidentialitySettingsModels.ConfidentialityUserData>, Error>) -> Void)
     
     func DONTSENDIT(completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void)
 }
