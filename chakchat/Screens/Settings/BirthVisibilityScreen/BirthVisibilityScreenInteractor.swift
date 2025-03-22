@@ -58,12 +58,21 @@ final class BirthVisibilityScreenInteractor: BirthVisibilityScreenBusinessLogic 
         let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
             phone: userRestrictionsSnap.phone,
             dateOfBirth: ConfidentialityDetails(openTo: birthRestriction, specifiedUsers: nil))
-        saveNewRestrictions(newUserRestrictions)
-        let updateRestrictionsEvent = UpdateRestrictionsEvent(newPhone: newUserRestrictions.phone,
-                                                              newDateOfBirth: newUserRestrictions.dateOfBirth)
-        os_log("Event published in birth visibility screen", log: logger, type: .default)
-        eventManager.publish(event: updateRestrictionsEvent)
-        os_log("Routed to confidentiality settings screen", log: logger, type: .default)
-        onRouteToConfidentialityScreen?()
+        worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                self.saveNewRestrictions(data)
+                let updateRestrictionsEvent = UpdateRestrictionsEvent(newPhone: data.phone,
+                                                                      newDateOfBirth: data.dateOfBirth)
+                eventManager.publish(event: updateRestrictionsEvent)
+                onRouteToConfidentialityScreen?()
+            case .failure(let failure):
+                _ = self.errorHandler.handleError(failure)
+                os_log("Failed to save user restrictions", log: logger, type: .fault)
+                print(failure)
+                onRouteToConfidentialityScreen?()
+            }
+        }
     }
 }
