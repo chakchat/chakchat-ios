@@ -26,14 +26,14 @@ final class PhoneVisibilityScreenWorker: PhoneVisibilityScreenWorkerLogic {
     }
     
     // MARK: - Public Methods
-    func updateUserRestriction(_ request: ConfidentialitySettingsModels.ConfidentialityUserData, completion: @escaping (Result<Void, any Error>) -> Void) {
+    func updateUserRestriction(_ request: ConfidentialitySettingsModels.ConfidentialityUserData, completion: @escaping (Result<ConfidentialitySettingsModels.ConfidentialityUserData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         userService.sendPutRestrictionRequest(request, accessToken) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case .success(_):
-                self.userDefaultsManager.saveRestrictions(request)
-                completion(.success(()))
+            case .success(let response):
+                self.userDefaultsManager.saveRestrictions(response.data)
+                completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
             }

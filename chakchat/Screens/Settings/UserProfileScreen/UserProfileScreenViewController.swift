@@ -64,7 +64,8 @@ final class UserProfileScreenViewController: UIViewController {
         userTableViewData[0].value = userData.username
         userTableViewData[1].value = Format.number(userData.phone) ?? ""
         if let birth = userData.dateOfBirth {
-            userTableViewData[2].value = birth
+            let formattedBirth = birth.replacingOccurrences(of: "-", with: ".")
+            userTableViewData[2].value = formattedBirth
         }
         if let photoURL = userData.photo {
             let image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
@@ -81,7 +82,8 @@ final class UserProfileScreenViewController: UIViewController {
         nameLabel.text = userData.name
         userTableViewData[0].value = userData.username
         if let birth = userData.dateOfBirth {
-            userTableViewData[2].value = birth
+            let formattedBirth = birth.replacingOccurrences(of: "-", with: ".")
+            userTableViewData[2].value = formattedBirth
         }
         userTableView.reloadData()
     }

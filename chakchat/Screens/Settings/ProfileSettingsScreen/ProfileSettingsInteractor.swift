@@ -77,7 +77,7 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
         }
     }
     
-    func putProfilePhoto(_ image: UIImage) {
+    func putProfilePhoto(_ image: UIImage, completion: @escaping (Result<Void, Error>) -> Void) {
         uploadFile(image) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -89,10 +89,12 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
                         os_log("Uploaded user photo", log: self.logger, type: .default)
                         let updatePhotoEvent = UpdatePhotoEvent(newPhoto: data.photo)
                         self.eventPublisher.publish(event: updatePhotoEvent)
+                        completion(.success(()))
                     case .failure(let failure):
                         _ = self.errorHandler.handleError(failure)
                         os_log("Failed to upload user photo", log: self.logger, type: .fault)
                         print(failure)
+                        completion(.failure(failure))
                     }
                 }
             case .failure(let failure):

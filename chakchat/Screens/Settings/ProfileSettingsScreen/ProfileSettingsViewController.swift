@@ -61,6 +61,7 @@ final class ProfileSettingsViewController: UIViewController {
     private let isApplyEnabled = CurrentValueSubject<Bool, Never>(true)
     private var photoMenu: UIMenu = UIMenu(children: [])
     private let clearButton: UIButton = UIButton(type: .system)
+    private var isPhoto: Bool = false
     
     
     // MARK: - Initialization
@@ -98,9 +99,8 @@ final class ProfileSettingsViewController: UIViewController {
         let formattedPhone = Format.number(userData.phone)
         phoneTextField.setText(formattedPhone)
         if let birth = userData.dateOfBirth {
-            dateFormatter.dateFormat = UIConstants.dateFormat
-            selectedDate = dateFormatter.date(from: birth)
-            birthTextField.setText(birth)
+            let formattedData = birth.replacingOccurrences(of: "-", with: ".")
+            birthTextField.setText(formattedData)
         }
         let editAction = UIAction(
             title: LocalizationManager.shared.localizedString(for: "edit"),
@@ -122,6 +122,7 @@ final class ProfileSettingsViewController: UIViewController {
             photoMenu = UIMenu(children: [editAction, deleteAction])
             clearButton.menu = photoMenu
             clearButton.showsMenuAsPrimaryAction = true
+            isPhoto = true
         } else {
             let image = UIProfilePhoto(userData.name, Constants.iconImageSize, Constants.borderWidth).getPhoto()
             iconImageView.layer.cornerRadius = 50
@@ -129,6 +130,7 @@ final class ProfileSettingsViewController: UIViewController {
             photoMenu = UIMenu(children: [editAction])
             clearButton.menu = photoMenu
             clearButton.showsMenuAsPrimaryAction = true
+            isPhoto = false
         }
     }
     
@@ -417,8 +419,17 @@ final class ProfileSettingsViewController: UIViewController {
         do {
             let newData = try transferUserProfileData()
             interactor.putNewData(newData)
-            if let image = iconImageView.image {
-                interactor.putProfilePhoto(image)
+            if isPhoto {
+                guard let image = iconImageView.image else { return }
+                interactor.putProfilePhoto(image) { [weak self] res in
+                    guard let self = self else { return }
+                    switch res {
+                    case .success:
+                        self.isPhoto = true
+                    case .failure:
+                        self.isPhoto = false
+                    }
+                }
             }
         } catch CriticalError.noData {
             print("Critical error")

@@ -25,6 +25,6 @@ protocol PhoneVisibilityScreenPresentationLogic {
 
 protocol PhoneVisibilityScreenWorkerLogic {
     func updateUserRestriction(_ request: ConfidentialitySettingsModels.ConfidentialityUserData,
-                               completion: @escaping (Result<Void, Error>) -> Void)
+                               completion: @escaping (Result<ConfidentialitySettingsModels.ConfidentialityUserData, Error>) -> Void)
     func saveNewRestrictions(_ newUserRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData)
 }

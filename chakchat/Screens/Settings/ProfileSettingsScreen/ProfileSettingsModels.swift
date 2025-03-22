@@ -28,6 +28,12 @@ enum ProfileSettingsModels {
         let name: String
         let username: String
         let dateOfBirth: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case name = "name"
+            case username = "username"
+            case dateOfBirth = "date_of_birth"
+        }
     }
     
     struct NewPhotoRequest: Codable {
