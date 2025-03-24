@@ -16,9 +16,11 @@ protocol CoreDataManagerProtocol {
     func deleteChat(_ chatID: UUID)
     func deleteAllChats()
     
+    func refreshChats(_ chatsData: ChatsModels.GeneralChatModel.ChatsData)
+    
     func createUser(_ userData: ProfileSettingsModels.ProfileUserData)
     func createUsers(_ usersData: ProfileSettingsModels.Users)
-    func fetchUsers() -> [User]
+    func fetchUsers() -> [UUID]?
     func deleteUser(_ user: User)
     func deleteAllUsers()
 }

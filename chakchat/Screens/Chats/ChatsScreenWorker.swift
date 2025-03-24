@@ -110,6 +110,10 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
         return chats
     }
     
+    func refreshChats(_ chats: ChatsModels.GeneralChatModel.ChatsData) {
+        coreDataManager.refreshChats(chats)
+    }
+    
     func deleteDBchats() {
         coreDataManager.deleteAllChats()
     }

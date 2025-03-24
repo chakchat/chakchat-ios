@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 // MARK: - ImageCacheManager
 final class ImageCacheManager: ImageCacheProtocol {
@@ -14,13 +15,19 @@ final class ImageCacheManager: ImageCacheProtocol {
     
     private init() {}
     
-    private let cache = NSCache<NSURL, UIImage>()
-    
     func getImage(for url: NSURL) -> UIImage? {
-        return cache.object(forKey: url)
+        guard let u = url.absoluteString else { return nil }
+        return KingfisherManager.shared.cache.retrieveImageInMemoryCache(forKey: u)
     }
     
     func saveImage(_ image: UIImage, for url: NSURL) {
-        cache.setObject(image, forKey: url)
+        guard let u = url.absoluteString else { return }
+        KingfisherManager.shared.cache.store(image, forKey: u)
+    }
+    
+    func clearCache() {
+        KingfisherManager.shared.cache.clearMemoryCache()
+        KingfisherManager.shared.cache.clearDiskCache()
+        KingfisherManager.shared.cache.cleanExpiredDiskCache()
     }
 }

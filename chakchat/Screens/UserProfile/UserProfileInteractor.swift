@@ -23,6 +23,7 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     
     var onRouteToChat: ((ProfileSettingsModels.ProfileUserData, ChatsModels.GeneralChatModel.ChatData?) -> Void)?
     var onRouteBack: (() -> Void)?
+    var onRouteToMain: (() -> Void)?
     
     // MARK: - Initialization
     init(
@@ -76,17 +77,19 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     func blockChat() {
         guard let chatID = chatData?.chatID else { return }
         worker.blockChat(chatID) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(_):
-                os_log("Chat with id:%@ is blocked", log: logger, type: .default, chatID as CVarArg)
-                let event = BlockedChatEvent(blocked: true)
-                eventPublisher.publish(event: event)
-                presenter.passBlocked()
-            case .failure(let failure):
-                _ = errorHandler.handleError(failure)
-                os_log("Failed to block chat with %@", log: logger, type: .fault, chatID as CVarArg)
-                print(failure)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(_):
+                    os_log("Chat with id:%@ is blocked", log: self.logger, type: .default, chatID as CVarArg)
+                    let event = BlockedChatEvent(blocked: true)
+                    self.eventPublisher.publish(event: event)
+                    self.presenter.passBlocked()
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to block chat with %@", log: self.logger, type: .fault, chatID as CVarArg)
+                    print(failure)
+                }
             }
         }
     }
@@ -94,17 +97,19 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     func unblockChat() {
         guard let chatID = chatData?.chatID else { return }
         worker.unblockChat(chatID) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(_):
-                os_log("Chat with id:%@ is unblocked", log: logger, type: .default, chatID as CVarArg)
-                let event = BlockedChatEvent(blocked: false)
-                eventPublisher.publish(event: event)
-                presenter.passUnblocked()
-            case .failure(let failure):
-                _ = errorHandler.handleError(failure)
-                os_log("Failed to unblock chat with %@", log: logger, type: .fault, chatID as CVarArg)
-                print(failure)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(_):
+                    os_log("Chat with id:%@ is unblocked", log: self.logger, type: .default, chatID as CVarArg)
+                    let event = BlockedChatEvent(blocked: false)
+                    self.eventPublisher.publish(event: event)
+                    self.presenter.passUnblocked()
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to unblock chat with %@", log: self.logger, type: .fault, chatID as CVarArg)
+                    print(failure)
+                }
             }
         }
     }
@@ -112,17 +117,21 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     func deleteChat(_ deleteMode: DeleteMode) {
         guard let chatID = chatData?.chatID else { return }
         worker.deleteChat(chatID, deleteMode) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(_):
-                os_log("Chat with id:%@ is deleted", log: logger, type: .default, userData.id as CVarArg)
-                let event = DeletedChatEvent(chatID: chatID)
-                eventPublisher.publish(event: event)
-            case .failure(let failure):
-                _ = errorHandler.handleError(failure)
-                os_log("Failed to delete chat with %@", log: logger, type: .fault, userData.id as CVarArg)
-                print(failure)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(_):
+                    os_log("Chat with id:%@ is deleted", log: self.logger, type: .default, self.userData.id as CVarArg)
+                    let event = DeletedChatEvent(chatID: chatID)
+                    self.eventPublisher.publish(event: event)
+                    self.routeToChatsScreen()
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to delete chat with %@", log: self.logger, type: .fault, self.userData.id as CVarArg)
+                    print(failure)
+                }
             }
+
         }
     }
     
@@ -151,6 +160,10 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     
     func routeBack() {
         onRouteBack?()
+    }
+    
+    func routeToChatsScreen() {
+        onRouteToMain?()
     }
     
     private func convertData(_ chatCoreData: Chat) -> ChatsModels.GeneralChatModel.ChatData? {

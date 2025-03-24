@@ -22,6 +22,7 @@ protocol UserProfileBusinessLogic {
     func passUserData()
     func searchMessages()
     func routeBack()
+    func routeToChatsScreen()
 }
 
 protocol UserProfilePresentationLogic {

@@ -102,14 +102,9 @@ final class GroupChatProfileViewController: UIViewController {
         
         interactor.getUserDataByID(chatData.members) { [weak self] result in
             DispatchQueue.main.async {
-                guard let self = self else { return }
-                switch result {
-                case .success(let data):
-                    self.userTableViewData.append(data)
-                    self.userDataTable.reloadData()
-                case .failure(let failure):
-                    self.interactor.handleError(failure)
-                }
+                guard let result else { return }
+                self?.userTableViewData = result
+                self?.userDataTable.reloadData()
             }
         }
     }
@@ -355,6 +350,12 @@ extension GroupChatProfileViewController: UITableViewDelegate, UITableViewDataSo
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let userData = userTableViewData[indexPath.row]
+        interactor.routeToProfile(userData)
     }
 }
 

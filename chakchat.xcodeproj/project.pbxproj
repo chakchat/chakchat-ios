@@ -63,6 +63,7 @@
 		AA2781E92D80ABAB0049ACAF /* Chat+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781E72D80ABAB0049ACAF /* Chat+CoreDataProperties.swift */; };
 		AA2781EB2D80FC380049ACAF /* DeletedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */; };
 		AA2781EF2D8112F50049ACAF /* BlockedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */; };
+		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
 		AA75DCBB2D81C71E00775199 /* DeletedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */; };
 		AA75DCBF2D81E42400775199 /* UpdatedGroupInfoEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBE2D81E42400775199 /* UpdatedGroupInfoEvent.swift */; };
@@ -82,6 +83,12 @@
 		AA7BAE002D3FCA740030AC82 /* SettingsScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BADFF2D3FCA740030AC82 /* SettingsScreenViewController.swift */; };
 		AA7BAE032D3FD1900030AC82 /* SettingsMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BAE022D3FD1900030AC82 /* SettingsMenuCell.swift */; };
 		AA7BAE3D2D40E8920030AC82 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BAE3C2D40E8920030AC82 /* UserDefaultsManager.swift */; };
+		AA8312F82D91BA4B00924F56 /* AddUserAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312F72D91BA4B00924F56 /* AddUserAssembly.swift */; };
+		AA8312FA2D91BA5600924F56 /* AddUserInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312F92D91BA5600924F56 /* AddUserInteractor.swift */; };
+		AA8312FC2D91BA5D00924F56 /* AddUserWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312FB2D91BA5D00924F56 /* AddUserWorker.swift */; };
+		AA8312FE2D91BA6600924F56 /* AddUserPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312FD2D91BA6600924F56 /* AddUserPresenter.swift */; };
+		AA8313002D91BA7000924F56 /* AddUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312FF2D91BA7000924F56 /* AddUserViewController.swift */; };
+		AA8313022D91BA7700924F56 /* AddUserProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8313012D91BA7700924F56 /* AddUserProtocols.swift */; };
 		AA8316482D344B740029325C /* Micro5-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA8316452D344AE50029325C /* Micro5-Regular.ttf */; };
 		AA84EFFB2D49129C00678ABA /* ConfidentialityScreenAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84EFFA2D49129C00678ABA /* ConfidentialityScreenAssembly.swift */; };
 		AA84EFFD2D4912AB00678ABA /* ConfidentialityScreenInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84EFFC2D4912AB00678ABA /* ConfidentialityScreenInteractor.swift */; };
@@ -384,6 +391,12 @@
 		AA7BADFF2D3FCA740030AC82 /* SettingsScreenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreenViewController.swift; sourceTree = "<group>"; };
 		AA7BAE022D3FD1900030AC82 /* SettingsMenuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuCell.swift; sourceTree = "<group>"; };
 		AA7BAE3C2D40E8920030AC82 /* UserDefaultsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManager.swift; sourceTree = "<group>"; };
+		AA8312F72D91BA4B00924F56 /* AddUserAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddUserAssembly.swift; sourceTree = "<group>"; };
+		AA8312F92D91BA5600924F56 /* AddUserInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddUserInteractor.swift; sourceTree = "<group>"; };
+		AA8312FB2D91BA5D00924F56 /* AddUserWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddUserWorker.swift; sourceTree = "<group>"; };
+		AA8312FD2D91BA6600924F56 /* AddUserPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddUserPresenter.swift; sourceTree = "<group>"; };
+		AA8312FF2D91BA7000924F56 /* AddUserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddUserViewController.swift; sourceTree = "<group>"; };
+		AA8313012D91BA7700924F56 /* AddUserProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddUserProtocols.swift; sourceTree = "<group>"; };
 		AA8316452D344AE50029325C /* Micro5-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Micro5-Regular.ttf"; sourceTree = "<group>"; };
 		AA84EFFA2D49129C00678ABA /* ConfidentialityScreenAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidentialityScreenAssembly.swift; sourceTree = "<group>"; };
 		AA84EFFC2D4912AB00678ABA /* ConfidentialityScreenInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidentialityScreenInteractor.swift; sourceTree = "<group>"; };
@@ -617,6 +630,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */,
 				AAA839F22D638A3200C870A4 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -805,6 +819,19 @@
 				AA1C0E372D43A232008E47D8 /* UserDefaultsManagerProtocol.swift */,
 			);
 			path = UserDefaults;
+			sourceTree = "<group>";
+		};
+		AA8312F62D91B8C800924F56 /* AddUser */ = {
+			isa = PBXGroup;
+			children = (
+				AA8312F72D91BA4B00924F56 /* AddUserAssembly.swift */,
+				AA8312F92D91BA5600924F56 /* AddUserInteractor.swift */,
+				AA8312FB2D91BA5D00924F56 /* AddUserWorker.swift */,
+				AA8312FD2D91BA6600924F56 /* AddUserPresenter.swift */,
+				AA8312FF2D91BA7000924F56 /* AddUserViewController.swift */,
+				AA8313012D91BA7700924F56 /* AddUserProtocols.swift */,
+			);
+			path = AddUser;
 			sourceTree = "<group>";
 		};
 		AA8316412D3447600029325C /* UI */ = {
@@ -1084,6 +1111,7 @@
 		AA9B621D2D2D5E650064CB23 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				AA8312F62D91B8C800924F56 /* AddUser */,
 				AA2781772D7DE1820049ACAF /* Group */,
 				AAB3024D2D75BBFC00BECA3B /* UserProfile */,
 				AAB302672D76159400BECA3B /* Chat */,
@@ -1642,6 +1670,7 @@
 			name = chakchat;
 			packageProductDependencies = (
 				AAA839F12D638A3200C870A4 /* Alamofire */,
+				AA7140B92D921043007F5C23 /* Kingfisher */,
 			);
 			productName = chakchat;
 			productReference = AA9B62042D2D47CB0064CB23 /* chakchat.app */;
@@ -1679,6 +1708,7 @@
 			mainGroup = AA9B61FB2D2D47CB0064CB23;
 			packageReferences = (
 				AAA839F02D638A3200C870A4 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = AA9B62052D2D47CB0064CB23 /* Products */;
 			projectDirPath = "";
@@ -1746,11 +1776,13 @@
 				AA2781852D7DE3770049ACAF /* GroupProfileEditModels.swift in Sources */,
 				E1960A202D6B49C4008E27C0 /* CachePresenter.swift in Sources */,
 				AA2781602D7DA1540049ACAF /* GroupChatInteractor.swift in Sources */,
+				AA8312FC2D91BA5D00924F56 /* AddUserWorker.swift in Sources */,
 				AA84F0652D53672B00678ABA /* ContextsProtocols.swift in Sources */,
 				E11D350F2D40C3F400A698EA /* Colors.swift in Sources */,
 				AA84F0362D4BEF3E00678ABA /* BirthVisibilityScreenViewController.swift in Sources */,
 				AA84F02E2D4BEF1800678ABA /* BirthVisibilityScreenInteractor.swift in Sources */,
 				AA75DCC12D81E43200775199 /* UpdatedGroupPhotoEvent.swift in Sources */,
+				AA8313002D91BA7000924F56 /* AddUserViewController.swift in Sources */,
 				AA1C0E3A2D43A5D7008E47D8 /* EventManager.swift in Sources */,
 				AAA5F3DD2D393A9A00B9D50E /* MockSendCodeService.swift in Sources */,
 				AAB300D02D6F0E4C00BECA3B /* SecretPersonalChatServiceProtocol.swift in Sources */,
@@ -1789,6 +1821,7 @@
 				AA1C0E4B2D43C9A8008E47D8 /* ProfileSettingsProtocol.swift in Sources */,
 				E1960A652D6DE50D008E27C0 /* NewGroupPresenter.swift in Sources */,
 				AA92EC612D381B8D007DEC76 /* Constants.swift in Sources */,
+				AA8313022D91BA7700924F56 /* AddUserProtocols.swift in Sources */,
 				AA9B62292D2D6C970064CB23 /* SendCodePresenter.swift in Sources */,
 				AA9B626F2D2FD2660064CB23 /* SignupModels.swift in Sources */,
 				E135ED402D4D373F006CE143 /* Format.swift in Sources */,
@@ -1818,6 +1851,7 @@
 				AA84F0072D4912E500678ABA /* ConfidentialityScreenProtocols.swift in Sources */,
 				E1960A102D6A2BD8008E27C0 /* AppThemeInteractor.swift in Sources */,
 				AA7BADE92D3F9FDF0030AC82 /* ChatsScreenViewController.swift in Sources */,
+				AA8312FA2D91BA5600924F56 /* AddUserInteractor.swift in Sources */,
 				E10019002D8DB5A7001DA208 /* UINewChatAlert.swift in Sources */,
 				AA84F0572D4D0C7100678ABA /* NotificationScreenModels.swift in Sources */,
 				AAB300E52D6F4F0300BECA3B /* SecretUpdateServiceProtocol.swift in Sources */,
@@ -1986,6 +2020,7 @@
 				AA1C0E412D43C927008E47D8 /* ProfileSettingsAssembly.swift in Sources */,
 				AA9B62672D2FD22B0064CB23 /* SignupAssembly.swift in Sources */,
 				AA07A6772D5D4F9300CFE124 /* ProfileSettingsWorker.swift in Sources */,
+				AA8312FE2D91BA6600924F56 /* AddUserPresenter.swift in Sources */,
 				AA9B624C2D2EC7B40064CB23 /* VerifyWorker.swift in Sources */,
 				AA84F0262D4BC57C00678ABA /* ExceptionsCell.swift in Sources */,
 				AA9B622D2D2D6CAE0064CB23 /* SendCodeModels.swift in Sources */,
@@ -2000,6 +2035,7 @@
 				AAB300C22D6EF98100BECA3B /* GroupChatServiceProtocol.swift in Sources */,
 				AA9B62A12D32DFC60064CB23 /* StateMachine.swift in Sources */,
 				E19609EA2D61FFF2008E27C0 /* LocalizationManager.swift in Sources */,
+				AA8312F82D91BA4B00924F56 /* AddUserAssembly.swift in Sources */,
 				AAB300DE2D6F336900BECA3B /* UpdateService.swift in Sources */,
 				E1960A492D6BE148008E27C0 /* BlackListProtocols.swift in Sources */,
 				AA9B625B2D2EE5620064CB23 /* VerificationCodeValidator.swift in Sources */,
@@ -2302,6 +2338,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.3.1;
+			};
+		};
 		AAA839F02D638A3200C870A4 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire";
@@ -2313,6 +2357,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AA7140B92D921043007F5C23 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
 		AAA839F12D638A3200C870A4 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AAA839F02D638A3200C870A4 /* XCRemoteSwiftPackageReference "Alamofire" */;

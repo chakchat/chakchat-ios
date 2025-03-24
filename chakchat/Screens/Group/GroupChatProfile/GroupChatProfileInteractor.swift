@@ -23,6 +23,8 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     var onRouteToChatMenu: (() -> Void)?
     var onRouteToEdit: ((GroupProfileEditModels.ProfileData) -> Void)?
     var onRouteBack: (() -> Void)?
+    var onRouteToProfile: ((ProfileSettingsModels.ProfileUserData, ProfileConfiguration) -> Void)?
+    var onRouteToMyProfile: (() -> Void)?
     
     init(
         presenter: GroupChatProfilePresentationLogic,
@@ -144,15 +146,9 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
         }
     }
     
-    func getUserDataByID(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, any Error>) -> Void) {
-        worker.getUserDataByID(users) { [weak self] result in
-            guard self != nil else { return }
-            switch result {
-            case .success(let data):
-                completion(.success(data))
-            case .failure(let failure):
-                completion(.failure(failure))
-            }
+    func getUserDataByID(_ users: [UUID], completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void) {
+        worker.getUserDataByID(users) { result in
+            completion(result)
         }
     }
     
@@ -177,6 +173,15 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     
     func routeToChatMenu() {
         onRouteToChatMenu?()
+    }
+    
+    func routeToProfile(_ user: ProfileSettingsModels.ProfileUserData) {
+        if user.id == getMyID() {
+            onRouteToMyProfile?()
+        } else {
+            let conf = ProfileConfiguration(isSecret: false, fromGroupChat: true)
+            onRouteToProfile?(user, conf)
+        }
     }
     
     func routeBack() {
