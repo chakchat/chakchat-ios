@@ -47,7 +47,7 @@ class CacheViewController: UIViewController {
         configureBackButton()
         configureTitleLabel()
         navigationItem.titleView = titleLabel
-        setupConstraints()
+        configureConstraints()
         setupActions()
         updateCacheInfo()
         loadCurrentCacheLimit()
@@ -80,7 +80,7 @@ class CacheViewController: UIViewController {
         configureActivityIndicator()
     }
     
-    private func setupConstraints() {
+    private func configureConstraints() {
         view.addSubview(stackView)
         view.addSubview(clearCacheButton)
         view.addSubview(cacheLimitLabel)
@@ -142,6 +142,8 @@ class CacheViewController: UIViewController {
     private func configureCacheLimitSlider() {
         cacheLimitSlider.minimumValue = 10
         cacheLimitSlider.maximumValue = 1000
+        let currentLimit = ImageCacheManager.shared.getCurrentCacheLimit()
+        cacheLimitSlider.value = Float(currentLimit)
     }
     
     private func configureActivityIndicator() {
@@ -170,7 +172,7 @@ class CacheViewController: UIViewController {
         
         let totalGB = String(format: "%.1f", storageInfo.total)
         let freeGB = String(format: "%.1f", storageInfo.free)
-        storageInfoLabel.text = "\(LocalizationManager.shared.localizedString(for: "total_memory")) \(totalGB) GB\n\(LocalizationManager.shared.localizedString(for: "free_memory")): \(freeGB) GB"
+        storageInfoLabel.text = "\(LocalizationManager.shared.localizedString(for: "total_memory")) \(totalGB) GB\n\(LocalizationManager.shared.localizedString(for: "free_memory")) \(freeGB) GB"
     }
     
     private func loadCurrentCacheLimit() {

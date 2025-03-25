@@ -120,7 +120,7 @@ final class ImageCacheManager: ImageCacheProtocol {
             let info: String
             switch result {
             case .success(let data):
-                info = String(format: "\(LocalizationManager.shared.localizedString(for: "cache_size")) %.2f MB (%.1f%% \(LocalizationManager.shared.localizedString(for: "device_storage"))", data.sizeMB, data.percentage)
+                info = String(format: "\(LocalizationManager.shared.localizedString(for: "cache_size")) %.2f MB (%.1f%% \(LocalizationManager.shared.localizedString(for: "device_storage")))", data.sizeMB, data.percentage)
             case .failure(let error):
                 info = "Error: \(error.localizedDescription)"
             }
