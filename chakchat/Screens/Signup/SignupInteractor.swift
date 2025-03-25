@@ -60,8 +60,8 @@ final class SignupInteractor: SignupBusinessLogic {
             guard let self = self else { return }
             switch result {
             case .success(let data):
-                os_log("This username is available: %@", log: self.logger, type: .default, data as CVarArg)
-                completion(.success(data))
+                os_log("This username is available", log: self.logger, type: .default)
+                completion(.success(data.userExists))
             case .failure(let failure):
                 os_log("Failed to check username availability", log: self.logger, type: .default)
                 _ = self.errorHandler.handleError(failure)

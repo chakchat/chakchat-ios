@@ -11,4 +11,5 @@ import Foundation
 final class CachePresenter : CachePresentationLogic {
     
     weak var view: CacheViewController?
+    
 }

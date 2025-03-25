@@ -165,7 +165,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
                 chatID: chatData.chatID,
                 name: groupInfo.name,
                 description: groupInfo.description,
-                photoURL: nil
+                photoURL: groupInfo.groupPhoto
             )
             onRouteToEdit?(dataToEdit)
         }

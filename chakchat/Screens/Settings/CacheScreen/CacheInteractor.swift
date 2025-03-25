@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - CacheInteractor
 final class CacheInteractor: CacheBusinessLogic {
-    
+        
     // MARK: - Properties
     private let presenter: CachePresentationLogic
     var onRouteToSettingsMenu: (() -> Void)?
@@ -18,7 +18,7 @@ final class CacheInteractor: CacheBusinessLogic {
     init(presenter: CachePresentationLogic) {
         self.presenter = presenter
     }
-    
+        
     // MARK: - Routing
     func backToSettingsMenu() {
         onRouteToSettingsMenu?()
