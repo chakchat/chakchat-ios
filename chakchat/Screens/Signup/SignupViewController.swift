@@ -121,7 +121,7 @@ final class SignupViewController: UIViewController {
         configureUsernameTextField()
         configureInputButton()
         configurateErrorLabel()
-        bindDynamicCheck()
+        //bindDynamicCheck()
     }
     
     private func configureChakChatStackView() {
@@ -232,8 +232,8 @@ final class SignupViewController: UIViewController {
         sendGradientButton.setHeight(Constants.createButtonHeight)
         sendGradientButton.setWidth(Constants.createButtonWidth)
         sendGradientButton.titleLabel?.font = Fonts.systemB20
-        sendGradientButton.isEnabled = false
-        sendGradientButton.alpha = 0.5
+        //sendGradientButton.isEnabled = false
+        //sendGradientButton.alpha = 0.5
         sendGradientButton.addTarget(self, action: #selector(sendButtonPressed), for: .touchUpInside)
     }
     

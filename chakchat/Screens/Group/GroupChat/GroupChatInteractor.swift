@@ -15,7 +15,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     private let worker: GroupChatWorkerLogic
     private let eventSubscriber: EventSubscriberProtocol
     private let errorHandler: ErrorHandlerLogic
-    private let chatData: ChatsModels.GeneralChatModel.ChatData
+    private var chatData: ChatsModels.GeneralChatModel.ChatData
     private let logger: OSLog
     
     private var cancellables = Set<AnyCancellable>()
@@ -54,7 +54,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func handleDeletedMemberEvent(_ event: DeletedMemberEvent) {
-        print("Handle member deletion")
+        if let i = chatData.members.firstIndex(of: event.memberID) {
+            chatData.members.remove(at: i)
+        }
     }
     
     func routeBack() {

@@ -96,6 +96,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                     case .success(let data):
                         os_log("Loaded chats data", log: self.logger, type: .default)
                         self.showChats(data)
+                        self.refreshChats(data)
                     case .failure(let failure):
                         self.showDBChats()
                         _ = self.errorHandler.handleError(failure)
@@ -150,6 +151,10 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {
         presenter.showChats(allChatsData)
+    }
+    
+    private func refreshChats(_ chats: ChatsModels.GeneralChatModel.ChatsData) {
+        worker.refreshChats(chats)
     }
     
     func showDBChats() {

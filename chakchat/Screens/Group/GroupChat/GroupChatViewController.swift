@@ -45,22 +45,6 @@ final class GroupChatViewController: UIViewController {
         interactor.passChatData()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        interactor.passChatData()
-    }
-    
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            guard let text = groupNameLabel.text else { return }
-            let image = UIProfilePhoto(text, Constants.navigationItemHeight, Constants.borderWidth).getPhoto()
-            iconImageView.image = image
-            iconImageView.image = image
-        }
-    }
-    
     func configureWithData(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         if case .group(let groupInfo) = chatData.info {
             let color = UIColor.random()

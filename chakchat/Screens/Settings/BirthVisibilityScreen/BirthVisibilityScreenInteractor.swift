@@ -48,31 +48,31 @@ final class BirthVisibilityScreenInteractor: BirthVisibilityScreenBusinessLogic 
         presenter.showUserRestrictions(userRestrictions)
     }
     
-    func saveNewRestrictions(_ userRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData) {
-        os_log("Saved new data in birth visibility screen", log: logger, type: .default)
-        worker.saveNewRestrictions(userRestrictions)
+    func saveNewRestrictions(_ restriction: String) {
+        let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
+            phone: userRestrictionsSnap.phone,
+            dateOfBirth: ConfidentialityDetails(openTo: restriction, specifiedUsers: nil))
+        worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    os_log("Saved user restrictions", log: self.logger, type: .default)
+                    let updateRestrictionsEvent = UpdateRestrictionsEvent(newPhone: data.phone,
+                                                                          newDateOfBirth: data.dateOfBirth)
+                    self.eventManager.publish(event: updateRestrictionsEvent)
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to save user restrictions", log: self.logger, type: .fault)
+                    print(failure)
+                    
+                }
+            }
+        }
     }
     
     // MARK: - Rounting
-    func backToConfidentialityScreen(_ birthRestriction: String) {
-        let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
-            phone: userRestrictionsSnap.phone,
-            dateOfBirth: ConfidentialityDetails(openTo: birthRestriction, specifiedUsers: nil))
-        worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let data):
-                self.saveNewRestrictions(data)
-                let updateRestrictionsEvent = UpdateRestrictionsEvent(newPhone: data.phone,
-                                                                      newDateOfBirth: data.dateOfBirth)
-                eventManager.publish(event: updateRestrictionsEvent)
-                onRouteToConfidentialityScreen?()
-            case .failure(let failure):
-                _ = self.errorHandler.handleError(failure)
-                os_log("Failed to save user restrictions", log: logger, type: .fault)
-                print(failure)
-                onRouteToConfidentialityScreen?()
-            }
-        }
+    func backToConfidentialityScreen() {
+        onRouteToConfidentialityScreen?()
     }
 }

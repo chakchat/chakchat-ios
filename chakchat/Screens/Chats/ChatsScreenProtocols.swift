@@ -54,6 +54,8 @@ protocol ChatsScreenWorkerLogic {
     func getUserDataByID(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
     func getDBChats() -> [ChatsModels.GeneralChatModel.ChatData]?
     
+    func refreshChats(_ chats: ChatsModels.GeneralChatModel.ChatsData)
+    
     func searchForExistingChat(_ memberID: UUID) -> Chat?
 }
 

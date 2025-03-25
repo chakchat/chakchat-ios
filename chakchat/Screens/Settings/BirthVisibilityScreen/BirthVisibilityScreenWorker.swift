@@ -39,8 +39,4 @@ final class BirthVisibilityScreenWorker: BirthVisibilityScreenWorkerLogic {
             }
         }
     }
-    
-    func saveNewRestrictions(_ newUserRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData) {
-        userDeafultsManager.saveRestrictions(newUserRestrictions)
-    }
 }

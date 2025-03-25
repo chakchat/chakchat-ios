@@ -81,7 +81,7 @@ enum ChatsModels {
         struct ChatData: Codable {
             let chatID: UUID
             let type: ChatType
-            let members: [UUID]
+            var members: [UUID]
             let createdAt: Date
             let info: Info
             

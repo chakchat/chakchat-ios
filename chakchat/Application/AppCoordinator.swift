@@ -211,4 +211,9 @@ final class AppCoordinator {
         let groupEditVC = GroupProfileEditAssembly.build(with: mainAppContext, coordinator: self, chatData)
         navigationController.pushViewController(groupEditVC, animated: true)
     }
+    
+    func showAddUsersScreen() {
+        let addUsersVC = AddUserAssembly.build(with: mainAppContext, coordinator: self)
+        navigationController.pushViewController(addUsersVC, animated: true)
+    }
 }
