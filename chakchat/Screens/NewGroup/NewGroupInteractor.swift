@@ -94,6 +94,8 @@ final class NewGroupInteractor: NewGroupBusinessLogic {
                         case .success(let data):
                             ImageCacheManager.shared.saveImage(image, for: d.fileURL as NSURL)
                             self.routeToGroupChat(data)
+                            let event = UpdatedGroupPhotoEvent(photo: image)
+                            self.eventPublisher.publish(event: event)
                         case .failure(let failure):
                             _ = self.errorHandler.handleError(failure)
                             os_log("Failed to upload group chat photo", log: self.logger, type: .fault)

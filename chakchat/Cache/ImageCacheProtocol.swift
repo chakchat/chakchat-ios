@@ -13,4 +13,12 @@ protocol ImageCacheProtocol {
     func getImage(for url: NSURL) -> UIImage?
 
     func saveImage(_ image: UIImage, for url: NSURL)
+    
+    func clearCache()
+    func getCacheSize(completion: @escaping (Result<Double, Error>) -> Void)
+    func getCacheSizePercentage(completion: @escaping (Result<Double, Error>) -> Void)
+    func setCacheLimit(megabytes: Int)
+    func getCurrentCacheLimit() -> Int
+    func getDeviceStorageInfo() -> (total: Double, free: Double)?
+    func getFormattedCacheInfo(completion: @escaping (String) -> Void)
 }

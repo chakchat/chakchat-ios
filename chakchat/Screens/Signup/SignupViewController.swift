@@ -121,7 +121,7 @@ final class SignupViewController: UIViewController {
         configureUsernameTextField()
         configureInputButton()
         configurateErrorLabel()
-        //bindDynamicCheck()
+        bindDynamicCheck()
     }
     
     private func configureChakChatStackView() {
@@ -232,8 +232,8 @@ final class SignupViewController: UIViewController {
         sendGradientButton.setHeight(Constants.createButtonHeight)
         sendGradientButton.setWidth(Constants.createButtonWidth)
         sendGradientButton.titleLabel?.font = Fonts.systemB20
-        //sendGradientButton.isEnabled = false
-        //sendGradientButton.alpha = 0.5
+        sendGradientButton.isEnabled = false
+        sendGradientButton.alpha = 0.5
         sendGradientButton.addTarget(self, action: #selector(sendButtonPressed), for: .touchUpInside)
     }
     
@@ -295,17 +295,21 @@ final class SignupViewController: UIViewController {
                 self?.updateNameUI(isValid: isValid)
             }
             .store(in: &cancellables)
+        isUsernameInputValid
+            .sink { [weak self] isValid in
+                self?.updateUsernameUI(isValid: isValid)
+            }.store(in: &cancellables)
         
         Publishers.CombineLatest(isUsernameInputValid, isUsernameAvailable)
             .sink { [weak self] (isFormatValid, isAvailable) in
-                let isValid = isFormatValid && isAvailable
+                let isValid = isFormatValid && !isAvailable
                 DispatchQueue.main.async {
                     self?.updateUsernameUI(isValid: isValid)
                 }
             }
             .store(in: &cancellables)
         Publishers.CombineLatest3(isNameInputValid, isUsernameInputValid, isUsernameAvailable)
-            .map { $0 && $1 && $2 }
+            .map { $0 && $1 && !$2 }
             .sink { [weak self] isEnabled in
                 DispatchQueue.main.async {
                     self?.sendGradientButton.isEnabled = isEnabled
@@ -313,6 +317,14 @@ final class SignupViewController: UIViewController {
                 }
             }
             .store(in: &cancellables)
+//        Publishers.CombineLatest(isNameInputValid, isUsernameInputValid)
+//            .sink { [weak self] (isNameValid, isUsernameValid) in
+//                let isEnabled = isNameValid && isUsernameValid
+//                DispatchQueue.main.async {
+//                    self?.sendGradientButton.isEnabled = isEnabled
+//                    self?.sendGradientButton.alpha = isEnabled ? 1 : 0.5
+//                }
+//            }.store(in: &cancellables)
     }
 
     // MARK: - UI Helpers

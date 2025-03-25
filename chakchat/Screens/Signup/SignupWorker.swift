@@ -66,7 +66,7 @@ final class SignupWorker: SignupWorkerLogic {
         }
     }
     
-    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<Bool, any Error>) -> Void) {
+    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<SignupModels.UserExistsResponse, any Error>) -> Void) {
         userService.sendCheckUsernameRequest(username) { [weak self] result in
             guard self != nil else { return }
             switch result {

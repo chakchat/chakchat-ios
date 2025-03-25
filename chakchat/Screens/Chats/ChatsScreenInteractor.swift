@@ -96,7 +96,6 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                     case .success(let data):
                         os_log("Loaded chats data", log: self.logger, type: .default)
                         self.showChats(data)
-                        self.refreshChats(data)
                     case .failure(let failure):
                         self.showDBChats()
                         _ = self.errorHandler.handleError(failure)
@@ -126,6 +125,12 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         }.store(in: &cancellables)
         eventSubscriber.subscribe(DeletedChatEvent.self) { [weak self] event in
             self?.handleDeletedChatEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(UpdatedGroupPhotoEvent.self) { [weak self] event in
+            self?.loadChats()
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(DeletedMemberEvent.self) { [weak self] event in
+            self?.loadChats()
         }.store(in: &cancellables)
     }
     

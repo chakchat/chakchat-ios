@@ -23,7 +23,7 @@ final class UserService: UserServiceProtocol {
         Sender.send(endpoint: endpoint, method: .get, headers: headers, completion: completion)
     }
     
-    func sendCheckUsernameRequest(_ username: String, completion: @escaping (Result<SuccessResponse<Bool>, any Error>) -> Void) {
+    func sendCheckUsernameRequest(_ username: String, completion: @escaping (Result<SuccessResponse<SignupModels.UserExistsResponse>, any Error>) -> Void) {
         let endpoint = "\(UserServiceEndpoints.usernameAvailability.rawValue)\(username)"
         
         let headers = [

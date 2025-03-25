@@ -1565,10 +1565,10 @@
 			isa = PBXGroup;
 			children = (
 				E1960A1D2D6B4998008E27C0 /* CacheAssembly.swift */,
-				E1960A1F2D6B49C4008E27C0 /* CachePresenter.swift */,
-				E1960A212D6B49E8008E27C0 /* CacheProtocols.swift */,
 				E1960A232D6B4A02008E27C0 /* CacheInteractor.swift */,
+				E1960A1F2D6B49C4008E27C0 /* CachePresenter.swift */,
 				E1960A252D6B4A2A008E27C0 /* CacheViewController.swift */,
+				E1960A212D6B49E8008E27C0 /* CacheProtocols.swift */,
 			);
 			path = CacheScreen;
 			sourceTree = "<group>";

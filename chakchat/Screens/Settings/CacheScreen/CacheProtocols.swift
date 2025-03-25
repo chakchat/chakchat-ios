@@ -12,5 +12,9 @@ protocol CacheBusinessLogic {
     func backToSettingsMenu()
 }
 
+protocol CacheSettingsDataStore {
+}
+
 protocol CachePresentationLogic {
 }
+

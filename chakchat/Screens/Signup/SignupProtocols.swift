@@ -23,7 +23,7 @@ protocol SignupWorkerLogic {
                      completion: @escaping (Result<SignupState, Error>) -> Void)
     
     func getSignupCode() -> UUID?
-    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<Bool, Error>) -> Void)
+    func checkUsernameAvailability(_ username: String, completion: @escaping (Result<SignupModels.UserExistsResponse, Error>) -> Void)
 }
 
 

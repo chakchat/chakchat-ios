@@ -21,4 +21,12 @@ enum SignupModels {
             case username = "username"
         }
     }
+    
+    struct UserExistsResponse: Codable {
+        let userExists: Bool
+        
+        enum CodingKeys: String, CodingKey {
+            case userExists = "user_exists"
+        }
+    }
 }
