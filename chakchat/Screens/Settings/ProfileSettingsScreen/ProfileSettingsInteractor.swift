@@ -14,6 +14,7 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
     
     // MARK: - Properties
     private let presenter: ProfileSettingsScreenPresentationLogic
+    private let userDefaultsManager: UserDefaultsManagerProtocol
     private let worker: ProfileSettingsScreenWorkerLogic
     private let eventPublisher: EventPublisherProtocol
     private let errorHandler: ErrorHandlerLogic
@@ -24,12 +25,14 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
     
     // MARK: - Initialization
     init(presenter: ProfileSettingsScreenPresentationLogic,
+         userDefaultsManager: UserDefaultsManagerProtocol,
          worker: ProfileSettingsScreenWorkerLogic,
          eventPublisher: EventPublisherProtocol,
          errorHandler: ErrorHandlerLogic,
          logger: OSLog
     ) {
         self.presenter = presenter
+        self.userDefaultsManager = userDefaultsManager
         self.worker = worker
         self.eventPublisher = eventPublisher
         self.errorHandler = errorHandler
@@ -81,12 +84,14 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
         uploadFile(image) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case .success(let data):
+            case .success(let d):
                 os_log("Uploaded user photo to file storage", log: logger, type: .default)
-                worker.putProfilePhoto(data.fileId) { result in
+                worker.putProfilePhoto(d.fileId) { result in
                     switch result {
                     case .success(let data):
                         os_log("Uploaded user photo", log: self.logger, type: .default)
+                        ImageCacheManager.shared.saveImage(image, for: d.fileURL as NSURL)
+                        self.userDefaultsManager.savePhotoURL(d.fileURL)
                         let updatePhotoEvent = UpdatePhotoEvent(newPhoto: data.photo)
                         self.eventPublisher.publish(event: updatePhotoEvent)
                         completion(.success(()))

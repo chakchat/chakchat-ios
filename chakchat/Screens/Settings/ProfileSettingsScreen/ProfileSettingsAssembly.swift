@@ -25,6 +25,7 @@ enum ProfileSettingsAssembly {
         )
         let interactor = ProfileSettingsInteractor(
             presenter: presenter,
+            userDefaultsManager: context.userDefaultsManager,
             worker: worker,
             eventPublisher: context.eventManager,
             errorHandler: context.errorHandler,
