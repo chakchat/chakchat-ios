@@ -44,17 +44,19 @@ final class AppCoordinator {
 
     // MARK: - Public Methods
     func start() {
-//        if signupContext.keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) != nil {
-//            let chatVC = ChatsAssembly.build(with: mainAppContext, coordinator: self)
-//            navigationController.pushViewController(chatVC, animated: false)
-//        } else {
-//            let startVC = CreateStartScreen()
-//            navigationController.pushViewController(startVC, animated: false)
-//        }
-        let startVC = CreateStartScreen()
-        navigationController.pushViewController(startVC, animated: false)
+        if isUserLoggedIn() {
+            setChatsScreen()
+        } else {
+            let startVC = CreateStartScreen()
+            navigationController.pushViewController(startVC, animated: false)
+        }
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
+    }
+    
+    private func isUserLoggedIn() -> Bool {
+        let token = signupContext.keychainManager.getString(key: KeychainManager.keyForSaveAccessToken)
+        return token != nil
     }
     
     private func CreateStartScreen() -> UIViewController {
