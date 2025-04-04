@@ -20,7 +20,7 @@ final class CoreDataStack {
             let container = NSPersistentContainer(name: modelName)
             container.loadPersistentStores { (_, error) in
                 if let error = error as NSError? {
-                    fatalError("Unresolved error \(error), \(error.userInfo)")
+                    print("Failed to save context: \(error), \(error.userInfo)")
                 }
             }
             persistentContainers[modelName] = container
@@ -43,18 +43,7 @@ final class CoreDataStack {
                 try context.save()
             } catch {
                 let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
-        }
-    }
-    
-    func saveBackgroundContext(_ context: NSManagedObjectContext) {
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                print("Failed to save context: \(nserror), \(nserror.userInfo)")
             }
         }
     }

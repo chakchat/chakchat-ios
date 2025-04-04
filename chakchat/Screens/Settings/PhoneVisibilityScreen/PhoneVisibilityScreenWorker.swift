@@ -39,8 +39,4 @@ final class PhoneVisibilityScreenWorker: PhoneVisibilityScreenWorkerLogic {
             }
         }
     }
-    
-    func saveNewRestrictions(_ newUserRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData) {
-        userDefaultsManager.saveRestrictions(newUserRestrictions)
-    }
 }

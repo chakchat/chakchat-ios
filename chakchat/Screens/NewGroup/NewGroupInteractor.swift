@@ -87,12 +87,15 @@ final class NewGroupInteractor: NewGroupBusinessLogic {
         uploadFile(image) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case .success(let data):
-                worker.uploadGroupPhoto(data.fileId, chatID) { result in
+            case .success(let d):
+                worker.uploadGroupPhoto(d.fileId, chatID) { res in
                     DispatchQueue.main.async {
-                        switch result {
+                        switch res {
                         case .success(let data):
+                            ImageCacheManager.shared.saveImage(image, for: d.fileURL as NSURL)
                             self.routeToGroupChat(data)
+                            let event = UpdatedGroupPhotoEvent(photo: image)
+                            self.eventPublisher.publish(event: event)
                         case .failure(let failure):
                             _ = self.errorHandler.handleError(failure)
                             os_log("Failed to upload group chat photo", log: self.logger, type: .fault)

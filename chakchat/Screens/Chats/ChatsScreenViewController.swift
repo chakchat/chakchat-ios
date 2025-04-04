@@ -46,12 +46,16 @@ final class ChatsScreenViewController: UIViewController {
     }
     
     override func viewDidLoad() {
-        self.interactor.loadMeData()
-        self.interactor.loadMeRestrictions()
-        self.interactor.loadChats()
+        interactor.loadMeData()
+        interactor.loadMeRestrictions()
+        interactor.loadChats()
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .languageDidChange, object: nil)
         configureUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        interactor.loadChats()
     }
     
     override func viewWillLayoutSubviews() {

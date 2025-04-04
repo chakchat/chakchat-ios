@@ -20,6 +20,7 @@ final class PhoneVisibilityScreenInteractor: PhoneVisibilityScreenBusinessLogic 
     private let userRestrictionsSnap: ConfidentialitySettingsModels.ConfidentialityUserData
     
     var onRouteToConfidentialityScreen: (() -> Void)?
+    var onRouteToAddUsersScreen: (() -> Void)?
     
     // MARK: - Initialization
     init(presenter: PhoneVisibilityScreenPresenter, 
@@ -48,36 +49,34 @@ final class PhoneVisibilityScreenInteractor: PhoneVisibilityScreenBusinessLogic 
         presenter.showUserRestrictions(userRestrictions)
     }
     
-    func saveNewRestrictions(_ userRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData) {
-        os_log("Saved new data in phone visibility screen", log: logger, type: .default)
-        worker.saveNewRestrictions(userRestrictions)
+    func saveNewRestrictions(_ restriction: String) {
+        let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
+            phone: ConfidentialityDetails(openTo: restriction, specifiedUsers: nil),
+            dateOfBirth: userRestrictionsSnap.dateOfBirth)
+        worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    os_log("Saved user restrictions", log: self.logger, type: .default)
+                    let updateRestrictionsEvent = UpdateRestrictionsEvent(newPhone: data.phone,
+                                                                          newDateOfBirth: data.dateOfBirth)
+                    self.eventManager.publish(event: updateRestrictionsEvent)
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to save restrictions", log: self.logger, type: .fault)
+                    print(failure)
+                }
+            }
+        }
     }
     
     // MARK: - Routing
-    /// в будущем нужно будет не стринг передавать а целиком ConfidentialityDetails
-    /// пока что стринг, потому что я сохраняю только статус кому открыта видимость номера телефона
-    /// а UUID выбранных пользователей нет, потому что тот сервис я еще не трогал
-    /// в dateOfBirth кладу значение из моего снапа, потому что оно не поменялось
-    func backToConfidentialityScreen(_ userRestriction: String) {
-        let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
-            phone: ConfidentialityDetails(openTo: userRestriction, specifiedUsers: nil),
-            dateOfBirth: userRestrictionsSnap.dateOfBirth)
-        worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let data):
-                os_log("Saved user restrictions", log: logger, type: .default)
-                self.saveNewRestrictions(data)
-                let updateRestrictionsEvent = UpdateRestrictionsEvent(newPhone: data.phone,
-                                                                      newDateOfBirth: data.dateOfBirth)
-                eventManager.publish(event: updateRestrictionsEvent)
-                onRouteToConfidentialityScreen?()
-            case .failure(let failure):
-                _ = self.errorHandler.handleError(failure)
-                os_log("Failed to save restrictions", log: logger, type: .fault)
-                print(failure)
-                onRouteToConfidentialityScreen?()
-            }
-        }
+    func backToConfidentialityScreen() {
+        onRouteToConfidentialityScreen?()
+    }
+    
+    func showAddUsersScreen() {
+        onRouteToAddUsersScreen?()
     }
 }

@@ -34,12 +34,8 @@ final class UserDefaultsManager: UserDefaultsManagerProtocol {
         saveNickname(userData.name)
         saveUsername(userData.username)
         savePhone(userData.phone)
-        if let photoPath = userData.photo {
-            savePhotoURL(photoPath)
-        }
-        if let birth = userData.dateOfBirth {
-            saveBirth(birth)
-        }
+        savePhotoURL(userData.photo)
+        saveBirth(userData.dateOfBirth)
     }
     
     func saveId(_ id: UUID) {
@@ -91,7 +87,7 @@ final class UserDefaultsManager: UserDefaultsManagerProtocol {
         print("Vibration notification status = \(vibrationNotificationStatus)")
     }
     
-    func savePhotoURL(_ url: URL) {
+    func savePhotoURL(_ url: URL?) {
         UserDefaults.standard.set(url, forKey: photoUrlKey)
     }
     

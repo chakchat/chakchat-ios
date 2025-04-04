@@ -25,6 +25,9 @@ enum PhoneVisibilityScreenAssembly {
         interactor.onRouteToConfidentialityScreen = { [weak coordinator] in
             coordinator?.popScreen()
         }
+        interactor.onRouteToAddUsersScreen = { [weak coordinator] in
+            coordinator?.showAddUsersScreen()
+        }
         let view = PhoneVisibilityScreenViewController(interactor: interactor)
         presenter.view = view
         return view

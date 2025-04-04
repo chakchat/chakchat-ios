@@ -99,6 +99,8 @@ final class ProfileSettingsViewController: UIViewController {
         let formattedPhone = Format.number(userData.phone)
         phoneTextField.setText(formattedPhone)
         if let birth = userData.dateOfBirth {
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            selectedDate = dateFormatter.date(from: birth)
             let formattedData = birth.replacingOccurrences(of: "-", with: ".")
             birthTextField.setText(formattedData)
         }
@@ -281,10 +283,9 @@ final class ProfileSettingsViewController: UIViewController {
         guard let newUsername = usernameTextField.getText() else {
             throw CriticalError.noData
         }
-        if let newBirth = birthTextField.getText() {
-            let date = dateFormatter.date(from: newBirth)
+        if let selectedDate {
             dateFormatter.dateFormat = "yyyy-MM-dd"
-            let bToRequest = dateFormatter.string(from: date ?? Date())
+            let bToRequest = dateFormatter.string(from: selectedDate)
             return ProfileSettingsModels.ChangeableProfileUserData(
                 name: newNickname,
                 username: newUsername,
@@ -506,6 +507,7 @@ extension ProfileSettingsViewController : UIImagePickerControllerDelegate, UINav
         if let pickedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             iconImageView.image = pickedImage
             iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
+            isPhoto = true
         }
         let deleteAction = UIAction(
             title: LocalizationManager.shared.localizedString(for: "delete"),

@@ -99,3 +99,14 @@
 "alert_chat" = "Send a message to start a conversation.";
 "alert_group_title" = "There are no messages in the group yet...";
 "alert_group" = "• Up to 1000 people\n• General chat history\n• Possibility to create a group secret chat";
+"clear_cache" = "Clear cache";
+"cant_get_info_storage" = "Cant get info about the storage";
+"total_memory" = "Total memory:";
+"free_memory" = "Free:";
+"cache_limit" = "Cache limit:";
+"clean_cache" = "Clean cache?";
+"clean_cache_message" = "All cache will be deleted!";
+"clean" = "Clean";
+"cache_is_cleaned" = "Cache cleaned";
+"cache_size" = "Cache size:";
+"device_storage" = "of device storage";

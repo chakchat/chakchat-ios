@@ -108,6 +108,7 @@ final class ProfileSettingsWorker: ProfileSettingsScreenWorkerLogic {
             guard let self = self else { return }
             switch result {
             case .success(_):
+                ImageCacheManager.shared.clearCache()
                 // если смогли удалить токены, то выходим
                 if keychainManager.deleteTokens() {
                     completion(.success(()))

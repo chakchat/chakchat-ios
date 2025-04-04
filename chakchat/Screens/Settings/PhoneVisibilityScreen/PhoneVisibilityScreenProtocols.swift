@@ -9,14 +9,12 @@ import Foundation
 
 // MARK: - PhoneVisibilityScreenProtocols
 protocol PhoneVisibilityScreenBusinessLogic {
-    /// потом нужно сделать, чтобы параметр был не стринг, а ConfidentialityDetails,
-    /// который касается изменения видимости номера телефона
-    /// чуть подробнее расписал в интеракторе, где имплементированна функция.
-    func backToConfidentialityScreen(_ phoneRestriction: String)
+    func backToConfidentialityScreen()
+    func showAddUsersScreen()
     
     func loadUserRestrictions()
     func showUserRestrictions(_ userRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData)
-    func saveNewRestrictions(_ userRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData)
+    func saveNewRestrictions(_ restriction: String)
 }
 
 protocol PhoneVisibilityScreenPresentationLogic {
@@ -26,5 +24,4 @@ protocol PhoneVisibilityScreenPresentationLogic {
 protocol PhoneVisibilityScreenWorkerLogic {
     func updateUserRestriction(_ request: ConfidentialitySettingsModels.ConfidentialityUserData,
                                completion: @escaping (Result<ConfidentialitySettingsModels.ConfidentialityUserData, Error>) -> Void)
-    func saveNewRestrictions(_ newUserRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData)
 }

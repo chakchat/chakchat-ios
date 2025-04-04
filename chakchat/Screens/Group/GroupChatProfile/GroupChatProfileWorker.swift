@@ -82,18 +82,29 @@ final class GroupChatProfileWorker: GroupChatProfileWorkerLogic {
         }
     }
     
-    func getUserDataByID(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, any Error>) -> Void) {
+    func getUserDataByID(_ users: [UUID], completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        for usr in users {
-            userService.sendGetUserRequest(usr, accessToken) { [weak self] result in
-                guard self != nil else { return }
-                switch result {
-                case .success(let response):
-                    completion(.success(response.data))
-                case .failure(let failure):
-                    completion(.failure(failure))
+        var result: [ProfileSettingsModels.ProfileUserData?] = Array(repeating: nil, count: users.count)
+        let dispatchGroup = DispatchGroup()
+        
+        for (i, usr) in users.enumerated() {
+            dispatchGroup.enter()
+            userService.sendGetUserRequest(usr, accessToken) { [weak self] res in
+                DispatchQueue.global().async {
+                    defer { dispatchGroup.leave() }
+                    guard self != nil else { return }
+                    switch res {
+                    case .success(let response):
+                        result[i] = response.data
+                    case .failure(_):
+                        print("Failed to get data of user with id: \(usr)")
+                    }
                 }
             }
+        }
+        dispatchGroup.notify(queue: .global()) {
+            let filtered = result.compactMap { $0 }
+            completion(filtered.isEmpty ? nil : filtered)
         }
     }
     

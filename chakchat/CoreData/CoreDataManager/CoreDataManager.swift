@@ -136,6 +136,14 @@ final class CoreDataManager: CoreDataManagerProtocol {
         }
     }
     
+    func refreshChats(_ chatsData: ChatsModels.GeneralChatModel.ChatsData) {
+        let context = CoreDataStack.shared.viewContext(for: "ChatsModel")
+        context.perform {
+            self.deleteAllChats()
+            self.saveChats(chatsData)
+        }
+    }
+    
     func createUser(_ userData: ProfileSettingsModels.ProfileUserData) {
         let context = CoreDataStack.shared.viewContext(for: "UserModel")
         let user = User(context: context)
@@ -156,14 +164,25 @@ final class CoreDataManager: CoreDataManagerProtocol {
         CoreDataStack.shared.saveContext(for: "UserModel")
     }
     
-    func fetchUsers() -> [User] {
-        let context = CoreDataStack.shared.viewContext(for: "UserModel")
-        let request: NSFetchRequest<User> = User.fetchRequest()
+    func fetchUsers() -> [UUID]? {
+        let context = CoreDataStack.shared.viewContext(for: "ChatsModel")
+        let fetchRequest: NSFetchRequest<Chat> = Chat.fetchRequest()
+        var res: [UUID]? = []
         do {
-            return try context.fetch(request)
+            let chats = try context.fetch(fetchRequest)
+            for chat in chats {
+                let members = try JSONDecoder().decode([UUID].self, from: chat.members)
+                for member in members {
+                    res?.append(member)
+                }
+            }
+            if let res {
+                return Array(Set(res))
+            }
+            return nil
         } catch {
-            print("Fetch error: \(error)")
-            return []
+            print("Error in FetchUsers")
+            return nil
         }
     }
     

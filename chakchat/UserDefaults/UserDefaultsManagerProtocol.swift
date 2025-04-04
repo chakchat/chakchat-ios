@@ -24,7 +24,7 @@ protocol UserDefaultsManagerProtocol {
     func saveAudioNotificationStatus(_ audioNotificationStatus: Bool)
     func saveVibrationNotificationStatus(_ visualNotificationStatus: Bool)
     
-    func savePhotoURL(_ url: URL)
+    func savePhotoURL(_ url: URL?)
     func savePhotoMetadata(_ photo: SuccessModels.UploadResponse)
     
     func loadID() -> UUID

@@ -20,10 +20,11 @@ protocol GroupChatProfileBusinessLogic: SearchInteractor {
     func handleUpdatedGroupInfoEvent(_ event: UpdatedGroupInfoEvent)
     func handleUpdatedGroupPhotoEvent(_ event: UpdatedGroupPhotoEvent)
     
-    func getUserDataByID(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
+    func getUserDataByID(_ users: [UUID], completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
     
     func routeToChatMenu()
     func routeToEdit()
+    func routeToProfile(_ user: ProfileSettingsModels.ProfileUserData)
     func routeBack()
 }
 
@@ -56,7 +57,7 @@ protocol GroupChatProfileWorkerLogic {
         completion: @escaping (Result<ProfileSettingsModels.Users, Error>) -> Void
     )
     
-    func getUserDataByID(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
+    func getUserDataByID(_ users: [UUID], completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
     
     func getMyID() -> UUID
 }

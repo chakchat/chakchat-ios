@@ -44,6 +44,11 @@ final class PhoneVisibilityScreenViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
     }
+    // для сохранения выбора пользователя
+    override func viewWillDisappear(_ animated: Bool) {
+        let phoneRestriction = transferRestriction()
+        interactor.saveNewRestrictions(phoneRestriction)
+    }
     
     // MARK: - UI Configuration
     private func configureUI() {
@@ -114,8 +119,7 @@ final class PhoneVisibilityScreenViewController: UIViewController {
     // MARK: - Actions
     @objc
     private func backButtonPressed() {
-        let phoneRestriction = transferRestriction()
-        interactor.backToConfidentialityScreen(phoneRestriction)
+        interactor.backToConfidentialityScreen()
     }
 }
 
@@ -207,7 +211,7 @@ extension PhoneVisibilityScreenViewController: UITableViewDelegate, UITableViewD
             updateExceptionsSection()
             tableView.reloadData()
         } else {
-            // the logic of the second section has not yet been invented
+            interactor.showAddUsersScreen()
         }
     }
 }
