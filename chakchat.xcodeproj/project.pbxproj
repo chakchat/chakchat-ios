@@ -227,6 +227,9 @@
 		AAB3026F2D7615BE00BECA3B /* ChatPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB3026E2D7615BE00BECA3B /* ChatPresenter.swift */; };
 		AAB302712D7615C700BECA3B /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB302702D7615C700BECA3B /* ChatViewController.swift */; };
 		AAB302732D7615CF00BECA3B /* ChatProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB302722D7615CF00BECA3B /* ChatProtocols.swift */; };
+		AAEF16872D9FD2D10022B30F /* WSManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16862D9FD2D10022B30F /* WSManagerProtocol.swift */; };
+		AAEF16892D9FD2D70022B30F /* WSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16882D9FD2D70022B30F /* WSManager.swift */; };
+		AAEF168B2D9FDBC60022B30F /* MessagesModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF168A2D9FDBC60022B30F /* MessagesModels.swift */; };
 		E10019002D8DB5A7001DA208 /* UINewChatAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */; };
 		E11D350B2D40009F00A698EA /* UIErrorLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350A2D40009F00A698EA /* UIErrorLabel.swift */; };
 		E11D350D2D409DB000A698EA /* UIFont+LoadCustomFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350C2D409DB000A698EA /* UIFont+LoadCustomFont.swift */; };
@@ -533,6 +536,9 @@
 		AAB3026E2D7615BE00BECA3B /* ChatPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPresenter.swift; sourceTree = "<group>"; };
 		AAB302702D7615C700BECA3B /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		AAB302722D7615CF00BECA3B /* ChatProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatProtocols.swift; sourceTree = "<group>"; };
+		AAEF16862D9FD2D10022B30F /* WSManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSManagerProtocol.swift; sourceTree = "<group>"; };
+		AAEF16882D9FD2D70022B30F /* WSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSManager.swift; sourceTree = "<group>"; };
+		AAEF168A2D9FDBC60022B30F /* MessagesModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesModels.swift; sourceTree = "<group>"; };
 		E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINewChatAlert.swift; sourceTree = "<group>"; };
 		E11D350A2D40009F00A698EA /* UIErrorLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIErrorLabel.swift; sourceTree = "<group>"; };
 		E11D350C2D409DB000A698EA /* UIFont+LoadCustomFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+LoadCustomFont.swift"; sourceTree = "<group>"; };
@@ -1064,6 +1070,7 @@
 				AA9B62812D302EFF0064CB23 /* Application */,
 				AA9B627E2D3018B00064CB23 /* Contexts */,
 				AA1C0E342D43A0C0008E47D8 /* EventManager */,
+				AAEF16852D9FD2BF0022B30F /* WSManager */,
 				AA1C0E312D43A055008E47D8 /* Events */,
 				AA9B625C2D2FC5410064CB23 /* Common */,
 				AA9B62372D2D75050064CB23 /* Services */,
@@ -1427,6 +1434,16 @@
 			path = Chat;
 			sourceTree = "<group>";
 		};
+		AAEF16852D9FD2BF0022B30F /* WSManager */ = {
+			isa = PBXGroup;
+			children = (
+				AAEF16862D9FD2D10022B30F /* WSManagerProtocol.swift */,
+				AAEF16882D9FD2D70022B30F /* WSManager.swift */,
+				AAEF168A2D9FDBC60022B30F /* MessagesModels.swift */,
+			);
+			path = WSManager;
+			sourceTree = "<group>";
+		};
 		E19609A92D608CF3008E27C0 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -1754,6 +1771,7 @@
 				AA1C0E3A2D43A5D7008E47D8 /* EventManager.swift in Sources */,
 				AAA5F3DD2D393A9A00B9D50E /* MockSendCodeService.swift in Sources */,
 				AAB300D02D6F0E4C00BECA3B /* SecretPersonalChatServiceProtocol.swift in Sources */,
+				AAEF16872D9FD2D10022B30F /* WSManagerProtocol.swift in Sources */,
 				AA84F0222D4BBEC300678ABA /* PhoneVisibilityScreenViewController.swift in Sources */,
 				AA1C0E3C2D43ACED008E47D8 /* UpdateProfileDataEvent.swift in Sources */,
 				AA9B62342D2D71A30064CB23 /* PhoneValidator.swift in Sources */,
@@ -1828,6 +1846,7 @@
 				E19609E12D60F47C008E27C0 /* LanguageCell.swift in Sources */,
 				E1960A082D6A2B00008E27C0 /* AppThemeAssembly.swift in Sources */,
 				AA84F05D2D4E302F00678ABA /* UpdateAudioNotificationEvent.swift in Sources */,
+				AAEF168B2D9FDBC60022B30F /* MessagesModels.swift in Sources */,
 				9B1EC08D2D3A834600E01E00 /* ErrorId.swift in Sources */,
 				AA92EC662D392CEB007DEC76 /* MockSendCodeWorker.swift in Sources */,
 				E1960A6F2D6E0286008E27C0 /* UINewGroupTitleLabel.swift in Sources */,
@@ -1847,6 +1866,7 @@
 				AA84F0322D4BEF2700678ABA /* BirthVisibilityScreenWorker.swift in Sources */,
 				AA84F01C2D4BBEA800678ABA /* PhoneVisibilityScreenWorker.swift in Sources */,
 				AAB300C62D6F00DA00BECA3B /* ChatsScreenModels.swift in Sources */,
+				AAEF16892D9FD2D70022B30F /* WSManager.swift in Sources */,
 				E1F904442D445D0D001B2468 /* UIDeletableTextField.swift in Sources */,
 				AA84F0242D4BC55100678ABA /* VisibilityCell.swift in Sources */,
 				AA2781752D7DB94C0049ACAF /* GroupChatProfileProtocols.swift in Sources */,
