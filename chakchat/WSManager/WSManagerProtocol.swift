@@ -10,4 +10,5 @@ import Foundation
 protocol WSManagerProtocol {
     func connectToWS()
     func receiveData()
+    func disconnect()
 }
