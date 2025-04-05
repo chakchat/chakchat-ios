@@ -75,7 +75,11 @@ final class ChatViewController: UIViewController {
         }
         nicknameLabel.text = userData.name
         if isSecret {
+            view.addSubview(expirationButton)
             messageInputView.addSubview(expirationButton)
+            expirationButton.setImage(UIImage(systemName: "timer"), for: .normal)
+            expirationButton.setHeight(24)
+            expirationButton.setWidth(24)
             expirationButton.pinRight(messageInputView.trailingAnchor, 20)
             expirationButton.pinCenterY(messageInputView)
             
@@ -109,7 +113,6 @@ final class ChatViewController: UIViewController {
         configureNicknameLabel()
         configureMessageView()
         configureNewChatAlert()
-        configureExpirationButton()
     }
     
     private func configureBackground() {
@@ -204,12 +207,6 @@ final class ChatViewController: UIViewController {
         newChatAlert.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.8).isActive = true
     }
     
-    private func configureExpirationButton() {
-        view.addSubview(expirationButton)
-        expirationButton.setImage(UIImage(systemName: "timer"), for: .normal)
-        expirationButton.setHeight(24)
-        expirationButton.setWidth(24)
-    }
     
     private func showEmptyDisclaimer() {
         let disclaimer = UIAlertController(title: "You input empty key", message: "Try input key again", preferredStyle: .alert)
