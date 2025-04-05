@@ -27,4 +27,8 @@ final class UserProfilePresenter: UserProfilePresentationLogic {
     func passUnblocked() {
         view?.passUnblock()
     }
+    
+    func showFailDisclaimer() {
+        view?.showFailDisclaimer()
+    }
 }

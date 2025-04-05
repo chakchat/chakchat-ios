@@ -105,6 +105,11 @@ final class UserProfileWorker: UserProfileWorkerLogic {
         return myID
     }
     
+    func changeSecretKey(_ key: String) -> Bool {
+        let s = keychainManager.save(key: key, value: KeychainManager.keyForSaveSecretKey)
+        return s
+    }
+    
     func searchMessages() {
         /// имплементация позже
     }

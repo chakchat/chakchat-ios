@@ -29,6 +29,7 @@ final class ChatViewController: UIViewController {
     private let nicknameLabel: UILabel = UILabel()
     private var tapGesture: UITapGestureRecognizer?
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
+    private lazy var expirationButton: UIButton = UIButton(type: .system)
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
     
     // MARK: - Initialization
@@ -73,6 +74,35 @@ final class ChatViewController: UIViewController {
             iconImageView.layer.cornerRadius = Constants.cornerRadius
         }
         nicknameLabel.text = userData.name
+        if isSecret {
+            view.addSubview(expirationButton)
+            messageInputView.addSubview(expirationButton)
+            expirationButton.setImage(UIImage(systemName: "timer"), for: .normal)
+            expirationButton.setHeight(24)
+            expirationButton.setWidth(24)
+            expirationButton.pinRight(messageInputView.trailingAnchor, 20)
+            expirationButton.pinCenterY(messageInputView)
+            
+            let alert = UIAlertController(title: "Input key", message: nil, preferredStyle: .alert)
+            alert.addTextField { tf in
+                tf.placeholder = "Key"
+            }
+            let ent = UIAlertAction(title: "Enter", style: .default) { _ in
+                if let key = alert.textFields?.first?.text {
+                    self.interactor.saveSecretKey(key)
+                } else {
+                    self.showEmptyDisclaimer()
+                }
+            }
+            alert.addAction(ent)
+            self.present(alert, animated: false)
+        }
+    }
+    
+    func showSecretKeyFail() {
+        let failAllert = UIAlertController(title: "Failed to save secret key", message: "Try to save in again in profile", preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default)
+        failAllert.addAction(ok)
     }
     
     // MARK: - UI Configuration
@@ -175,6 +205,14 @@ final class ChatViewController: UIViewController {
         newChatAlert.pinCenterX(view)
         newChatAlert.pinCenterY(view)
         newChatAlert.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.8).isActive = true
+    }
+    
+    
+    private func showEmptyDisclaimer() {
+        let disclaimer = UIAlertController(title: "You input empty key", message: "Try input key again", preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default)
+        disclaimer.addAction(ok)
+        self.present(disclaimer, animated: true)
     }
     
     @objc private func handleTitleTap() {

@@ -66,6 +66,7 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                     info: data.info
                 )
                 eventPublisher.publish(event: event)
+                routeToChat(chatData)
             case .failure(let failure):
                 _ = errorHandler.handleError(failure)
                 os_log("Failed to cread secret chat with %@", log: logger, type: .fault, userData.id as CVarArg)
@@ -132,6 +133,15 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                 }
             }
 
+        }
+    }
+    
+    func changeSecretKey(_ key: String) {
+        if worker.changeSecretKey(key) {
+            os_log("Changed secret key", log: logger, type: .default)
+        } else {
+            os_log("Failed to change secret key", log: logger, type: .fault)
+            presenter.showFailDisclaimer()
         }
     }
     

@@ -15,6 +15,7 @@ final class KeychainManager: KeychainManagerBusinessLogic {
     static let keyForSaveSignupCode: String = "signupCode"
     static let keyForSaveAccessToken: String = "accessToken"
     static let keyForSaveRefreshToken: String = "refreshToken"
+    static let keyForSaveSecretKey: String = "secretKey"
     
     // MARK: - Saving Methods
     // for verification code and other data with UUID type

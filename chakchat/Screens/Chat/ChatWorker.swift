@@ -63,6 +63,11 @@ final class ChatWorker: ChatWorkerLogic {
         }
     }
     
+    func saveSecretKey(_ key: String) -> Bool{
+        let s = keychainManager.save(key: key, value: KeychainManager.keyForSaveSecretKey)
+        return s
+    }
+    
     func sendTextMessage(_ message: String) {
         print("Sended message: \(message)")
     }
