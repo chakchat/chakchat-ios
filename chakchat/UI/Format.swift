@@ -12,11 +12,13 @@ final class Format {
     
     // MARK: - Formatting Raw Number
     static func number(_ number: String) -> String? {
-        guard number.count == 11 else {
+        let cleanNumber = number.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+        
+        guard cleanNumber.count == 11 else {
             print("Incorrect number length")
             return nil
         }
-        let formattedNumber = "+7 (\(number.prefix(4).suffix(3))) \(number.prefix(7).suffix(3))-\(number.prefix(9).suffix(2))-\(number.suffix(2))"
+        let formattedNumber = "+7 (\(cleanNumber.prefix(4).suffix(3))) \(cleanNumber.prefix(7).suffix(3))-\(cleanNumber.prefix(9).suffix(2))-\(cleanNumber.suffix(2))"
         
         return formattedNumber
     }

@@ -16,5 +16,9 @@ final class MockErrorHandler: ErrorHandlerLogic {
         handledError = error
         return ErrorId(message: nil, type: ErrorOutput.None)
     }
+    
+    func handleExpiredRefreshToken() {
+        print("hello world")
+    }
 }
 
