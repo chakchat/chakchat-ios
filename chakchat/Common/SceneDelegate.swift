@@ -23,12 +23,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
+        let startVC = StartViewController()
+        window.rootViewController = startVC
+        window.makeKeyAndVisible()
+        
         appCoordinator = AppCoordinator(window: window)
-        appCoordinator?.start()
+        appCoordinator?.tryRefreshAccessToken { success in
+            if success {
+                self.appCoordinator?.startChats()
+            } else {
+                self.appCoordinator?.startRegistration()
+            }
+        }
         
         ThemeManager.shared.applyTheme(theme: ThemeManager.shared.currentTheme)
-        
-        window.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

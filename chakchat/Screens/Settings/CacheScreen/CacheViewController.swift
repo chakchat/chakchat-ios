@@ -16,7 +16,7 @@ class CacheViewController: UIViewController {
     
     private let cacheInfoLabel = UILabel()
     private let storageInfoLabel = UILabel()
-    private let clearCacheButton = UIButton(type: .system)
+    private let clearCacheButton = UIGradientButton(title: LocalizationManager.shared.localizedString(for: "clear_cache"))
     private let cacheLimitSlider = UISlider()
     private let cacheLimitLabel = UILabel()
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
@@ -127,11 +127,11 @@ class CacheViewController: UIViewController {
     }
     
     private func configureClearCacheButton() {
-        clearCacheButton.setTitle(LocalizationManager.shared.localizedString(for: "clear_cache"), for: .normal)
-        clearCacheButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-        clearCacheButton.backgroundColor = .systemRed
-        clearCacheButton.tintColor = Colors.backgroundSettings
-        clearCacheButton.layer.cornerRadius = 10
+        clearCacheButton.titleLabel?.font = Fonts.systemB20
+        
+//        clearCacheButton.backgroundColor = .systemRed
+//        clearCacheButton.tintColor = Colors.backgroundSettings
+//        clearCacheButton.layer.cornerRadius = 10
     }
     
     private func configureCacheLimitLabel() {

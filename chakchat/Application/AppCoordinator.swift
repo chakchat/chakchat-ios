@@ -43,15 +43,28 @@ final class AppCoordinator {
     }
 
     // MARK: - Public Methods
-    func start() {
-        if isUserLoggedIn() {
-            setChatsScreen()
-        } else {
-            let startVC = CreateStartScreen()
-            navigationController.pushViewController(startVC, animated: false)
-        }
+    func startRegistration() {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
+        let sendVC = CreateSendCodeScreen()
+        navigationController.pushViewController(sendVC, animated: true)
+    }
+    
+    func startChats() {
+        window.rootViewController = navigationController
+        window.makeKeyAndVisible()
+        let chatsVC = CreateChatsScreen()
+        navigationController.pushViewController(chatsVC, animated: true)
+    }
+    
+    func tryRefreshAccessToken(completion: @escaping (Bool) -> Void) {
+        if isUserLoggedIn() {
+            refreshAccessToken { success in
+                completion(success)
+            }
+        } else {
+            completion(false)
+        }
     }
     
     private func isUserLoggedIn() -> Bool {
@@ -59,13 +72,39 @@ final class AppCoordinator {
         return token != nil
     }
     
-    private func CreateStartScreen() -> UIViewController {
-        return StartAssembly.build(with: signupContext, coordinator: self)
+    private func refreshAccessToken(completion: @escaping (Bool) -> Void) {
+        let identityService = IdentityService()
+        guard let refreshToken = mainAppContext.keychainManager.getString(key: KeychainManager.keyForSaveRefreshToken) else {
+            completion(false)
+            return
+        }
+        
+        identityService.sendRefreshTokensRequest(RefreshRequest(refreshToken: refreshToken)) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else {
+                    completion(false)
+                    return
+                }
+                
+                switch result {
+                case .success(let keys):
+                    _ = self.mainAppContext.keychainManager.save(key: KeychainManager.keyForSaveAccessToken, value: keys.data.accessToken)
+                    _ = self.mainAppContext.keychainManager.save(key: KeychainManager.keyForSaveRefreshToken, value: keys.data.refreshToken)
+                    completion(true)
+                    
+                case .failure(let failure):
+                    if let error = failure as? APIErrorResponse,
+                       error.errorType == ApiErrorType.refreshTokenExpired.rawValue {
+                        self.signupContext.errorHandler.handleExpiredRefreshToken()
+                    }
+                    completion(false)
+                }
+            }
+        }
     }
     
-    func showRegistrationScreen() {
-        let registrationVC = SendCodeAssembly.build(with: signupContext, coordinator: self)
-        navigationController.setViewControllers([registrationVC], animated: true)
+    func CreateSendCodeScreen() -> UIViewController {
+        return SendCodeAssembly.build(with: signupContext, coordinator: self)
     }
 
     func showVerifyScreen() {

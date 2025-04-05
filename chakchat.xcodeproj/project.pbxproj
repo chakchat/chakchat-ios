@@ -181,7 +181,6 @@
 		AA9B627D2D300DEE0064CB23 /* SignupDataValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B627C2D300DEE0064CB23 /* SignupDataValidator.swift */; };
 		AA9B62802D3018CB0064CB23 /* SignupContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B627F2D3018CB0064CB23 /* SignupContext.swift */; };
 		AA9B62832D302F150064CB23 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62822D302F150064CB23 /* AppCoordinator.swift */; };
-		AA9B62862D303E330064CB23 /* StartAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62852D303E330064CB23 /* StartAssembly.swift */; };
 		AA9B628D2D3149B60064CB23 /* ApiErrorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B628C2D3149B60064CB23 /* ApiErrorTypes.swift */; };
 		AA9B628F2D3152570064CB23 /* Sender.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B628E2D3152570064CB23 /* Sender.swift */; };
 		AA9B62A12D32DFC60064CB23 /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A02D32DFC60064CB23 /* StateMachine.swift */; };
@@ -246,6 +245,7 @@
 		E135ED422D4E7D06006CE143 /* UIProfileTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = E135ED412D4E7D06006CE143 /* UIProfileTextField.swift */; };
 		E135ED482D54C273006CE143 /* UIDateButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E135ED472D54C273006CE143 /* UIDateButton.swift */; };
 		E135ED4A2D54EB33006CE143 /* UICustomDatePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E135ED492D54EB33006CE143 /* UICustomDatePicker.swift */; };
+		E14CFF3F2DA12E5300B3A971 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E14CFF3E2DA12E5300B3A971 /* LaunchScreen.storyboard */; };
 		E19609B72D608E8F008E27C0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = E19609B62D608E8F008E27C0 /* Localizable.strings */; };
 		E19609BA2D608E98008E27C0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = E19609B92D608E98008E27C0 /* Localizable.strings */; };
 		E19609BD2D608EA0008E27C0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = E19609BC2D608EA0008E27C0 /* Localizable.strings */; };
@@ -492,7 +492,6 @@
 		AA9B627C2D300DEE0064CB23 /* SignupDataValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupDataValidator.swift; sourceTree = "<group>"; };
 		AA9B627F2D3018CB0064CB23 /* SignupContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignupContext.swift; sourceTree = "<group>"; };
 		AA9B62822D302F150064CB23 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
-		AA9B62852D303E330064CB23 /* StartAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartAssembly.swift; sourceTree = "<group>"; };
 		AA9B628C2D3149B60064CB23 /* ApiErrorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiErrorTypes.swift; sourceTree = "<group>"; };
 		AA9B628E2D3152570064CB23 /* Sender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sender.swift; sourceTree = "<group>"; };
 		AA9B62A02D32DFC60064CB23 /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
@@ -558,6 +557,7 @@
 		E135ED412D4E7D06006CE143 /* UIProfileTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIProfileTextField.swift; sourceTree = "<group>"; };
 		E135ED472D54C273006CE143 /* UIDateButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIDateButton.swift; sourceTree = "<group>"; };
 		E135ED492D54EB33006CE143 /* UICustomDatePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomDatePicker.swift; sourceTree = "<group>"; };
+		E14CFF3E2DA12E5300B3A971 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E19609B52D608E8F008E27C0 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E19609B82D608E98008E27C0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E19609BB2D608EA0008E27C0 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1226,6 +1226,7 @@
 			children = (
 				AA9B62072D2D47CB0064CB23 /* AppDelegate.swift */,
 				AA9B62092D2D47CB0064CB23 /* SceneDelegate.swift */,
+				E14CFF3E2DA12E5300B3A971 /* LaunchScreen.storyboard */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1278,7 +1279,6 @@
 			isa = PBXGroup;
 			children = (
 				AA9B621F2D2D5F790064CB23 /* StartViewController.swift */,
-				AA9B62852D303E330064CB23 /* StartAssembly.swift */,
 			);
 			path = StartScreen;
 			sourceTree = "<group>";
@@ -1741,6 +1741,7 @@
 				E19609B72D608E8F008E27C0 /* Localizable.strings in Resources */,
 				AA8316482D344B740029325C /* Micro5-Regular.ttf in Resources */,
 				9B1EC06E2D369C6000E01E00 /* RobotoMono-VariableFont_wght.ttf in Resources */,
+				E14CFF3F2DA12E5300B3A971 /* LaunchScreen.storyboard in Resources */,
 				9B1EC0842D395F5D00E01E00 /* Inter-VariableFont_opsz,wght.ttf in Resources */,
 				9B1EC0862D39669F00E01E00 /* Poppins-Regular.ttf in Resources */,
 			);
@@ -2027,7 +2028,6 @@
 				E1960A0E2D6A2B9E008E27C0 /* AppThemeProtocols.swift in Sources */,
 				AA2781832D7DE1E10049ACAF /* GroupProfileEditProtocols.swift in Sources */,
 				AA1C0E362D43A0D5008E47D8 /* EventPublisherProtocol.swift in Sources */,
-				AA9B62862D303E330064CB23 /* StartAssembly.swift in Sources */,
 				E135ED3E2D4CF59E006CE143 /* Fonts.swift in Sources */,
 				AA87FC6F2D55039B00E8D066 /* UserProfileScreenWorker.swift in Sources */,
 				AA9B62802D3018CB0064CB23 /* SignupContext.swift in Sources */,
