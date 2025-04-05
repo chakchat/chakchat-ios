@@ -43,7 +43,7 @@ final class MessageInputView: UIView {
     
     // MARK: - UI Configuration
     private func configureUI() {
-        backgroundColor = .systemGray6
+        backgroundColor = UIColor(named: "MessageInputView") 
         layer.cornerRadius = Constants.radius
         
         configureSendButton()
