@@ -30,6 +30,7 @@ final class ChatViewController: UIViewController {
     private var tapGesture: UITapGestureRecognizer?
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
     private lazy var expirationButton: UIButton = UIButton(type: .system)
+    private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
     
     // MARK: - Initialization
     init(interactor: ChatBusinessLogic) {
@@ -102,14 +103,39 @@ final class ChatViewController: UIViewController {
     
     // MARK: - UI Configuration
     private func configureUI() {
-        view.backgroundColor = Colors.background
-        
+        configureBackground()
         configureBackButton()
         configureIconImageView()
         configureNicknameLabel()
         configureMessageView()
         configureNewChatAlert()
         configureExpirationButton()
+    }
+    
+    private func configureBackground() {
+        if ThemeManager.shared.currentTheme == AppTheme.dark || (ThemeManager.shared.currentTheme == AppTheme.system && traitCollection.userInterfaceStyle == .dark) {
+            view.backgroundColor = Colors.background
+        } else {
+            let colors = [
+                UIColor(hex: "ffffff") ?? Colors.background,
+                UIColor(hex: "ffffff") ?? Colors.background,
+                UIColor(hex: "ffe3b4") ?? Colors.background,
+                UIColor(hex: "ffc768") ?? Colors.background,
+                UIColor(hex: "ffb09c") ?? Colors.background,
+                UIColor(hex: "ffa9d3") ?? Colors.background,
+                UIColor(hex: "ffc2e0") ?? Colors.background,
+                UIColor(hex: "ffdeee") ?? Colors.background
+            ]
+            gradientView = ChatBackgroundGradientView(colors: colors)
+            
+            view.addSubview(gradientView)
+            gradientView.pinTop(view, 0)
+            gradientView.pinBottom(view, 0)
+            gradientView.pinLeft(view, 0)
+            gradientView.pinRight(view, 0)
+            
+            view.sendSubviewToBack(gradientView)
+        }
     }
 
     private func configureBackButton() {

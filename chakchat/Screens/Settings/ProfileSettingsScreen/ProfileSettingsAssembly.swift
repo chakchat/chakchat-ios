@@ -35,7 +35,7 @@ enum ProfileSettingsAssembly {
             coordinator?.popScreen()
         }
         interactor.onRouteToRegistration = { [weak coordinator] in
-            coordinator?.showRegistrationScreen()
+            coordinator?.CreateSendCodeScreen()
         }
         let view = ProfileSettingsViewController(interactor: interactor)
         presenter.view = view
