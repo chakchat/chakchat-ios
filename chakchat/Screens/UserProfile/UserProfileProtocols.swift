@@ -23,6 +23,8 @@ protocol UserProfileBusinessLogic {
     func searchMessages()
     func routeBack()
     func routeToChatsScreen()
+    
+    func changeSecretKey(_ key: String)
 }
 
 protocol UserProfilePresentationLogic {
@@ -33,6 +35,8 @@ protocol UserProfilePresentationLogic {
     )
     func passBlocked()
     func passUnblocked()
+    
+    func showFailDisclaimer()
 }
 
 protocol UserProfileWorkerLogic {
@@ -47,4 +51,6 @@ protocol UserProfileWorkerLogic {
     
     func searchForExistingChat(_ memberID: UUID) -> Chat?
     func getMyID() -> UUID
+    
+    func changeSecretKey(_ key: String) -> Bool
 }

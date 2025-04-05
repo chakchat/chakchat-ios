@@ -18,6 +18,6 @@ final class ChatPresenter: ChatPresentationLogic {
     }
     
     func showSecretKeyFail() {
-        <#code#>
+        view?.showSecretKeyFail()
     }
 }

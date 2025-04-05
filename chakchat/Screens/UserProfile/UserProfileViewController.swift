@@ -97,7 +97,9 @@ final class UserProfileViewController: UIViewController {
             buttonStackView.addArrangedSubview(chatButton)
             buttonStackView.setWidth(310)
         case (true, false):
-            break
+            let secretKeyButton = createButton("key.card", "Secret key")
+            buttonStackView.addArrangedSubview(secretKeyButton)
+            buttonStackView.setWidth(310)
         case (false, true):
             let chatButton = createButton("message.fill",
                                           LocalizationManager.shared.localizedString(for: "chat_l"))
@@ -156,6 +158,13 @@ final class UserProfileViewController: UIViewController {
         }
         optionsMenu = UIMenu(title: LocalizationManager.shared.localizedString(for: "choose_option"), children: [blockAction, deleteAction])
         setMenu(optionsMenu)
+    }
+    
+    func showFailDisclaimer() {
+        let disclaimer = UIAlertController(title: "Failed to change secret key", message: "Try again please", preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default)
+        disclaimer.addAction(ok)
+        self.present(disclaimer, animated: true)
     }
     
     // MARK: - UI Configuration

@@ -136,6 +136,15 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
         }
     }
     
+    func changeSecretKey(_ key: String) {
+        if worker.changeSecretKey(key) {
+            os_log("Changed secret key", log: logger, type: .default)
+        } else {
+            os_log("Failed to change secret key", log: logger, type: .fault)
+            presenter.showFailDisclaimer()
+        }
+    }
+    
     func searchForExistingChat() {
         if let chatData = worker.searchForExistingChat(userData.id) {
             let convertedChatData = convertData(chatData)
