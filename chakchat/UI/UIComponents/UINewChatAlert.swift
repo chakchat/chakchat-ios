@@ -66,7 +66,7 @@ final class UINewChatAlert: UIView {
     
     // MARK: - Setup
     private func configureView() {
-        backgroundColor = Colors.picker.withAlphaComponent(Constants.alpha)
+        backgroundColor = UIColor(named: "EmptyChatMessageColor") ?? .tertiaryLabel
         layer.cornerRadius = Constants.cornerRadius
         layer.masksToBounds = true
         

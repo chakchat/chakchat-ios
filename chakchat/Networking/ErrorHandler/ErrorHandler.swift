@@ -22,7 +22,6 @@ final class ErrorHandler: ErrorHandlerLogic {
         self.identityService = identityService
     }
     
-    // MARK: - Public Methods
     func handleError(_ error: Error) -> ErrorId {
         if error is Keychain.KeychainError {
             guard let keychainError = error as? Keychain.KeychainError else {
@@ -50,7 +49,24 @@ final class ErrorHandler: ErrorHandlerLogic {
         return ErrorId(message: serverErrorMessage, type: ErrorOutput.Alert)
     }
     
-    func handleAccessTokenAbsence() {
+    func handleExpiredRefreshToken() {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {
+            print("Can't load accessToken, missing probably")
+            return
+        }
+        guard let refreshToken = keychainManager.getString(key: KeychainManager.keyForSaveRefreshToken) else {
+            print("Can't load refreshToken, missing probably")
+            return
+        }
+        let request = RefreshRequest(refreshToken: refreshToken)
+        identityService.sendSignoutRequest(request, accessToken) { [weak self] result in
+            guard let self = self else { return }
+            ImageCacheManager.shared.clearCache()
+            _ = keychainManager.deleteTokens()
+        }
+    }
+    
+    private func handleAccessTokenAbsence() {
         guard let refreshToken = keychainManager.getString(key: KeychainManager.keyForSaveRefreshToken) else { return }
         identityService.sendRefreshTokensRequest(RefreshRequest(refreshToken: refreshToken)) { [weak self] result in
             guard let self = self else { return }
