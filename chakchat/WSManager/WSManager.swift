@@ -66,7 +66,7 @@ final class WSManager: WSManagerProtocol {
     
     func disconnect() {
         stopPinging()
-        webSocketTask?.cancel(with: .goingAway, reason: "Client is not in mood".data(using: .utf8))
+        webSocketTask?.cancel(with: .goingAway, reason: "Client is not in a mood".data(using: .utf8))
         webSocketTask = nil
     }
     
