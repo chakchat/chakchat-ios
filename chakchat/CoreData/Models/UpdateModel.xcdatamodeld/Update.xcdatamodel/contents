@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22757" systemVersion="23E224" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="DeletedUpdate" representedClassName="DeletedUpdate" parentEntity="Update" syncable="YES">
+        <attribute name="mode" attributeType="String"/>
+        <relationship name="deletedUpdate" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+        <relationship name="parentUpdate" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+    </entity>
+    <entity name="FileMessageUpdate" representedClassName="FileMessageUpdate" parentEntity="Update" syncable="YES">
+        <attribute name="fileCreatedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fileID" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="fileName" attributeType="String"/>
+        <attribute name="fileSize" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="fileURL" attributeType="String"/>
+        <attribute name="mimeType" optional="YES" attributeType="String"/>
+        <relationship name="parentUpdate" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+        <relationship name="replyTo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Update"/>
+    </entity>
+    <entity name="ReactionUpdate" representedClassName="ReactionUpdate" parentEntity="Update" syncable="YES">
+        <attribute name="reaction" attributeType="String"/>
+        <relationship name="message" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+        <relationship name="parentUpdate" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+    </entity>
+    <entity name="SecretUpdate" representedClassName="SecretUpdate" parentEntity="Update" syncable="YES">
+        <attribute name="initializationVector" attributeType="Binary"/>
+        <attribute name="keyHash" attributeType="String"/>
+        <attribute name="payload" attributeType="Binary"/>
+        <relationship name="parentUpdate" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+    </entity>
+    <entity name="TextMessageEditedUpdate" representedClassName="TextMessageEditedUpdate" parentEntity="Update" syncable="YES">
+        <attribute name="newText" attributeType="String"/>
+        <relationship name="message" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+        <relationship name="parentUpdate" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+    </entity>
+    <entity name="TextMessageUpdate" representedClassName="TextMessageUpdate" parentEntity="Update" syncable="YES">
+        <attribute name="text" attributeType="String"/>
+        <relationship name="parentUpdate" maxCount="1" deletionRule="Cascade" destinationEntity="Update"/>
+        <relationship name="replyTo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Update"/>
+    </entity>
+    <entity name="Update" representedClassName="Update" isAbstract="YES" syncable="YES">
+        <attribute name="chatID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="senderID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="updateID" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+</model>
