@@ -16,4 +16,8 @@ final class ChatPresenter: ChatPresentationLogic {
     func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool) {
         view?.configureWithData(userData, isSecret)
     }
+    
+    func showSecretKeyFail() {
+        <#code#>
+    }
 }

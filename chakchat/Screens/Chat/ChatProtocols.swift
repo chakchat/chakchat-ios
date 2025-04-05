@@ -15,10 +15,12 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func passUserData()
     func setExpirationTime(_ expiration: String?)
     func handleChatBlock(_ event: BlockedChatEvent)
+    func saveSecretKey(_ key: String)
 }
 
 protocol ChatPresentationLogic {
     func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool)
+    func showSecretKeyFail()
 }
 
 protocol ChatWorkerLogic {
@@ -29,6 +31,7 @@ protocol ChatWorkerLogic {
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
     func sendTextMessage(_ message: String)
+    func saveSecretKey(_ key: String) -> Bool
 }
 
 protocol SendingMessagesProtocol: AnyObject {

@@ -100,6 +100,15 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
+    func saveSecretKey(_ key: String) {
+        if worker.saveSecretKey(key) {
+            os_log("Secret key saved", log: logger, type: .default)
+        } else {
+            os_log("Failed to save secret key", log: logger, type: .fault)
+            presenter.showSecretKeyFail()
+        }
+    }
+    
     private func subscribeToEvents() {
         eventManager.subscribe(BlockedChatEvent.self) { [weak self] event in
             self?.handleChatBlock(event)

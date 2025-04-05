@@ -66,6 +66,7 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                     info: data.info
                 )
                 eventPublisher.publish(event: event)
+                routeToChat(chatData)
             case .failure(let failure):
                 _ = errorHandler.handleError(failure)
                 os_log("Failed to cread secret chat with %@", log: logger, type: .fault, userData.id as CVarArg)
