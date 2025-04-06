@@ -305,11 +305,11 @@ final class UserProfileViewController: UIViewController {
     }
     
     private func deleteChatForMe() {
-        interactor.deleteChat(DeleteMode.onlyMe)
+        interactor.deleteChat(DeleteMode.DeleteModeForSender)
     }
     
     private func deleteCharForBoth() {
-        interactor.deleteChat(DeleteMode.all)
+        interactor.deleteChat(DeleteMode.DeleteModeForAll)
     }
     
     @objc private func chatButtonPressed() {
