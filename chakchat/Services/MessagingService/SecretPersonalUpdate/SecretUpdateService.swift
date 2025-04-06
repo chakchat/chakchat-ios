@@ -18,7 +18,7 @@ final class SecretUpdateService: SecretUpdateServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretUpdateModels.SecretPreview>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)\(MessaginServiceEndpoints.SecretUpdateEndpoints.sendMessage.rawValue)"
+        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.SecretUpdateEndpoints.sendMessage.rawValue)"
         let idempotencyKey = UUID().uuidString
         
         let body = try? JSONEncoder().encode(request)
@@ -38,7 +38,7 @@ final class SecretUpdateService: SecretUpdateServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)\(MessaginServiceEndpoints.SecretUpdateEndpoints.sendMessage.rawValue)\(updateID)"
+        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.SecretUpdateEndpoints.sendMessage.rawValue)\(updateID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

@@ -10,7 +10,7 @@ import Foundation
 /// нужно будет дописывать туда какую-то информацию.
 /// Например в ручке "concreteChat" нужно потом в конце дописать {chatID}
 
-enum MessaginServiceEndpoints {
+enum MessagingServiceEndpoints {
     
     enum ChatsEndpoints: String {
         case getAllChats = "/api/messaging/v1.0/chat/all"
@@ -43,21 +43,32 @@ enum MessaginServiceEndpoints {
     enum SecretGroupChatEndpoints: String {
         case secretGroupChat = "/api/messaging/v1.0/chat/group"
     }
-    /// ВСЕ РУЧКИ НАЧИНАЮТСЯ С "/api/messaging/v1.0/{chatID}"
-    /// тут лишь продолжение этих ручек после "/{chatID}"
-    /// в ручке deleteMessage на конце "/{updateID}"
-    /// для редактирования текстового сообщения ручка,  как sendTextMessage,
-    /// только на конце еще "/{updateID}"
-    /// для удаления реакции ручка, как sendReaction, только на конце "/{updateID}"
-    ///
-    enum UpdateEndpoints: String {
-        case getUpdatesInRange = "/update"
-        case searchForMessages = "/update/message/search"
+    /// в начале каждого запроса нужно к эндпоинту приписывать chatPersonalPrefix
+    /// в начале каждого secret запроса делаю secretPrefix
+    enum PersonalUpdateEndpoints: String {
+        case chatPersonalPrefix = "/chat/personal/"
+        case searchMessages = "/update/message/search"
         case sendTextMessage = "/update/message/text"
-        case deleteMessage = "/update/message/"
-        case sendFileMessage = "/update/message/file"
-        case sendReaction = "/update/reaction/"
-        case forwardMessage = "/update/messaga/forward"
+        case updateMessage = "/update/message"
+        case sendFile = "/update/message/file"
+        case sendReaction = "/update/reaction"
+        case forwardMessage = "/update/text-message/forward"
+        case forwardFile = "/update/file-message/forward"
+        
+        case secretPrefix = "/chat/personal/secret"
+    }
+    
+    enum GroupUpdateEndpoint: String {
+        case chatPersonalPrefix = "/chat/group/"
+        case searchMessages = "/update/message/search"
+        case sendTextMessage = "/update/message/text"
+        case updateMessage = "/update/message"
+        case sendFile = "/update/message/file"
+        case sendReaction = "/update/reaction"
+        case forwardMessage = "/update/text-message/forward"
+        case forwardFile = "/update/file-message/forward"
+        
+        case secretPrefix = "/chat/personal/secret"
     }
     /// аналогично UpdateEndpoint, все начинается с "/api/messaging/v1.0/{chatID}"
     /// для удаления сообщения ручка такая же, как sendMessage,
