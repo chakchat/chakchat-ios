@@ -15,7 +15,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
     ) {
-        let endpoint = MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue
+        let endpoint = MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue
         let idempotencyKey = UUID().uuidString
         
         let body = try? JSONEncoder().encode(request)
@@ -35,7 +35,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)"
+        let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)"
         
         let body = try? JSONEncoder().encode(request)
         
@@ -52,7 +52,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)"
+        let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -68,7 +68,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/member/\(memberID)"
+        let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/member/\(memberID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -84,7 +84,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/member/\(memberID)"
+        let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/member/\(memberID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -100,7 +100,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/photo"
+        let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/photo"
         
         let body = try? JSONEncoder().encode(request)
         
@@ -117,7 +117,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/photo"
+        let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/photo"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

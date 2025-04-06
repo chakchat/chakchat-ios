@@ -9,14 +9,14 @@ import Foundation
 
 // MARK: - SecretUpdateServiceProtocol
 protocol SecretUpdateServiceProtocol {
-    func sendTextMessageRequest(
+    func sendSecretMessage(
         _ request: ChatsModels.SecretUpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretUpdateModels.SecretPreview>, Error>) -> Void
     )
     
-    func sendDeleteMessageRequest(
+    func deleteSecretMessage(
         _ chatID: UUID,
         _ updateID: Int64,
         _ accessToken: String,

@@ -10,15 +10,15 @@ import Foundation
 // MARK: - SecretUpdateService
 final class SecretUpdateService: SecretUpdateServiceProtocol {
     
-    private let baseAPI: String = "/api/messaging/v1.0/"
+    private let baseAPI: String = "/api/messaging/v1.0/chat/personal/secret/"
     
-    func sendTextMessageRequest(
+    func sendSecretMessage(
         _ request: ChatsModels.SecretUpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.SecretUpdateModels.SecretPreview>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.SecretUpdateEndpoints.sendMessage.rawValue)"
+        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.SecretUpdateEndpoints.update.rawValue)"
         let idempotencyKey = UUID().uuidString
         
         let body = try? JSONEncoder().encode(request)
@@ -32,13 +32,13 @@ final class SecretUpdateService: SecretUpdateServiceProtocol {
         Sender.send(endpoint: endpoint, method: .post, headers: headers, body: body, completion: completion)
     }
     
-    func sendDeleteMessageRequest(
+    func deleteSecretMessage(
         _ chatID: UUID,
         _ updateID: Int64,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.SecretUpdateEndpoints.sendMessage.rawValue)\(updateID)"
+        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.SecretUpdateEndpoints.update.rawValue)/\(updateID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

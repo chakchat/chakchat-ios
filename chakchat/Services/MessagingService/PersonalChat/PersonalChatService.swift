@@ -15,7 +15,7 @@ final class PersonalChatService: PersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = MessaginServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue
+        let endpoint = MessagingServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue
         let idempotencyKey = UUID().uuidString
         
         let body = try? JSONEncoder().encode(request)
@@ -34,7 +34,7 @@ final class PersonalChatService: PersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue)/\(chatID)/block"
+        let endpoint = "\(MessagingServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue)/\(chatID)/block"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -49,7 +49,7 @@ final class PersonalChatService: PersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue)/\(chatID)/unblock"
+        let endpoint = "\(MessagingServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue)/\(chatID)/unblock"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -65,7 +65,7 @@ final class PersonalChatService: PersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue)/\(chatID)"
+        let endpoint = "\(MessagingServiceEndpoints.PersonalChatEndpoints.personalChat.rawValue)/\(chatID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
