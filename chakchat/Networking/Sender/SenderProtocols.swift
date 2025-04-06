@@ -13,6 +13,7 @@ protocol SenderLogic {
                                  method: HTTPMethod,
                                  headers: [String:String]?,
                                  body: Data?,
+                                 attempt: Int,
                                  completion: @escaping (Result<SuccessResponse<T>, Error>) -> Void
     )
 }
