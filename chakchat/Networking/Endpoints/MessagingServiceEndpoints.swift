@@ -43,10 +43,8 @@ enum MessagingServiceEndpoints {
     enum SecretGroupChatEndpoints: String {
         case secretGroupChat = "/api/messaging/v1.0/chat/group"
     }
-    /// в начале каждого запроса нужно к эндпоинту приписывать chatPersonalPrefix
-    /// в начале каждого secret запроса делаю secretPrefix
+
     enum PersonalUpdateEndpoints: String {
-        case chatPersonalPrefix = "/chat/personal/"
         case searchMessages = "/update/message/search"
         case sendTextMessage = "/update/message/text"
         case updateMessage = "/update/message"
@@ -54,12 +52,9 @@ enum MessagingServiceEndpoints {
         case sendReaction = "/update/reaction"
         case forwardMessage = "/update/text-message/forward"
         case forwardFile = "/update/file-message/forward"
-        
-        case secretPrefix = "/chat/personal/secret"
     }
     
     enum GroupUpdateEndpoint: String {
-        case chatPersonalPrefix = "/chat/group/"
         case searchMessages = "/update/message/search"
         case sendTextMessage = "/update/message/text"
         case updateMessage = "/update/message"
@@ -67,14 +62,9 @@ enum MessagingServiceEndpoints {
         case sendReaction = "/update/reaction"
         case forwardMessage = "/update/text-message/forward"
         case forwardFile = "/update/file-message/forward"
-        
-        case secretPrefix = "/chat/personal/secret"
-    }
-    /// аналогично UpdateEndpoint, все начинается с "/api/messaging/v1.0/{chatID}"
-    /// для удаления сообщения ручка такая же, как sendMessage,
-    /// только на конце "{updateID}"
-    enum SecretUpdateEndpoints: String {
-        case sendMessage = "/update/secret/"
     }
     
+    enum SecretUpdateEndpoints: String {
+        case update = "/update/secret"
+    }
 }

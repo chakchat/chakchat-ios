@@ -15,7 +15,7 @@ final class ChatWorker: ChatWorkerLogic {
     private let coreDataManager: CoreDataManagerProtocol
     private let personalChatService: PersonalChatServiceProtocol
     private let secretPersonalChatService: SecretPersonalChatServiceProtocol
-    private let updateService: UpdateServiceProtocol
+    private let updateService: PersonalUpdateServiceProtocol
     
     // MARK: - Initialization
     init(
@@ -23,7 +23,7 @@ final class ChatWorker: ChatWorkerLogic {
         coreDataManager: CoreDataManagerProtocol,
         personalChatService: PersonalChatServiceProtocol,
         secretPersonalChatService: SecretPersonalChatServiceProtocol,
-        updateService: UpdateServiceProtocol
+        updateService: PersonalUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
         self.coreDataManager = coreDataManager
