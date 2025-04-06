@@ -385,7 +385,7 @@ enum ChatsModels {
         }
         
         struct ForwardMessageRequest: Codable {
-            let messages: [UUID]
+            let messages: [Int64]
             let fromChatID: UUID
             
             enum CodingKeys: String, CodingKey {
@@ -427,8 +427,8 @@ enum ChatsModels {
 }
 
 enum DeleteMode: String {
-    case onlyMe = "only_me"
-    case all = "all"
+    case DeleteModeForSender = "for_delition_sender"
+    case DeleteModeForAll = "for_all"
 }
 
 enum ChatType: String, Codable {

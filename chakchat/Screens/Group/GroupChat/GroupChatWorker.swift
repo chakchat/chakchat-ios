@@ -10,12 +10,12 @@ import Foundation
 final class GroupChatWorker: GroupChatWorkerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let coreDataManager: CoreDataManagerProtocol
-    private let updateService: UpdateServiceProtocol
+    private let updateService: PersonalUpdateServiceProtocol
     
     init(
         keychainManager: KeychainManagerBusinessLogic,
         coreDataManager: CoreDataManagerProtocol,
-        updateService: UpdateServiceProtocol
+        updateService: PersonalUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
         self.coreDataManager = coreDataManager

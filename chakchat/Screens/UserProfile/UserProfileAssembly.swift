@@ -18,7 +18,7 @@ enum UserProfileAssembly {
         profileConfiguration: ProfileConfiguration
     ) -> UIViewController {
         let presenter = UserProfilePresenter()
-        let updateService = UpdateService()
+        let updateService = PersonalUpdateService()
         let personalChatService = PersonalChatService()
         let secretPersonalChatService = SecretPersonalChatService()
         let worker = UserProfileWorker(

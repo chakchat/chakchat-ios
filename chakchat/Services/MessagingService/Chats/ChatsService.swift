@@ -14,7 +14,7 @@ final class ChatsService: ChatsServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatsData>, any Error>) -> Void
     ) {
-        let endpoint = MessaginServiceEndpoints.ChatsEndpoints.getAllChats.rawValue
+        let endpoint = MessagingServiceEndpoints.ChatsEndpoints.getAllChats.rawValue
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -29,7 +29,7 @@ final class ChatsService: ChatsServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatsData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.ChatsEndpoints.getConcreteChat.rawValue)\(chatID)"
+        let endpoint = "\(MessagingServiceEndpoints.ChatsEndpoints.getConcreteChat.rawValue)\(chatID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

@@ -15,7 +15,7 @@ final class SecretPersonalChatService: SecretPersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = MessaginServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue
+        let endpoint = MessagingServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue
         let idempotencyKey = UUID().uuidString
         
         let body = try? JSONEncoder().encode(request)
@@ -35,7 +35,7 @@ final class SecretPersonalChatService: SecretPersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue)/\(chatID)/expiration"
+        let endpoint = "\(MessagingServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue)/\(chatID)/expiration"
         
         let body = try? JSONEncoder().encode(request)
         
@@ -53,7 +53,7 @@ final class SecretPersonalChatService: SecretPersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue)/\(chatID)/delete/\(deleteMode)"
+        let endpoint = "\(MessagingServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue)/\(chatID)/delete/\(deleteMode)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

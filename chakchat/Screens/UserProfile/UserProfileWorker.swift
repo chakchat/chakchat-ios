@@ -16,7 +16,7 @@ final class UserProfileWorker: UserProfileWorkerLogic {
     private let coreDataManager: CoreDataManagerProtocol
     private let personalChatService: PersonalChatServiceProtocol
     private let secretPersonalChatService: SecretPersonalChatServiceProtocol
-    private let messagingService: UpdateServiceProtocol
+    private let messagingService: PersonalUpdateServiceProtocol
     
     // MARK: - Initialization
     init(
@@ -25,7 +25,7 @@ final class UserProfileWorker: UserProfileWorkerLogic {
         coreDataManager: CoreDataManagerProtocol,
         personalChatService: PersonalChatServiceProtocol,
         secretPersonalChatService: SecretPersonalChatServiceProtocol,
-        messagingService: UpdateServiceProtocol
+        messagingService: PersonalUpdateServiceProtocol
     ) {
         self.userDefaultsManager = userDefaultsManager
         self.keychainManager = keychainManager

@@ -15,7 +15,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue
+        let endpoint = MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue
         let idempotencyKey = UUID().uuidString
         
         let body = try? JSONEncoder().encode(request)
@@ -35,7 +35,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)"
+        let endpoint = "\(MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)"
         
         let body = try? JSONEncoder().encode(request)
         
@@ -52,7 +52,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)"
+        let endpoint = "\(MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -68,7 +68,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/member/\(memberID)"
+        let endpoint = "\(MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/member/\(memberID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -84,7 +84,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/member/\(memberID)"
+        let endpoint = "\(MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/member/\(memberID)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -100,7 +100,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/photo"
+        let endpoint = "\(MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/photo"
         
         let body = try? JSONEncoder().encode(request)
         
@@ -117,7 +117,7 @@ final class GroupChatService: GroupChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessaginServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/photo"
+        let endpoint = "\(MessagingServiceEndpoints.GroupChatEndpoints.groupChat.rawValue)/\(chatID)/photo"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

@@ -1,15 +1,14 @@
 //
-//  UpdateServiceProtocol.swift
+//  GroupUpdateServiceProtocol.swift
 //  chakchat
 //
-//  Created by Кирилл Исаев on 26.02.2025.
+//  Created by Кирилл Исаев on 05.04.2025.
 //
 
 import Foundation
 
-// MARK: - UpdateServiceProtocol
-protocol UpdateServiceProtocol {
-    func sendGetUpdatesRequest(
+protocol GroupUpdateServiceProtocol {
+    func getUpdatesInRange(
         _ chatID: UUID,
         _ from: Int64,
         _ to: Int64,
@@ -17,7 +16,7 @@ protocol UpdateServiceProtocol {
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
     )
     
-    func sendSearchForMessageRequest(
+    func searchForMessages(
         _ chatID: UUID,
         _ offset: Int64,
         _ limit: Int64,
@@ -27,14 +26,14 @@ protocol UpdateServiceProtocol {
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
     )
     
-    func sendPutTextMessageRequest(
+    func sendTextMessage(
         _ request: ChatsModels.UpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
     )
     
-    func sendDeleteMessageRequest(
+    func deleteMessage(
         _ chatID: UUID,
         _ updateID: Int64,
         _ deleteMode: DeleteMode,
@@ -42,7 +41,7 @@ protocol UpdateServiceProtocol {
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void
     )
     
-    func sendEditTextMessageRequest(
+    func editTextMessage(
         _ chatID: UUID,
         _ updateID: Int64,
         _ request: ChatsModels.UpdateModels.EditMessageRequest,
@@ -50,28 +49,35 @@ protocol UpdateServiceProtocol {
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
     )
     
-    func sendFileMessageRequest(
+    func sendFileMessage(
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.FileMessageRequest,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
     )
     
-    func sendReactionMessageRequest(
+    func sendReaction(
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ReactionRequest,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Reaction>, Error>) -> Void
     )
     
-    func sendDeleteReactionRequest(
+    func deleteReaction(
         _ chatID: UUID,
         _ updateID: Int64,
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void
     )
     
-    func sendForwardMessageRequest(
+    func forwardTextMessage(
+        _ chatID: UUID,
+        _ request: ChatsModels.UpdateModels.ForwardMessageRequest,
+        _ accessToken: String,
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+    )
+    
+    func forwardFileMessage(
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ForwardMessageRequest,
         _ accessToken: String,
