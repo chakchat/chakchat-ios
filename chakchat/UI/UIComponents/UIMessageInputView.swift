@@ -143,7 +143,7 @@ final class MessageInputView: UIView {
     @objc
     private func sendMessage() {
         guard let text = textField.text, !text.isEmpty else { return }
-        interactor?.sendTextMessage(text)
+        //interactor?.sendTextMessage(text)
         textField.text = nil
         sendButton.alpha = Constants.alphaF
     }

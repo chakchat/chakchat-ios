@@ -8,9 +8,10 @@
 import UIKit
 import Combine
 import OSLog
+import CropViewController
 
 // MARK: - ProfileSettingsViewController
-final class ProfileSettingsViewController: UIViewController {
+final class ProfileSettingsViewController: UIViewController, CropViewControllerDelegate {
     
     // MARK: - Constants
     private enum Constants {
@@ -398,7 +399,6 @@ final class ProfileSettingsViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
-        imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
     }
     
@@ -504,11 +504,8 @@ final class ProfileSettingsViewController: UIViewController {
 // MARK: - UIImagePickerControllerDelegate, UINavigationControllerDelegate
 extension ProfileSettingsViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let pickedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-            iconImageView.image = pickedImage
-            iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
-            isPhoto = true
-        }
+        guard let pickedImage = info[.originalImage] as? UIImage else { return }
+        
         let deleteAction = UIAction(
             title: LocalizationManager.shared.localizedString(for: "delete"),
             image: UIImage(systemName: "trash"),
@@ -516,6 +513,7 @@ extension ProfileSettingsViewController : UIImagePickerControllerDelegate, UINav
         ) { action in
             self.sendDeleteImageRequest()
         }
+        
         if photoMenu.children.count == 1 {
             var updatedChildren = photoMenu.children
             updatedChildren.append(deleteAction)
@@ -524,10 +522,29 @@ extension ProfileSettingsViewController : UIImagePickerControllerDelegate, UINav
             clearButton.showsMenuAsPrimaryAction = true
         }
         picker.dismiss(animated: true, completion: nil)
+        
+        showCrop(pickedImage)
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+    
+    private func showCrop(_ image: UIImage) {
+        let vc = CropViewController(croppingStyle: .circular, image: image)
+        vc.aspectRatioPreset = .presetSquare
+        vc.aspectRatioLockEnabled = true
+        vc.toolbarPosition = .top
+        vc.doneButtonTitle = "Continue"
+        vc.cancelButtonTitle = "Back"
+        vc.delegate = self
+        present(vc, animated: true)
+    }
+    
+    func cropViewController(_ cropViewController: CropViewController, didCropToImage image: UIImage, withRect cropRect: CGRect, angle: Int) {
+        isPhoto = true
+        iconImageView.image = image
+        cropViewController.dismiss(animated: true)
     }
 }
 

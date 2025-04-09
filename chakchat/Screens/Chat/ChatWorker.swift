@@ -68,7 +68,18 @@ final class ChatWorker: ChatWorkerLogic {
         return s
     }
     
-    func sendTextMessage(_ message: String) {
-        print("Sended message: \(message)")
+    func sendTextMessage(_ chatID: UUID, _ message: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        let request = ChatsModels.UpdateModels.SendMessageRequest(text: message, replyTo: nil)
+        updateService.sendTextMessage(request, chatID, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
     }
 }

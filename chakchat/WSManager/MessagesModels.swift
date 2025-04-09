@@ -8,7 +8,7 @@
 import Foundation
 
 struct Message: Codable {
-    let type: MessageType
+    let type: WSMessageType
     let data: MessageData
 }
 
@@ -23,19 +23,67 @@ enum MessageData: Codable {
 
 struct UpdateData: Codable {
     let chatID: UUID
-    let updateID: Int64
-    let type: UpdateDataType
-    let senderID: UUID
-    let createdAt: Date
     let content: UpdateContent
+    let createdAt: Date
+    let senderID: UUID
+    let type: UpdateDataType
+    let updateID: Int64
     
     enum CodingKeys: String, CodingKey {
         case chatID = "chat_id"
         case updateID = "update_id"
-        case type
+        case type = "type"
         case senderID = "sender_id"
         case createdAt = "created_at"
-        case content
+        case content = "content"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        chatID = try container.decode(UUID.self, forKey: .chatID)
+        senderID = try container.decode(UUID.self, forKey: .senderID)
+        updateID = try container.decode(Int64.self, forKey: .updateID)
+        type = try container.decode(UpdateDataType.self, forKey: .type)
+        
+        let timestamp = try container.decode(Double.self, forKey: .createdAt)
+        createdAt = Date(timeIntervalSince1970: timestamp)
+        
+        switch type {
+        case .textMessage:
+            let textContent = try container.decode(TextContent.self, forKey: .content)
+            content = .textContent(textContent)
+        case .file:
+            let fileContent = try container.decode(FileContent.self, forKey: .content)
+            content = .fileContent(fileContent)
+        case .reaction:
+            let reactionContent = try container.decode(ReactionContent.self, forKey: .content)
+            content = .reactionContent(reactionContent)
+        case .textEdited:
+            let editedContent = try container.decode(EditedContent.self, forKey: .content)
+            content = .editedContent(editedContent)
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(chatID, forKey: .chatID)
+        try container.encode(senderID, forKey: .senderID)
+        try container.encode(updateID, forKey: .updateID)
+        try container.encode(type, forKey: .type)
+        try container.encode(createdAt.timeIntervalSince1970, forKey: .createdAt)
+        
+        switch content {
+        case .textContent(let text):
+            try container.encode(text, forKey: .content)
+        case .fileContent(let file):
+            try container.encode(file, forKey: .content)
+        case .reactionContent(let reaction):
+            try container.encode(reaction, forKey: .content)
+        case .editedContent(let edited):
+            try container.encode(edited, forKey: .content)
+        }
     }
 }
 
@@ -124,9 +172,9 @@ indirect enum UpdateContent: Codable {
 }
 
 struct TextContent: Codable {
+    let replyTo: UUID?
     let text: String
     let edited: UpdateData?
-    let replyTo: UUID
     let reactions: [UpdateData]?
     
     enum CodingKeys: String, CodingKey {
@@ -161,7 +209,7 @@ struct EditedContent: Codable {
     }
 }
 
-enum MessageType: String, Codable {
+enum WSMessageType: String, Codable {
     case update = "update"
     case chatCreated = "chat_created"
     case chatDeleted = "chat_deleted"

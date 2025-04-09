@@ -87,9 +87,9 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ request: ChatsModels.UpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendTextMessage)"
+        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendTextMessage.rawValue)"
         
         let idempotencyKey = UUID().uuidString
         

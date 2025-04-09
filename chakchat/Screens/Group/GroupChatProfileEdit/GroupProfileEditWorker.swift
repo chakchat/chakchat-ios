@@ -29,7 +29,7 @@ final class GroupProfileEditWorker: GroupProfileEditWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.GroupChat.UpdateRequest(name: name, description: description)
         groupService.sendUpdateChatRequest(chatID, request, accessToken) { [weak self] result in
-            guard let self = self else { return }
+            guard self != nil else { return }
             switch result {
             case .success(let response):
                 //self.coreDataManager.updateChat(response.data)
@@ -44,7 +44,7 @@ final class GroupProfileEditWorker: GroupProfileEditWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.GroupChat.PhotoUpdateRequest(photoID: photoID)
         groupService.sendUpdatePhotoRequest(request, chatID, accessToken) { [weak self] result in
-            guard let self = self else { return }
+            guard self != nil else { return }
             switch result {
             case .success(let response):
                 //self.coreDataManager.updateChat(response.data)

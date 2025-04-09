@@ -46,15 +46,13 @@ final class AppCoordinator {
     func startRegistration() {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
-        let sendVC = CreateSendCodeScreen()
-        navigationController.pushViewController(sendVC, animated: true)
+        showSendCodeScreen()
     }
     
     func startChats() {
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
-        let chatsVC = CreateChatsScreen()
-        navigationController.pushViewController(chatsVC, animated: true)
+        setChatsScreen()
     }
     
     func tryRefreshAccessToken(completion: @escaping (Bool) -> Void) {
@@ -103,8 +101,9 @@ final class AppCoordinator {
         }
     }
     
-    func CreateSendCodeScreen() -> UIViewController {
-        return SendCodeAssembly.build(with: signupContext, coordinator: self)
+    func showSendCodeScreen()  {
+        let sendCodeVC = SendCodeAssembly.build(with: signupContext, coordinator: self)
+        navigationController.pushViewController(sendCodeVC, animated: true)
     }
 
     func showVerifyScreen() {
