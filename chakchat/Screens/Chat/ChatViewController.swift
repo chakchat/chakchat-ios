@@ -8,10 +8,10 @@
 import UIKit
 import MessageKit
 import InputBarAccessoryView
+import PhotosUI
 
 // MARK: - ChatViewController
-final class ChatViewController: MessagesViewController, UIEditMenuInteractionDelegate {
-    
+final class ChatViewController: MessagesViewController {
     // MARK: - Constants
     enum Constants {
         static let navigationItemHeight: CGFloat = 44
@@ -33,6 +33,9 @@ final class ChatViewController: MessagesViewController, UIEditMenuInteractionDel
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
     private lazy var expirationButton: UIButton = UIButton(type: .system)
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
+    private var configuration: PHPickerConfiguration = PHPickerConfiguration(photoLibrary: .shared())
+    private var filter: PHPickerFilter = PHPickerFilter.any(of: [.images])
+    private lazy var picker: PHPickerViewController = PHPickerViewController(configuration: configuration)
     
     private var curUser: SenderPerson = SenderPerson(senderId: UUID().uuidString, displayName: "temp")
     
@@ -57,17 +60,17 @@ final class ChatViewController: MessagesViewController, UIEditMenuInteractionDel
         newChatAlert.addGestureRecognizer(tap2)
         interactor.passUserData()
     }
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+//    }
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//
+//        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+//        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+//    }
     
     // MARK: - Changing image color
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -147,7 +150,6 @@ final class ChatViewController: MessagesViewController, UIEditMenuInteractionDel
     
     func markMessageAsFailed(_ id: String) {
         if let index = messages.firstIndex(where: { $0.messageId == id }) {
-            messages[index].status = .failed
             messagesCollectionView.reloadSections([index])
         }
     }
@@ -166,6 +168,8 @@ final class ChatViewController: MessagesViewController, UIEditMenuInteractionDel
         configureNewChatAlert()
         configureMessagesCollectionView()
         configureInputBar()
+        configurePhppickerConfiguration()
+        configurePhppicker()
     }
     
     private func configureBackground() {
@@ -328,13 +332,13 @@ final class ChatViewController: MessagesViewController, UIEditMenuInteractionDel
     }
     private func configureInputBarPadding() {
         // Entire InputBar padding
-        messageInputBar.padding.bottom = 0
+        messageInputBar.padding.bottom = 8
         
         // or MiddleContentView padding
         messageInputBar.middleContentViewPadding.right = -38
         
         // or InputTextView padding
-        messageInputBar.inputTextView.textContainerInset.bottom = 0
+        messageInputBar.inputTextView.textContainerInset.bottom = 8
     }
     
     private func makeButton(named: String) -> InputBarButtonItem {
@@ -359,6 +363,40 @@ final class ChatViewController: MessagesViewController, UIEditMenuInteractionDel
                 }
                 self.navigationController?.present(actionSheet, animated: true, completion: nil)
             }
+    }
+    
+    private func insertPhoto(_ message: MessageForKit) {
+        messages.append(message)
+        // Reload last section to update header/footer labels and insert a new one
+        messagesCollectionView.performBatchUpdates({
+            messagesCollectionView.insertSections([messages.count - 1])
+            if messages.count >= 2 {
+                messagesCollectionView.reloadSections([messages.count - 2])
+            }
+        }, completion: { [weak self] _ in
+            if self?.isLastSectionVisible() == true {
+                self?.messagesCollectionView.scrollToLastItem(animated: true)
+            }
+        })
+    }
+    
+    func isLastSectionVisible() -> Bool {
+        guard !messages.isEmpty else { return false }
+        
+        let lastIndexPath = IndexPath(item: 0, section: messages.count - 1)
+        
+        return messagesCollectionView.indexPathsForVisibleItems.contains(lastIndexPath)
+    }
+    
+    private func configurePhppickerConfiguration() {
+        configuration.filter = filter
+        configuration.preferredAssetRepresentationMode = .current
+        configuration.selection = .ordered
+        configuration.selectionLimit = 5
+    }
+    
+    private func configurePhppicker() {
+        picker.delegate = self
     }
     
     private func showEmptyDisclaimer() {
@@ -437,14 +475,15 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate, M
     }
 }
 
-extension ChatViewController: InputBarAccessoryViewDelegate {
+
+
+extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         let tempM = MessageForKit(
+            text: text,
             sender: curUser,
             messageId: UUID().uuidString,
-            sentDate: Date(),
-            kind: .text(text),
-            status: .sending
+            date: Date()
         )
         newChatAlert.isHidden = true
         messages.append(tempM)
@@ -453,10 +492,35 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         interactor.sendTextMessage(text) { [weak self] isSent in
             guard let self = self else { return }
             if let index = self.messages.firstIndex(where: {$0.messageId == tempM.messageId}) {
-                self.messages[index].status = isSent ? .sent : .failed
                 self.messagesCollectionView.reloadItems(at: [IndexPath(item: index, section: 0)])
             }
         }
         dismissKeyboard()
+    }
+    
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith attachments: [AttachmentManager.Attachment]) {
+        newChatAlert.isHidden = true
+        for item in attachments {
+            if case .image(let image) = item {
+                self.sendImageMessage(photo: image)
+            }
+        }
+        inputBar.invalidatePlugins()
+    }
+    
+    func sendImageMessage(photo: UIImage) {
+        let photoMessage = MessageForKit(
+            image: photo,
+            sender: currentSender,
+            messageId: UUID().uuidString,
+            date: Date()
+        )
+        insertPhoto(photoMessage)
+    }
+}
+
+extension ChatViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        print("FAWF")
     }
 }
