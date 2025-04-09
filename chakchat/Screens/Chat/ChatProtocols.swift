@@ -11,7 +11,7 @@ import Foundation
 protocol ChatBusinessLogic: SendingMessagesProtocol {
     func routeBack()
     func routeToProfile()
-    func createChat(_ memberID: UUID)
+    func createChat(_ memberID: UUID, completion: @escaping () -> Void)
     func passUserData()
     func setExpirationTime(_ expiration: String?)
     func handleChatBlock(_ event: BlockedChatEvent)
@@ -21,6 +21,10 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
 protocol ChatPresentationLogic {
     func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool)
     func showSecretKeyFail()
+    
+    func presentMessage(_ message: ChatModels.Message)
+    func updateMessageStatus(_ id: String, _ newMessage: ChatModels.Message)
+    func updateMessageStatus(_ id: String)
 }
 
 protocol ChatWorkerLogic {
@@ -30,10 +34,10 @@ protocol ChatWorkerLogic {
         _ expiration: String?,
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
-    func sendTextMessage(_ message: String)
+    func sendTextMessage(_ chatID: UUID, _ message: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func saveSecretKey(_ key: String) -> Bool
 }
 
 protocol SendingMessagesProtocol: AnyObject {
-    func sendTextMessage(_ message: String)
+    func sendTextMessage(_ message: String, completion: @escaping (Bool) -> Void)
 }

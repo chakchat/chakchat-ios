@@ -56,12 +56,19 @@ final class ChatInteractor: ChatBusinessLogic {
     }
     
     // MARK: - Public Methods
-    func createChat(_ memberID: UUID) {
+    func createChat(_ memberID: UUID, completion: @escaping () -> Void) {
         worker.createChat(memberID) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let data):
                 os_log("Chat with member(%@) created", log: logger, type: .default, memberID as CVarArg)
+                chatData = ChatsModels.GeneralChatModel.ChatData(
+                    chatID: data.chatID,
+                    type: data.type,
+                    members: data.members,
+                    createdAt: data.createdAt,
+                    info: data.info
+                )
                 let event = CreatedChatEvent(
                     chatID: data.chatID,
                     type: data.type,
@@ -70,6 +77,7 @@ final class ChatInteractor: ChatBusinessLogic {
                     info: data.info
                 )
                 eventManager.publish(event: event)
+                completion()
             case .failure(let failure):
                 _ = errorHandler.handleError(failure)
                 os_log("Failed to create chat with member(%@):\n", log: logger, type: .fault, memberID as CVarArg)
@@ -78,11 +86,36 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    func sendTextMessage(_ message: String) {
+    func sendTextMessage(_ message: String, completion: @escaping (Bool) -> Void)  {
         if chatData == nil {
-            createChat(userData.id)
+            createChat(userData.id) { [weak self] in
+                self?.send(message) { isSent in
+                    completion(isSent)
+                }
+            }
+        } else {
+            send(message) { isSent in
+                completion(isSent)
+            }
         }
-        worker.sendTextMessage(message)
+    }
+    
+    private func send(_ message: String, completion: @escaping (Bool) -> Void) {
+        guard let cd = chatData else { return }
+        worker.sendTextMessage(cd.chatID, message) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    os_log("Sent message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
+                    completion(true)
+                case .failure(let failure):
+                    os_log("Failed to send message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
+                    print(failure)
+                    completion(false)
+                }
+            }
+        }
     }
     
     func setExpirationTime(_ expiration: String?) {

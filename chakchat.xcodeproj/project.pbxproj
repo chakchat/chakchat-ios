@@ -63,6 +63,12 @@
 		AA2781E92D80ABAB0049ACAF /* Chat+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781E72D80ABAB0049ACAF /* Chat+CoreDataProperties.swift */; };
 		AA2781EB2D80FC380049ACAF /* DeletedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */; };
 		AA2781EF2D8112F50049ACAF /* BlockedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */; };
+		AA5F718D2DA3FA2200BC12AA /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F718C2DA3FA2200BC12AA /* MessageKit */; };
+		AA5F718F2DA3FE5A00BC12AA /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */; };
+		AA5F71912DA411C600BC12AA /* UIMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F71902DA411C600BC12AA /* UIMessageCell.swift */; };
+		AA5F71952DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */; };
+		AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71972DA5BE8A00BC12AA /* CropViewController */; };
+		AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71992DA5BE8A00BC12AA /* TOCropViewController */; };
 		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
 		AA75DCBB2D81C71E00775199 /* DeletedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */; };
@@ -395,6 +401,9 @@
 		AA2781E72D80ABAB0049ACAF /* Chat+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chat+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedChatEvent.swift; sourceTree = "<group>"; };
 		AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedChatEvent.swift; sourceTree = "<group>"; };
+		AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
+		AA5F71902DA411C600BC12AA /* UIMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIMessageCell.swift; sourceTree = "<group>"; };
+		AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICameraInputBarAccessoryView.swift; sourceTree = "<group>"; };
 		AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBE2D81E42400775199 /* UpdatedGroupInfoEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatedGroupInfoEvent.swift; sourceTree = "<group>"; };
@@ -676,6 +685,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA5F718D2DA3FA2200BC12AA /* MessageKit in Frameworks */,
+				AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */,
+				AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */,
 				AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */,
 				AAA839F22D638A3200C870A4 /* Alamofire in Frameworks */,
 			);
@@ -1074,6 +1086,8 @@
 				AA75DCC22D89876C00775199 /* UIProfilePhoto.swift */,
 				E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */,
 				E14CFF402DA1395000B3A971 /* ChatBackgroundGradientView.swift */,
+				AA5F71902DA411C600BC12AA /* UIMessageCell.swift */,
+				AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -1515,6 +1529,7 @@
 				AAB3026C2D7615B500BECA3B /* ChatWorker.swift */,
 				AAB3026E2D7615BE00BECA3B /* ChatPresenter.swift */,
 				AAB302702D7615C700BECA3B /* ChatViewController.swift */,
+				AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */,
 				AAB302722D7615CF00BECA3B /* ChatProtocols.swift */,
 			);
 			path = Chat;
@@ -1764,6 +1779,9 @@
 			packageProductDependencies = (
 				AAA839F12D638A3200C870A4 /* Alamofire */,
 				AA7140B92D921043007F5C23 /* Kingfisher */,
+				AA5F718C2DA3FA2200BC12AA /* MessageKit */,
+				AA5F71972DA5BE8A00BC12AA /* CropViewController */,
+				AA5F71992DA5BE8A00BC12AA /* TOCropViewController */,
 			);
 			productName = chakchat;
 			productReference = AA9B62042D2D47CB0064CB23 /* chakchat.app */;
@@ -1802,6 +1820,8 @@
 			packageReferences = (
 				AAA839F02D638A3200C870A4 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				AA5F718B2DA3FA2200BC12AA /* XCRemoteSwiftPackageReference "MessageKit" */,
+				AA5F71962DA5BE8A00BC12AA /* XCRemoteSwiftPackageReference "TOCropViewController" */,
 			);
 			productRefGroup = AA9B62052D2D47CB0064CB23 /* Products */;
 			projectDirPath = "";
@@ -1971,6 +1991,7 @@
 				E1960A122D6A2C46008E27C0 /* AppThemeViewController.swift in Sources */,
 				E1960A332D6BA5B4008E27C0 /* HelpCell.swift in Sources */,
 				AA84F0202D4BBEB800678ABA /* PhoneVisibilityScreenProtocols.swift in Sources */,
+				AA5F718F2DA3FE5A00BC12AA /* ChatModels.swift in Sources */,
 				E1960A2F2D6B79D1008E27C0 /* HelpInteractor.swift in Sources */,
 				AA84F0532D4D0C5D00678ABA /* NotificationScreenPresenter.swift in Sources */,
 				E135ED482D54C273006CE143 /* UIDateButton.swift in Sources */,
@@ -2057,6 +2078,7 @@
 				AAA839F52D65B96600C870A4 /* IdentityServiceProtocols.swift in Sources */,
 				E1960A1B2D6A3666008E27C0 /* AppTheme.swift in Sources */,
 				AA7BADF62D3FCA2A0030AC82 /* SettingsScreenInteractor.swift in Sources */,
+				AA5F71912DA411C600BC12AA /* UIMessageCell.swift in Sources */,
 				AA07A67D2D5E5CC800CFE124 /* UpdateOnlineRestrictionEvent.swift in Sources */,
 				E19609D12D60E879008E27C0 /* LanguageAssembly.swift in Sources */,
 				E14CFF412DA1395000B3A971 /* ChatBackgroundGradientView.swift in Sources */,
@@ -2111,6 +2133,7 @@
 				E1960A582D6BE69E008E27C0 /* NewMessageViewController.swift in Sources */,
 				AA84F0472D4CD89800678ABA /* OnlineVisibilityScreenViewController.swift in Sources */,
 				AAB300B52D6DA9B900BECA3B /* UIColor+Random.swift in Sources */,
+				AA5F71952DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift in Sources */,
 				AA27817F2D7DE1D10049ACAF /* GroupProfileEditPresenter.swift in Sources */,
 				E1960A472D6BE13C008E27C0 /* BlackListPresenter.swift in Sources */,
 				E19609D92D60E8F6008E27C0 /* LanguagePresenter.swift in Sources */,
@@ -2454,6 +2477,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AA5F718B2DA3FA2200BC12AA /* XCRemoteSwiftPackageReference "MessageKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MessageKit/MessageKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.1.1;
+			};
+		};
+		AA5F71962DA5BE8A00BC12AA /* XCRemoteSwiftPackageReference "TOCropViewController" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TimOliver/TOCropViewController";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.4;
+			};
+		};
 		AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
@@ -2473,6 +2512,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AA5F718C2DA3FA2200BC12AA /* MessageKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA5F718B2DA3FA2200BC12AA /* XCRemoteSwiftPackageReference "MessageKit" */;
+			productName = MessageKit;
+		};
+		AA5F71972DA5BE8A00BC12AA /* CropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA5F71962DA5BE8A00BC12AA /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = CropViewController;
+		};
+		AA5F71992DA5BE8A00BC12AA /* TOCropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA5F71962DA5BE8A00BC12AA /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = TOCropViewController;
+		};
 		AA7140B92D921043007F5C23 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */;

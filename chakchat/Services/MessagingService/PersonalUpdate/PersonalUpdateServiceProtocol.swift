@@ -31,7 +31,7 @@ protocol PersonalUpdateServiceProtocol {
         _ request: ChatsModels.UpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func deleteMessage(
