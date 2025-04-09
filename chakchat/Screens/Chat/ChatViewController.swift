@@ -10,7 +10,7 @@ import MessageKit
 import InputBarAccessoryView
 
 // MARK: - ChatViewController
-final class ChatViewController: MessagesViewController {
+final class ChatViewController: MessagesViewController, UIEditMenuInteractionDelegate {
     
     // MARK: - Constants
     enum Constants {
@@ -22,6 +22,7 @@ final class ChatViewController: MessagesViewController {
         static let messageInputViewHorizontal: CGFloat = 8
         static let messageInputViewHeigth: CGFloat = 50
         static let messageInputViewBottom: CGFloat = 0
+        static let extraKeyboardIndent: CGFloat = 20
     }
     
     // MARK: - Properties
@@ -50,7 +51,22 @@ final class ChatViewController: MessagesViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        messagesCollectionView.addGestureRecognizer(tap1)
+        let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        newChatAlert.addGestureRecognizer(tap2)
         interactor.passUserData()
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     // MARK: - Changing image color
@@ -366,7 +382,32 @@ final class ChatViewController: MessagesViewController {
     }
     
     @objc private func dismissKeyboard() {
+        print("foo")
         view.endEditing(true)
+    }
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+            return
+        }
+        let keyboardHeight = keyboardFrame.height
+
+        if let buttonFrame = newChatAlert.superview?.convert(newChatAlert.frame, to: nil) {
+            let bottomY = buttonFrame.maxY
+            let screenHeight = UIScreen.main.bounds.height
+            let inputBarSizeY = messageInputBar.frame.height
+            if bottomY + inputBarSizeY > screenHeight - keyboardHeight {
+                let overlap = bottomY + inputBarSizeY - (screenHeight - keyboardHeight)
+                self.view.frame.origin.y -= overlap + Constants.extraKeyboardIndent
+            }
+        }
+    }
+    
+    @objc private func keyboardWillHide() {
+        if self.view.frame.origin.y != 0 {
+            self.view.frame.origin.y = 0
+        }
     }
 }
 
@@ -416,5 +457,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 self.messagesCollectionView.reloadItems(at: [IndexPath(item: index, section: 0)])
             }
         }
+        dismissKeyboard()
     }
 }
