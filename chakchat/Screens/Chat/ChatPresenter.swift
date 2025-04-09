@@ -43,11 +43,10 @@ final class ChatPresenter: ChatPresentationLogic {
     // имя неважно в персональных чатах
     private func mapToMessageKit(_ message: ChatModels.Message) -> MessageForKit {
         let m = MessageForKit(
+            text: message.text,
             sender: SenderPerson(senderId: message.senderID.uuidString, displayName: ""),
             messageId: message.updateID,
-            sentDate: message.sentAt,
-            kind: .text(message.text),
-            status: message.status
+            date: message.sentAt
         )
         return m
     }
