@@ -366,7 +366,7 @@ enum ChatsModels {
         
         struct FileMessageRequest: Codable {
             let fileID: UUID
-            let replyTo: UUID
+            let replyTo: Int64?
             
             enum CodingKeys: String, CodingKey {
                 case fileID = "file_id"
@@ -376,7 +376,7 @@ enum ChatsModels {
         
         struct ReactionRequest: Codable {
             let reaction: String
-            let messageID: UUID
+            let messageID: Int64
             
             enum CodingKeys: String, CodingKey {
                 case reaction = "reaction"
@@ -426,7 +426,7 @@ enum ChatsModels {
     }
 }
 
-enum DeleteMode: String {
+enum DeleteMode: String, Codable {
     case DeleteModeForSender = "for_delition_sender"
     case DeleteModeForAll = "for_all"
 }

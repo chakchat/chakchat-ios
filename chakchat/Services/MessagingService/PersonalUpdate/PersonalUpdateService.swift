@@ -109,7 +109,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ updateID: Int64,
         _ deleteMode: DeleteMode,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode)"
         
@@ -126,7 +126,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ updateID: Int64,
         _ request: ChatsModels.UpdateModels.EditMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendTextMessage.rawValue)/\(updateID)"
         
@@ -144,7 +144,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.FileMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendFile.rawValue)"
         
@@ -165,7 +165,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ReactionRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Reaction>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendReaction.rawValue)"
         
@@ -186,7 +186,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ chatID: UUID,
         _ updateID: Int64,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint =  "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendReaction.rawValue)/\(updateID)"
         

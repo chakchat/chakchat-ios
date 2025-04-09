@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - ChatWorker
 final class ChatWorker: ChatWorkerLogic {
-    
+        
     // MARK: - Properties
     private let keychainManager: KeychainManagerBusinessLogic
     private let coreDataManager: CoreDataManagerProtocol
@@ -48,6 +48,94 @@ final class ChatWorker: ChatWorkerLogic {
         }
     }
     
+    func sendTextMessage(_ chatID: UUID, _ message: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        let request = ChatsModels.UpdateModels.SendMessageRequest(text: message, replyTo: nil)
+        updateService.sendTextMessage(request, chatID, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func deleteMessage(_ chatID: UUID, _ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        updateService.deleteMessage(chatID, updateID, deleteMode, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func editTextMessage(_ chatID: UUID, _ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        let request = ChatsModels.UpdateModels.EditMessageRequest(text: text)
+        updateService.editTextMessage(chatID, updateID, request, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        let request = ChatsModels.UpdateModels.FileMessageRequest(fileID: fileID, replyTo: replyTo)
+        updateService.sendFileMessage(chatID, request, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        let request = ChatsModels.UpdateModels.ReactionRequest(reaction: reaction, messageID: messageID)
+        updateService.sendReaction(chatID, request, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        updateService.deleteReaction(chatID, updateID, accessToken) { result in
+            switch result {
+            case .success(let response):
+                let data = response.data
+                completion(.success(data))
+                // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
     func setExpirationTime(_ chatID: UUID, _ expiration: String?, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.SecretPersonalChat.ExpirationRequest(expiration: expiration)
@@ -66,20 +154,5 @@ final class ChatWorker: ChatWorkerLogic {
     func saveSecretKey(_ key: String) -> Bool{
         let s = keychainManager.save(key: key, value: KeychainManager.keyForSaveSecretKey)
         return s
-    }
-    
-    func sendTextMessage(_ chatID: UUID, _ message: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        let request = ChatsModels.UpdateModels.SendMessageRequest(text: message, replyTo: nil)
-        updateService.sendTextMessage(request, chatID, accessToken) { result in
-            switch result {
-            case .success(let response):
-                let data = response.data
-                completion(.success(data))
-                // сохраняем в coredata
-            case .failure(let failure):
-                completion(.failure(failure))
-            }
-        }
     }
 }
