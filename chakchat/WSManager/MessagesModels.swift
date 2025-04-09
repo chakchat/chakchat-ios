@@ -62,7 +62,11 @@ struct UpdateData: Codable {
         case .textEdited:
             let editedContent = try container.decode(EditedContent.self, forKey: .content)
             content = .editedContent(editedContent)
+        case .delete:
+            let deletedContent = try container.decode(DeletedContent.self, forKey: .content)
+            content = .deletedContent(deletedContent)
         }
+        
     }
     
     func encode(to encoder: Encoder) throws {
@@ -83,6 +87,8 @@ struct UpdateData: Codable {
             try container.encode(reaction, forKey: .content)
         case .editedContent(let edited):
             try container.encode(edited, forKey: .content)
+        case .deletedContent(let deleted):
+            try container.encode(deleted, forKey: .content)
         }
     }
 }
@@ -169,6 +175,7 @@ indirect enum UpdateContent: Codable {
     case fileContent(FileContent)
     case reactionContent(ReactionContent)
     case editedContent(EditedContent)
+    case deletedContent(DeletedContent)
 }
 
 struct TextContent: Codable {
@@ -209,6 +216,16 @@ struct EditedContent: Codable {
     }
 }
 
+struct DeletedContent: Codable {
+    let deletedID: Int64
+    let deletedMode: DeleteMode
+    
+    enum CodingKeys: String, CodingKey {
+        case deletedID = "deleted_id"
+        case deletedMode = "deleted_mode"
+    }
+}
+
 enum WSMessageType: String, Codable {
     case update = "update"
     case chatCreated = "chat_created"
@@ -226,4 +243,5 @@ enum UpdateDataType: String, Codable {
     case textEdited = "text_message_edited"
     case file = "file"
     case reaction = "reaction"
+    case delete = "delete"
 }

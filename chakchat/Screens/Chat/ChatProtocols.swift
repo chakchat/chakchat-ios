@@ -16,6 +16,13 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func setExpirationTime(_ expiration: String?)
     func handleChatBlock(_ event: BlockedChatEvent)
     func saveSecretKey(_ key: String)
+    /// update methods
+    /// using completions to incicate, what kind of response server sent(true=200, false = else)
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void)
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void)
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
 }
 
 protocol ChatPresentationLogic {
@@ -36,6 +43,12 @@ protocol ChatWorkerLogic {
     )
     func sendTextMessage(_ chatID: UUID, _ message: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func saveSecretKey(_ key: String) -> Bool
+    
+    func deleteMessage(_ chatID: UUID, _ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func editTextMessage(_ chatID: UUID, _ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
 }
 
 protocol SendingMessagesProtocol: AnyObject {

@@ -277,14 +277,14 @@ final class ChatViewController: MessagesViewController {
         messageInputBar.sendButton.imageView?.layer.cornerRadius = 16
         let charCountButton = InputBarButtonItem()
             .configure {
-                $0.title = "0/140"
+                $0.title = "0/2000"
                 $0.contentHorizontalAlignment = .right
                 $0.setTitleColor(UIColor(white: 0.6, alpha: 1), for: .normal)
                 $0.titleLabel?.font = UIFont.systemFont(ofSize: 10, weight: .bold)
                 $0.setSize(CGSize(width: 50, height: 25), animated: false)
             }.onTextViewDidChange { item, textView in
-                item.title = "\(textView.text.count)/140"
-                let isOverLimit = textView.text.count > 140
+                item.title = "\(textView.text.count)/2000"
+                let isOverLimit = textView.text.count > 2000
                 item.inputBarAccessoryView?
                     .shouldManageSendButtonEnabledState = !isOverLimit // Disable automated management when over limit
                 if isOverLimit {
@@ -392,11 +392,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate, M
     
     func messageStyle(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
         let tailCorner: MessageStyle.TailCorner = isFromCurrentSender(message: message) ? .bottomRight : .bottomLeft
-        if let image = UIImage(named: "bobbly") {
-            return .customImageTail(image, tailCorner)
-        } else {
-            return .bubbleTail(tailCorner, .curved)
-        }
+        return .bubbleTail(tailCorner, .curved)
     }
 }
 

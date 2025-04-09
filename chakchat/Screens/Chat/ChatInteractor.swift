@@ -100,20 +100,67 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    private func send(_ message: String, completion: @escaping (Bool) -> Void) {
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void) {
         guard let cd = chatData else { return }
-        worker.sendTextMessage(cd.chatID, message) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                switch result {
-                case .success(let data):
-                    os_log("Sent message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
-                    completion(true)
-                case .failure(let failure):
-                    os_log("Failed to send message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
-                    print(failure)
-                    completion(false)
-                }
+        worker.deleteMessage(cd.chatID, updateID, deleteMode) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void) {
+        guard let cd = chatData else { return }
+        worker.editTextMessage(cd.chatID, updateID, text) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
+        guard let cd = chatData else { return }
+        worker.sendFileMessage(cd.chatID, fileID, replyTo) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void) {
+        guard let cd = chatData else { return }
+        worker.sendReaction(cd.chatID, reaction, messageID) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void) {
+        guard let cd = chatData else { return }
+        worker.deleteReaction(cd.chatID, updateID) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
             }
         }
     }
@@ -139,6 +186,24 @@ final class ChatInteractor: ChatBusinessLogic {
         } else {
             os_log("Failed to save secret key", log: logger, type: .fault)
             presenter.showSecretKeyFail()
+        }
+    }
+    
+    private func send(_ message: String, completion: @escaping (Bool) -> Void) {
+        guard let cd = chatData else { return }
+        worker.sendTextMessage(cd.chatID, message) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    os_log("Sent message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
+                    completion(true)
+                case .failure(let failure):
+                    os_log("Failed to send message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
+                    print(failure)
+                    completion(false)
+                }
+            }
         }
     }
     
