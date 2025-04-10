@@ -10,33 +10,49 @@ import OSLog
  
 // MARK: - VerifyInteractor
 final class VerifyInteractor: VerifyBusinessLogic {
-    
     // MARK: - Properties
-    private let presentor: VerifyPresentationLogic
+    private let presenter: VerifyPresentationLogic
     private let worker: VerifyWorkerLogic
     private let errorHandler: ErrorHandlerLogic
-    private let state: SignupState
+    private var state: SignupState = .signupVerifyCode
     private let logger: OSLog
+    
+    private let phone: String
     
     var onRouteToSignupScreen: ((SignupState) -> Void)?
     var onRouteToChatScreen: ((SignupState) -> Void)?
     var onRouteToSendCodeScreen: ((SignupState) -> Void)?
     
     // MARK: - Initialization
-    init(presentor: VerifyPresentationLogic,
+    init(presenter: VerifyPresentationLogic,
          worker: VerifyWorkerLogic,
          errorHandler: ErrorHandlerLogic,
-         state: SignupState,
-         logger: OSLog
+         logger: OSLog,
+         phone: String
     ) {
-        self.presentor = presentor
+        self.presenter = presenter
         self.worker = worker
         self.errorHandler = errorHandler
-        self.state = state
         self.logger = logger
+        self.phone = phone
     }
     
     // MARK: - Public Methods
+    func sendCodeRequest(_ phone: String) {
+        let request = SendCodeModels.SendCodeRequest(phone: phone)
+        worker.sendInRequest(request) { [weak self] result in
+            guard let self = self else {return}
+            switch result {
+            case .success(let state):
+                os_log("Code received, saved", log: logger, type: .info)
+                self.state = state
+            case .failure(let error):
+                let errorId = self.errorHandler.handleError(error)
+                self.presenter.showError(errorId)
+            }
+        }
+    }
+    
     func sendVerificationRequest(_ code: String) {
         os_log("Sent code to server", log: logger, type: .info)
         
@@ -54,7 +70,7 @@ final class VerifyInteractor: VerifyBusinessLogic {
                     self.routeToChatScreen(state)
                 case .failure(let error):
                     let errorId = self.errorHandler.handleError(error)
-                    self.presentor.showError(errorId)
+                    self.presenter.showError(errorId)
                 }
             }
         } else if (state == SignupState.signupVerifyCode) {
@@ -71,15 +87,14 @@ final class VerifyInteractor: VerifyBusinessLogic {
                     self.routeToSignupScreen(state)
                 case .failure(let error):
                     let errorId = self.errorHandler.handleError(error)
-                    self.presentor.showError(errorId)
+                    self.presenter.showError(errorId)
                 }
             }
         }
     }
     
     func getPhone() {
-        let phone = worker.getPhone()
-        presentor.showPhone(phone)
+        presenter.showPhone(phone)
     }
     
     func resendCodeRequest(_ request: VerifyModels.ResendCodeRequest) {
@@ -93,7 +108,7 @@ final class VerifyInteractor: VerifyBusinessLogic {
                     os_log("Resent code to user", log: logger, type: .info)
                 case .failure(let error):
                     let errorId = self.errorHandler.handleError(error)
-                    self.presentor.showError(errorId)
+                    self.presenter.showError(errorId)
                 }
             }
         } else if (state == SignupState.signupVerifyCode) {
@@ -105,7 +120,7 @@ final class VerifyInteractor: VerifyBusinessLogic {
                     os_log("Resent code to user", log: logger, type: .info)
                 case .failure(let error):
                     let errorId = self.errorHandler.handleError(error)
-                    self.presentor.showError(errorId)
+                    self.presenter.showError(errorId)
                 }
             }
         }
@@ -128,6 +143,6 @@ final class VerifyInteractor: VerifyBusinessLogic {
     }
     
     func successTransition() {
-        presentor.hideResendButton()
+        presenter.hideResendButton()
     }
 }

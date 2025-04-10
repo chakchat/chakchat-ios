@@ -24,13 +24,21 @@ protocol VerifyPresentationLogic {
 }
 
 protocol VerifyWorkerLogic {
+    func sendInRequest(_ request: SendCodeModels.SendCodeRequest,
+                     completion: @escaping (Result<SignupState, Error>) -> Void)
+    
+    func sendUpRequest(_ request: SendCodeModels.SendCodeRequest,
+                     completion: @escaping (Result<SignupState, Error>) -> Void)
+    
     func sendVerificationRequest<Request: Codable, Response: Codable>(
         _ request: Request,
         _ endpoint: String,
         _ responseType: Response.Type,
         completion: @escaping (Result<SignupState, Error>) -> Void
     )
+    
     func getVerifyCode(_ key: String) -> UUID?
+    
     func getPhone() -> String
     
     func resendInRequest(_ request: VerifyModels.ResendCodeRequest,

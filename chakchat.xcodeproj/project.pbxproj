@@ -164,7 +164,6 @@
 		AA9B622F2D2D6CB90064CB23 /* SendCodeProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B622E2D2D6CB90064CB23 /* SendCodeProtocols.swift */; };
 		AA9B62322D2D71670064CB23 /* ValidatorsProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62312D2D71670064CB23 /* ValidatorsProtocols.swift */; };
 		AA9B62342D2D71A30064CB23 /* PhoneValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62332D2D71A30064CB23 /* PhoneValidator.swift */; };
-		AA9B62362D2D72E30064CB23 /* SendCodeWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62352D2D72E30064CB23 /* SendCodeWorker.swift */; };
 		AA9B62412D2EC0170064CB23 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62402D2EC0170064CB23 /* KeychainManager.swift */; };
 		AA9B62432D2EC4840064CB23 /* KeychainManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62422D2EC4840064CB23 /* KeychainManagerProtocol.swift */; };
 		AA9B62462D2EC77F0064CB23 /* VerifyAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62452D2EC77F0064CB23 /* VerifyAssembly.swift */; };
@@ -501,7 +500,6 @@
 		AA9B622E2D2D6CB90064CB23 /* SendCodeProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCodeProtocols.swift; sourceTree = "<group>"; };
 		AA9B62312D2D71670064CB23 /* ValidatorsProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidatorsProtocols.swift; sourceTree = "<group>"; };
 		AA9B62332D2D71A30064CB23 /* PhoneValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneValidator.swift; sourceTree = "<group>"; };
-		AA9B62352D2D72E30064CB23 /* SendCodeWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCodeWorker.swift; sourceTree = "<group>"; };
 		AA9B62402D2EC0170064CB23 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		AA9B62422D2EC4840064CB23 /* KeychainManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManagerProtocol.swift; sourceTree = "<group>"; };
 		AA9B62452D2EC77F0064CB23 /* VerifyAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyAssembly.swift; sourceTree = "<group>"; };
@@ -1194,7 +1192,6 @@
 			children = (
 				AA9B62242D2D6C490064CB23 /* SendCodeAssembly.swift */,
 				AA9B62262D2D6C810064CB23 /* SendCodeInteractor.swift */,
-				AA9B62352D2D72E30064CB23 /* SendCodeWorker.swift */,
 				AA9B62282D2D6C970064CB23 /* SendCodePresenter.swift */,
 				AA9B622A2D2D6CA40064CB23 /* SendCodeViewController.swift */,
 				AA9B622C2D2D6CAE0064CB23 /* SendCodeModels.swift */,
@@ -2112,7 +2109,6 @@
 				AA9B626B2D2FD2470064CB23 /* SignupPresenter.swift in Sources */,
 				AA1C0E452D43C974008E47D8 /* ProfileSettingsPresenter.swift in Sources */,
 				AAB300C42D6EF9C100BECA3B /* MessagingServiceEndpoints.swift in Sources */,
-				AA9B62362D2D72E30064CB23 /* SendCodeWorker.swift in Sources */,
 				AA9B620A2D2D47CB0064CB23 /* SceneDelegate.swift in Sources */,
 				AAA5F3E42D3959C800B9D50E /* MockErrorHandler.swift in Sources */,
 				AA9B62572D2EDF900064CB23 /* SuccessModels.swift in Sources */,
