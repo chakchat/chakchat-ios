@@ -2,7 +2,7 @@
 //  Chat+CoreDataClass.swift
 //  chakchat
 //
-//  Created by Кирилл Исаев on 11.03.2025.
+//  Created by Кирилл Исаев on 10.04.2025.
 //
 //
 

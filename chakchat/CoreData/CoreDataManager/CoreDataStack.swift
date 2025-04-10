@@ -32,10 +32,6 @@ final class CoreDataStack {
         return getPersistentContainer(for: modelName).viewContext
     }
     
-    func backgroundContext(for modelName: String) -> NSManagedObjectContext {
-        return getPersistentContainer(for: modelName).newBackgroundContext()
-    }
-    
     func saveContext(for modelName: String) {
         let context = getPersistentContainer(for: modelName).viewContext
         if context.hasChanges {

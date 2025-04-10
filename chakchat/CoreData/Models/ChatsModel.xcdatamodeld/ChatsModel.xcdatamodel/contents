@@ -4,7 +4,7 @@
         <attribute name="chatID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="info" attributeType="Binary"/>
-        <attribute name="members" attributeType="Binary"/>
+        <attribute name="members" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[UUID]"/>
         <attribute name="type" attributeType="String"/>
     </entity>
 </model>
