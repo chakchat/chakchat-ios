@@ -14,7 +14,7 @@ protocol PersonalUpdateServiceProtocol {
         _ from: Int64,
         _ to: Int64,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<Updates, Error>) -> Void
     )
     
     func searchForMessages(

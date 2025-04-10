@@ -131,6 +131,7 @@ enum ChatsModels {
         
         struct Preview: Codable {
             let updateID: Int64
+            let type: UpdateDataType
             let chatID: UUID
             let senderID: UUID
             let createdAt: Date
@@ -138,6 +139,7 @@ enum ChatsModels {
             
             enum CodingKeys: String, CodingKey {
                 case updateID = "update_id"
+                case type = "type"
                 case chatID = "chat_id"
                 case senderID = "sender_id"
                 case createdAt = "created_at"
@@ -184,7 +186,7 @@ enum ChatsModels {
         
         struct TextContent: Codable {
             let text: String
-            let replyTo: UUID
+            let replyTo: Int64?
             let forwarded: Bool
             let reactions: [Reaction]?
             

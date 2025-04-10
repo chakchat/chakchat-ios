@@ -12,6 +12,10 @@ struct Message: Codable {
     let data: MessageData
 }
 
+struct Updates: Codable {
+    let updates: [UpdateData]
+}
+
 enum MessageData: Codable {
     case update(UpdateData)
     case chatCreated(ChatCreatedData)

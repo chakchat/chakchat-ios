@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Alamofire
 
 // MARK: - UpdateService
 final class PersonalUpdateService: PersonalUpdateServiceProtocol {
@@ -17,30 +18,34 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ from: Int64,
         _ to: Int64,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<Updates, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/update"
+        let endpoint = "http://test.chakchat.ru/api/messaging/v1.0/chat/\(chatID)/update"
         
-        var components = URLComponents(string: endpoint)
-        var queryItems: [URLQueryItem] = []
-        queryItems.append(URLQueryItem(name: "from", value: String(from)))
-        queryItems.append(URLQueryItem(name: "to", value: String(to)))
+        let queryParams: [String: Any] = [
+            "from": String(from),
+            "to": String(to)
+        ]
         
-        components?.queryItems = queryItems
-        
-        guard let url = components?.url else {
-            completion(.failure(APIError.invalidURL))
-            return
-        }
-        
-        let endpointWithQuery = url.absoluteString
-        
-        let headers = [
+        let headers: HTTPHeaders = [
             "Authorization": "Bearer \(accessToken)",
             "Content-Type": "application/json"
         ]
         
-        Sender.send(endpoint: endpointWithQuery, method: .get, headers: headers, completion: completion)
+        AF.request(endpoint,
+                   method: .get,
+                   parameters: queryParams,
+                   encoding: URLEncoding.default,
+                   headers: headers)
+            .validate()
+            .responseDecodable(of: Updates.self) { response in
+                switch response.result {
+                case .success(let model):
+                    completion(.success(model))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
     }
     
     func searchForMessages(
