@@ -24,33 +24,13 @@ final class AddUserWorker: AddUserWorkerLogic {
     }
     
     func loadUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void) {
-        guard let uuids = coreDataManager.fetchUsers(),
-              let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {
             completion(nil)
             return
         }
-        
-        var results: [ProfileSettingsModels.ProfileUserData?] = Array(repeating: nil, count: uuids.count)
-        let dispatchGroup = DispatchGroup()
-        
-        for (i,uuid) in uuids.enumerated() {
-            dispatchGroup.enter()
-            userService.sendGetUserRequest(uuid, accessToken) { result in
-                DispatchQueue.global().async {
-                    defer { dispatchGroup.leave() }
-                    switch result {
-                    case .success(let response):
-                        results[i] = response.data
-                    case .failure(_):
-                        print("Failed to get data of user with id: \(uuid)")
-                    }
-                }
-            }
-        }
-        dispatchGroup.notify(queue: .global()) {
-            let filtered = results.compactMap { $0 }
-            completion(filtered.isEmpty ? nil : filtered)
-        }
+        let users = coreDataManager.fetchUsers()
+        let mappedUsers = mapFromCoreData(users)
+        completion(mappedUsers)
     }
     
     func fetchUsers(_ name: String?, _ username: String?, _ offset: Int, _ limit: Int, completion: @escaping (Result<ProfileSettingsModels.Users, any Error>) -> Void) {
@@ -65,4 +45,28 @@ final class AddUserWorker: AddUserWorkerLogic {
         }
     }
     
+    private func mapFromCoreData(_ users: [User]) -> [ProfileSettingsModels.ProfileUserData]? {
+        var mappedUsers: [ProfileSettingsModels.ProfileUserData] = []
+        for user in users {
+            guard let id = user.id,
+                  let name = user.name,
+                  let username = user.username,
+                  let createdAt = user.createdAt else {
+                debugPrint("Cant map from coredata in AddUserWorker")
+                return nil
+            }
+            
+            let mappedUser = ProfileSettingsModels.ProfileUserData(
+                id: id,
+                name: name,
+                username: username,
+                phone: user.phone ?? nil,
+                photo: user.photo ?? nil,
+                dateOfBirth: user.dateOfBirth ?? nil,
+                createdAt: createdAt
+            )
+            mappedUsers.append(mappedUser)
+        }
+        return mappedUsers
+    }
 }

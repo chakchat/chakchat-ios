@@ -67,7 +67,7 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
             guard let self = self else { return }
             switch result {
             case .success(let response):
-                coreDataManager.saveChats(response.data)
+                coreDataManager.createChats(response.data)
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
@@ -107,7 +107,8 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
     
     func getDBChats() -> [ChatsModels.GeneralChatModel.ChatData]? {
         let chats = coreDataManager.fetchChats()
-        return chats
+        let mappedChats = mapFromCoreData(chats)
+        return mappedChats
     }
     
     func refreshChats(_ chats: ChatsModels.GeneralChatModel.ChatsData) {
@@ -127,5 +128,30 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
         let myID = getMyID()
         let chat = coreDataManager.fetchChatByMembers(myID, memberID, ChatType.personal)
         return chat != nil ? chat : nil
+    }
+    
+    private func mapFromCoreData(_ chats: [Chat]) -> [ChatsModels.GeneralChatModel.ChatData]? {
+        var mappedChats: [ChatsModels.GeneralChatModel.ChatData] = []
+        for chatCoreData in chats {
+            let decoder = JSONDecoder()
+            guard let chatID = chatCoreData.chatID,
+                  let typeString = chatCoreData.type,
+                  let type = ChatType(rawValue: typeString),
+                  let members = chatCoreData.members,
+                  let createdAt = chatCoreData.createdAt,
+                  let infoData = chatCoreData.info,
+                  let info = (try? decoder.decode(ChatsModels.GeneralChatModel.Info.self, from: infoData))
+            else { return nil }
+            
+            let mappedChat = ChatsModels.GeneralChatModel.ChatData(
+                chatID: chatID,
+                type: type,
+                members: members,
+                createdAt: createdAt,
+                info: info
+            )
+            mappedChats.append(mappedChat)
+        }
+        return mappedChats
     }
 }
