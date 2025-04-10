@@ -30,10 +30,11 @@ final class UserDefaultsManager: UserDefaultsManagerProtocol {
     
     // MARK: - Public Methods
     func saveUserData(_ userData: ProfileSettingsModels.ProfileUserData) {
+        guard let phone = userData.phone else { return }
         saveId(userData.id)
         saveNickname(userData.name)
         saveUsername(userData.username)
-        savePhone(userData.phone)
+        savePhone(phone)
         savePhotoURL(userData.photo)
         saveBirth(userData.dateOfBirth)
     }

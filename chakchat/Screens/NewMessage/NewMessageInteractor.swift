@@ -43,8 +43,8 @@ final class NewMessageInteractor: NewMessageBusinessLogic {
     }
     
     func searchForExistingChat(_ userData: ProfileSettingsModels.ProfileUserData) {
-        if let chatData = worker.searchForExistingChat(userData.id) {
-            let convertedChatData = convertFromCoreData(chatData)
+        if let chatData = worker.searchForExistingChat(userData.id),
+           let convertedChatData = mapFromCoreData(chatData) {
             routeToChat(userData, convertedChatData)
         } else {
             routeToChat(userData, nil)
@@ -70,18 +70,25 @@ final class NewMessageInteractor: NewMessageBusinessLogic {
     func newGroupRoute() {
         onRouteToNewMessageScreen?()
     }
-    // нужно потом избавиться от этого кринжа
-    private func convertFromCoreData(_ chatCoreData: Chat) -> ChatsModels.GeneralChatModel.ChatData {
+    
+    private func mapFromCoreData(_ chatCoreData: Chat) -> ChatsModels.GeneralChatModel.ChatData? {
         let decoder = JSONDecoder()
-        let chatData = ChatsModels.GeneralChatModel.ChatData(
-            chatID: chatCoreData.chatID,
-            type: ChatType(rawValue: chatCoreData.type) ?? ChatType.personal,
-            members: (try? decoder.decode([UUID].self, from: chatCoreData.members)) ?? [UUID()],
-            createdAt: chatCoreData.createdAt,
-            info: (try? decoder.decode(ChatsModels.GeneralChatModel.Info.self, from: chatCoreData.info))
-            ?? ChatsModels.GeneralChatModel.Info.personal(ChatsModels.GeneralChatModel.PersonalInfo(blockedBy: [UUID()]))
+        guard let chatID = chatCoreData.chatID,
+              let typeString = chatCoreData.type,
+              let type = ChatType(rawValue: typeString),
+              let members = chatCoreData.members,
+              let createdAt = chatCoreData.createdAt,
+              let infoData = chatCoreData.info,
+              let info = (try? decoder.decode(ChatsModels.GeneralChatModel.Info.self, from: infoData))
+        else { return nil }
+        
+        return ChatsModels.GeneralChatModel.ChatData(
+            chatID: chatID,
+            type: type,
+            members: members,
+            createdAt: createdAt,
+            info: info
         )
-        return chatData
     }
 }
 

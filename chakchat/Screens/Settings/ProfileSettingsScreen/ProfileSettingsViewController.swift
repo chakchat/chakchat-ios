@@ -97,7 +97,8 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
     func configureUserData(_ userData: ProfileSettingsModels.ProfileUserData) {
         nameTextField.setText(userData.name)
         usernameTextField.setText(userData.username)
-        let formattedPhone = Format.number(userData.phone)
+        guard let phone = userData.phone else { return }
+        let formattedPhone = Format.number(phone)
         phoneTextField.setText(formattedPhone)
         if let birth = userData.dateOfBirth {
             dateFormatter.dateFormat = "yyyy-MM-dd"
