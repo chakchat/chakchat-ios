@@ -27,7 +27,7 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func loadFirstMessages(completion: @escaping (Result<[MessageForKit], Error>) -> Void)
     func loadMoreMessages()
 
-    func startPolling(completion: @escaping ([MessageForKit]) -> Void)
+    //func startPolling(completion: @escaping ([MessageForKit]) -> Void)
 }
 
 protocol ChatPresentationLogic {
