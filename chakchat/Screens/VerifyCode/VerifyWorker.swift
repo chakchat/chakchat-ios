@@ -14,7 +14,7 @@ final class VerifyWorker: VerifyWorkerLogic {
     private let identityService: IdentityServiceProtocol
     private let keychainManager: KeychainManagerBusinessLogic
     private let userDefaultsManager: UserDefaultsManagerProtocol
-
+    
     // MARK: - Initialization
     init(
         identityService: IdentityServiceProtocol,
@@ -27,6 +27,64 @@ final class VerifyWorker: VerifyWorkerLogic {
     }
     
     // MARK: - Public Methods
+    func sendInRequest(_ request: SendCodeModels.SendCodeRequest,
+                       completion: @escaping (Result<SignupState, Error>) -> Void) {
+        print("Send request to service")
+        identityService.sendCodeRequest(request,
+                                        IdentityServiceEndpoints.signinCodeEndpoint.rawValue,
+                                        SuccessModels.SendCodeSigninData.self) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else {return}
+                switch result {
+                case .success(let successResponse):
+                    let isSaved = self.keychainManager.save(key: KeychainManager.keyForSaveSigninCode,
+                                                            value: successResponse.data.signinKey)
+                    if isSaved {
+                        self.userDefaultsManager.savePhone(request.phone)
+                        completion(.success(SignupState.signin))
+                    } else {
+                        completion(.failure(Keychain.KeychainError.saveError))
+                    }
+                case .failure(let apiError):
+                    if apiError is APIErrorResponse {
+                        guard let apiErrorResponse = apiError as? APIErrorResponse else { return }
+                        if apiErrorResponse.errorType == ApiErrorType.userNotFound.rawValue {
+                            self.sendUpRequest(request, completion: completion)
+                        } else {
+                            completion(.failure(apiErrorResponse))
+                        }
+                    } else {
+                        completion(.failure(apiError))
+                    }
+                }
+            }
+        }
+    }
+    
+    func sendUpRequest(_ request: SendCodeModels.SendCodeRequest,
+                       completion: @escaping (Result<SignupState, Error>) -> Void) {
+        identityService.sendCodeRequest(request,
+                                        IdentityServiceEndpoints.signupCodeEndpoint.rawValue,
+                                        SuccessModels.SendCodeSignupData.self) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else {return}
+                switch result {
+                case .success(let successResponse):
+                    let isSaved = self.keychainManager.save(key: KeychainManager.keyForSaveSignupCode,
+                                                            value: successResponse.data.signupKey)
+                    if isSaved {
+                        self.userDefaultsManager.savePhone(request.phone)
+                        completion(.success(SignupState.signupVerifyCode))
+                    } else {
+                        completion(.failure(Keychain.KeychainError.saveError))
+                    }
+                case .failure(let apiError):
+                    completion(.failure(apiError))
+                }
+            }
+        }
+    }
+    
     func sendVerificationRequest<Request, Response>(_ request: Request, _ endpoint: String, _ responseType: Response.Type, completion: @escaping (Result<SignupState, any Error>) -> Void) where Request : Decodable, Request : Encodable, Response : Decodable, Response : Encodable {
         print("Send request to service")
         identityService.sendVerificationRequest(
@@ -56,11 +114,11 @@ final class VerifyWorker: VerifyWorkerLogic {
         }
         return savedKey
     }
-
+    
     func saveToken(_ response: SuccessModels.Tokens,
                    completion: @escaping (Result<SignupState, Error>) -> Void) {
         var isSaved = self.keychainManager.save(key: KeychainManager.keyForSaveAccessToken,
-                                           value: response.accessToken)
+                                                value: response.accessToken)
         if !isSaved {
             completion(.failure(Keychain.KeychainError.saveError))
         }
@@ -81,7 +139,7 @@ final class VerifyWorker: VerifyWorkerLogic {
     }
     
     func resendInRequest(_ request: VerifyModels.ResendCodeRequest,
-                     completion: @escaping (Result<SignupState, Error>) -> Void) {
+                         completion: @escaping (Result<SignupState, Error>) -> Void) {
         print("Send request to service")
         identityService.sendCodeRequest(request,
                                         IdentityServiceEndpoints.signinCodeEndpoint.rawValue,
@@ -105,7 +163,7 @@ final class VerifyWorker: VerifyWorkerLogic {
     }
     
     func resendUpRequest(_ request: VerifyModels.ResendCodeRequest,
-                       completion: @escaping (Result<SignupState, Error>) -> Void) {
+                         completion: @escaping (Result<SignupState, Error>) -> Void) {
         print("Send request to service")
         identityService.sendCodeRequest(request,
                                         IdentityServiceEndpoints.signupCodeEndpoint.rawValue,

@@ -219,10 +219,7 @@ final class SendCodeViewController: UIViewController {
         let cleanedPhone = phoneText.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
         
         if isPhoneNubmerInputValid {
-            interactor.sendCodeRequest(
-                SendCodeModels.SendCodeRequest(
-                    phone: cleanedPhone)
-            )
+            interactor.routeToVerifyScreen(cleanedPhone)
         } else {
             errorLabel.showError(LocalizationManager.shared.localizedString(for: "enter_valid_number"))
         }

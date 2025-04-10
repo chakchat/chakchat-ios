@@ -36,8 +36,6 @@ final class SendCodeIntegrationTests: XCTestCase {
             }
             return SendCodeInteractor(
                 presenter: presenter,
-                worker: worker,
-                state: SignupState.sendPhoneCode,
                 errorHandler: errorHandler, 
                 logger: OSLog(subsystem: "con.chakchat.tests", category: "TestsLog")
             )

@@ -24,3 +24,9 @@ final class MockWorker: SendCodeWorkerLogic {
         }
     }
 }
+
+protocol SendCodeWorkerLogic {
+    func sendInRequest(_ request: SendCodeModels.SendCodeRequest, completion: @escaping (Result<SignupState, any Error>) -> Void)
+    
+    func sendUpRequest(_ request: SendCodeModels.SendCodeRequest, completion: @escaping (Result<SignupState, any Error>) -> Void)
+}

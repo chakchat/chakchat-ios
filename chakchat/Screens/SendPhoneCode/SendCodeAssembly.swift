@@ -14,15 +14,8 @@ enum SendCodeAssembly {
     static func build(with context: SignupContextProtocol, coordinator: AppCoordinator) -> UIViewController {
         
         let presenter = SendCodePresenter()
-        let identityService = IdentityService()
         
-        let worker = SendCodeWorker(identityService: identityService, 
-                                    keychainManager: context.keychainManager,
-                                    userDefaultsManager: context.userDefaultsManager)
-        
-        let interactor = SendCodeInteractor(presenter: presenter, 
-                                            worker: worker, 
-                                            state: context.state,
+        let interactor = SendCodeInteractor(presenter: presenter,
                                             errorHandler: context.errorHandler,
                                             logger: context.logger
         )
@@ -30,10 +23,8 @@ enum SendCodeAssembly {
         let view = SendCodeViewController(interactor: interactor)
         presenter.view = view
         
-        interactor.onRouteToVerifyScreen = { [weak context, weak coordinator] state in
-            context?.state = state
-            print(state)
-            coordinator?.showVerifyScreen()
+        interactor.onRouteToVerifyScreen = { [weak coordinator] phone in
+            coordinator?.showVerifyScreen(phone)
         }
         
         return view

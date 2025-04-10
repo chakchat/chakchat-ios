@@ -11,7 +11,7 @@ import UIKit
 // MARK: - VerifyAssembly
 enum VerifyAssembly {
     
-    static func build(with context: SignupContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: SignupContextProtocol, coordinator: AppCoordinator, phone: String) -> UIViewController {
         
         let presenter = VerifyPresenter()
         let identityService = IdentityService()
@@ -23,12 +23,13 @@ enum VerifyAssembly {
         )
         
         let interactor = VerifyInteractor(
-            presentor: presenter,
+            presenter: presenter,
             worker: worker,
             errorHandler: context.errorHandler,
-            state: context.state,
-            logger: context.logger
+            logger: context.logger,
+            phone: phone
         )
+        interactor.sendCodeRequest(phone)
         let view = VerifyViewController(interactor: interactor)
         presenter.view = view
         

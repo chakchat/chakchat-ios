@@ -106,8 +106,8 @@ final class AppCoordinator {
         navigationController.pushViewController(sendCodeVC, animated: true)
     }
 
-    func showVerifyScreen() {
-        let verifyVC = VerifyAssembly.build(with: signupContext, coordinator: self)
+    func showVerifyScreen(_ phone: String) {
+        let verifyVC = VerifyAssembly.build(with: signupContext, coordinator: self, phone: phone)
         navigationController.pushViewController(verifyVC, animated: true)
     }
     
