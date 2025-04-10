@@ -39,11 +39,7 @@ final class ChatViewController: MessagesViewController {
     
     private var curUser: SenderPerson = SenderPerson(senderId: UUID().uuidString, displayName: "temp")
     
-    private var messages: [MessageForKit] = [] {
-        didSet {
-            newChatAlert.isHidden = true
-        }
-    }
+    private var messages: [MessageForKit] = []
     private var isPollingActive = false
     
     // MARK: - Initialization
@@ -66,13 +62,13 @@ final class ChatViewController: MessagesViewController {
                     self.messages = messages
                     self.messagesCollectionView.reloadData()
                     self.messagesCollectionView.scrollToLastItem()
-                    self.interactor.startPolling { messages in
-                        DispatchQueue.main.async {
-                            self.messages.append(contentsOf: messages)
-                            self.messagesCollectionView.reloadData()
-                            self.messagesCollectionView.scrollToLastItem()
-                        }
-                    }
+//                    self.interactor.startPolling { messages in
+//                        DispatchQueue.main.async {
+//                            self.messages.append(contentsOf: messages)
+//                            self.messagesCollectionView.reloadData()
+//                            self.messagesCollectionView.scrollToLastItem()
+//                        }
+//                    }
                 case .failure(let failure):
                     print("CRY")
                 }
