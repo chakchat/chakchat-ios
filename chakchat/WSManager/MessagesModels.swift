@@ -179,7 +179,7 @@ indirect enum UpdateContent: Codable {
 }
 
 struct TextContent: Codable {
-    let replyTo: UUID?
+    let replyTo: Int64?
     let text: String
     let edited: UpdateData?
     let reactions: [UpdateData]?
@@ -208,7 +208,7 @@ struct ReactionContent: Codable {
 
 struct EditedContent: Codable {
     let newText: String
-    let messageID: UUID
+    let messageID: Int64
     
     enum CodingKeys: String, CodingKey {
         case newText = "new_text"

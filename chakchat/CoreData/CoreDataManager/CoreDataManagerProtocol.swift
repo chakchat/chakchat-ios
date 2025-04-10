@@ -27,4 +27,8 @@ protocol CoreDataManagerProtocol {
     func updateUser(_ newUserData: ProfileSettingsModels.ProfileUserData)
     func deleteUser(_ user: User)
     func deleteAllUsers()
+    
+    func createUpdate(_ updateData: UpdateData)
+    func deleteUpdate(_ updateID: Int64)
+    func deleteAllUpdates(_ chatID: UUID)
 }

@@ -17,6 +17,8 @@ final class CoreDataManager: CoreDataManagerProtocol {
         case update = "UpdateModel"
     }
     
+    //MARK: Chats CRUD
+    
     func createChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         let encoder = JSONEncoder()
         let context = CoreDataStack.shared.viewContext(for: Models.chat.rawValue)
@@ -132,6 +134,8 @@ final class CoreDataManager: CoreDataManagerProtocol {
         }
     }
     
+    //MARK: Users CRUD
+    
     func createUser(_ userData: ProfileSettingsModels.ProfileUserData) {
         let context = CoreDataStack.shared.viewContext(for: Models.user.rawValue)
         let user = User(context: context)
@@ -190,5 +194,102 @@ final class CoreDataManager: CoreDataManagerProtocol {
             context.delete(user)
         }
         CoreDataStack.shared.saveContext(for: Models.user.rawValue)
+    }
+    
+    // MARK: - Updates CRUD
+    
+    func createUpdate(_ updateData: UpdateData) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let updateEntity: Update
+        switch updateData.content {
+        case .textContent(let textContent):
+            let textUpdate = TextMessageUpdate(context: context)
+            textUpdate.text = textContent.text
+            if let replyToID = textContent.replyTo {
+                textUpdate.replyTo = fetchUpdate(by: replyToID)
+            }
+            updateEntity = textUpdate
+        case .fileContent(let fileContent):
+            let fileUpdate = FileMessageUpdate(context: context)
+            fileUpdate.fileID = fileContent.fileID
+            fileUpdate.fileName = fileContent.fileName
+            fileUpdate.fileSize = fileContent.fileSize
+            fileUpdate.fileURL = fileContent.fileURL.absoluteString
+            fileUpdate.mimeType = fileContent.mimeType
+            fileUpdate.fileCreatedAt = updateData.createdAt
+            
+            updateEntity = fileUpdate
+            
+        case .reactionContent(let reactionContent):
+            let reactionUpdate = ReactionUpdate(context: context)
+            reactionUpdate.reaction = reactionContent.reaction
+            reactionUpdate.message = fetchUpdate(by: reactionContent.messageID)
+            
+            updateEntity = reactionUpdate
+            
+        case .editedContent(let editedContent):
+            let editUpdate = TextMessageEditedUpdate(context: context)
+            editUpdate.newText = editedContent.newText
+            editUpdate.message = fetchUpdate(by: editedContent.messageID)
+            
+            updateEntity = editUpdate
+            
+        case .deletedContent(let deletedContent):
+            let deleteUpdate = DeletedUpdate(context: context)
+            deleteUpdate.mode = deletedContent.deletedMode.rawValue
+            deleteUpdate.deletedUpdate = fetchUpdate(by: deletedContent.deletedID)
+            
+            updateEntity = deleteUpdate
+        }
+        
+        updateEntity.chatID = updateData.chatID
+        updateEntity.senderID = updateData.senderID
+        updateEntity.createdAt = updateData.createdAt
+        updateEntity.updateID = updateData.updateID
+        updateEntity.type = updateData.type.rawValue
+        
+        CoreDataStack.shared.saveContext(for: Models.user.rawValue)
+    }
+    
+    func deleteUpdate(_ updateID: Int64) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<Update> = Update.fetchRequest()
+        request.predicate = NSPredicate(format: "updateID == %lld", updateID)
+        request.fetchLimit = 1
+        do {
+            if let update = try context.fetch(request).first {
+                context.delete(update)
+                CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+            }
+        } catch {
+            debugPrint("Failed to delete update with id: \(updateID)")
+        }
+    }
+    
+    func deleteAllUpdates(_ chatID: UUID) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<NSFetchRequestResult> = Update.fetchRequest()
+        request.predicate = NSPredicate(format: "chatID == %@", chatID as CVarArg)
+        
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+        deleteRequest.resultType = .resultTypeObjectIDs
+        
+        do {
+            let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
+            if let objectIDs = result?.result as? [NSManagedObjectID] {
+                let changes = [NSDeletedObjectsKey: objectIDs]
+                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+            }
+            print("All updates for chat \(chatID) deleted")
+        } catch {
+            print("Failed to delete updates for chat \(chatID): \(error)")
+        }
+    }
+    
+    private func fetchUpdate(by id: Int64) -> Update? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<Update> = Update.fetchRequest()
+        request.predicate = NSPredicate(format: "updateID == %lld", id)
+        return try? context.fetch(request).first
     }
 }
