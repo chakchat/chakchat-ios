@@ -84,8 +84,9 @@ final class UserProfileViewController: UIViewController {
             iconImageView.layer.cornerRadius = Constants.cornerRadius
         }
         nicknameLabel.text = userData.name
+        guard let phone = userData.phone else { return }
         userTableViewData[0].value = userData.username
-        userTableViewData[1].value = Format.number(userData.phone) ?? ""
+        userTableViewData[1].value = Format.number(phone) ?? ""
         if let birth = userData.dateOfBirth {
             userTableViewData[2].value = birth
         }

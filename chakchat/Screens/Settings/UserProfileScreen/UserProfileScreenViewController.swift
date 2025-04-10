@@ -61,8 +61,9 @@ final class UserProfileScreenViewController: UIViewController {
     // MARK: - Public Methods
     func configureUserData(_ userData: ProfileSettingsModels.ProfileUserData) {
         nameLabel.text = userData.name
+        guard let phone = userData.phone else { return }
         userTableViewData[0].value = userData.username
-        userTableViewData[1].value = Format.number(userData.phone) ?? ""
+        userTableViewData[1].value = Format.number(phone) ?? ""
         if let birth = userData.dateOfBirth {
             let formattedBirth = birth.replacingOccurrences(of: "-", with: ".")
             userTableViewData[2].value = formattedBirth

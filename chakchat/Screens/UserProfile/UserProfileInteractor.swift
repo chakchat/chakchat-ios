@@ -177,16 +177,7 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     }
     
     private func convertData(_ chatCoreData: Chat) -> ChatsModels.GeneralChatModel.ChatData? {
-        let decoder = JSONDecoder()
-        let chatData = ChatsModels.GeneralChatModel.ChatData(
-            chatID: chatCoreData.chatID,
-            type: ChatType(rawValue: chatCoreData.type) ?? ChatType.personal,
-            members: (try? decoder.decode([UUID].self, from: chatCoreData.members)) ?? [UUID()],
-            createdAt: chatCoreData.createdAt,
-            info: (try? decoder.decode(ChatsModels.GeneralChatModel.Info.self, from: chatCoreData.info))
-            ?? ChatsModels.GeneralChatModel.Info.personal(ChatsModels.GeneralChatModel.PersonalInfo(blockedBy: [UUID()]))
-        )
-        return chatData
+        return nil
     }
     
     private func checkIsBlocked(_ chatData: ChatsModels.GeneralChatModel.ChatData?) -> Bool {

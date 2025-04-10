@@ -14,7 +14,7 @@ enum ProfileSettingsModels {
         let id: UUID
         let name: String
         let username: String
-        let phone: String
+        let phone: String?
         let photo: URL?
         let dateOfBirth: String?
         let createdAt: Date
