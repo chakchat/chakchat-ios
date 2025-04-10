@@ -25,6 +25,8 @@ final class ChatInteractor: ChatBusinessLogic {
     var onRouteToProfile: ((ProfileSettingsModels.ProfileUserData, ChatsModels.GeneralChatModel.ChatData?, ProfileConfiguration) -> Void)?
     
     private var cancellables = Set<AnyCancellable>()
+    private var isPolling = false
+    private var lastUpdateID: Int64 = 1
     
     // MARK: - Initialization
     init(
@@ -48,10 +50,78 @@ final class ChatInteractor: ChatBusinessLogic {
     }
     // если обычный чат еще не создан то он не может быть секретным
     func passUserData() {
+        let myID = worker.getMyID()
         if let chatD = chatData {
-            presenter.passUserData(userData, chatD.type.rawValue == "personal_secret")
+            presenter.passUserData(userData, chatD.type.rawValue == "personal_secret", myID)
         } else {
-            presenter.passUserData(userData, false)
+            presenter.passUserData(userData, false, myID)
+        }
+    }
+    
+    func loadFirstMessages(completion: @escaping (Result<[MessageForKit], Error>) -> Void) {
+        if let cd = chatData {
+            worker.loadFirstMessages(cd.chatID, 1, 100) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    let updates = self.mapToKit(data)
+                    lastUpdateID = Int64(updates.count) + 1
+                    completion(.success(updates))
+                    print(updates)
+                case .failure(let failure):
+                    completion(.failure(failure))
+                    print(failure)
+                }
+            }
+        }
+    }
+    
+    func loadMoreMessages() {
+        worker.loadMoreMessages()
+    }
+    
+    func startPolling(completion: @escaping ([MessageForKit]) -> Void) {
+        if let cd = chatData {
+            guard !isPolling else { return }
+            isPolling = true
+            poll(chatID: cd.chatID, onNewMessages: completion)
+        }
+    }
+    
+    private func mapToKit(_ updates: [UpdateData]) -> [MessageForKit] {
+        var mappedUpdates: [MessageForKit] = []
+        for update in updates {
+            if case .textContent(let textContent) = update.content {
+                let mappedUpdate = MessageForKit(
+                    text: textContent.text,
+                    sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                    messageId: String(update.updateID),
+                    date: update.createdAt
+                )
+                mappedUpdates.append(mappedUpdate)
+            }
+        }
+        return mappedUpdates
+    }
+    
+    private func poll(chatID: UUID, onNewMessages: @escaping ([MessageForKit]) -> Void) {
+        worker.loadFirstMessages(chatID, lastUpdateID, 100) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let updates):
+                if !updates.isEmpty {
+                    guard let lastUpdate = updates.last else { return }
+                    let messages = self.mapToKit(updates)
+                    lastUpdateID += (lastUpdate.updateID - lastUpdateID) + 1
+                    print(lastUpdateID)
+                    onNewMessages(messages)
+                }
+            case .failure(let error):
+                print("Polling error: \(error.localizedDescription)")
+            }
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+                self.poll(chatID: chatID, onNewMessages: onNewMessages)
+            }
         }
     }
     
@@ -200,7 +270,7 @@ final class ChatInteractor: ChatBusinessLogic {
                     completion(true)
                 case .failure(let failure):
                     os_log("Failed to send message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
-                    print(failure)
+                    _ = self.errorHandler.handleError(failure)
                     completion(false)
                 }
             }

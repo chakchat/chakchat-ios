@@ -24,6 +24,7 @@ enum ChatAssembly {
         
         let worker = ChatWorker(
             keychainManager: context.keychainManager,
+            userDefaultsManager: context.userDefaultsManager,
             coreDataManager: context.coreDataManager,
             personalChatService: personalChatService,
             secretPersonalChatService: secretPersonalChatService,

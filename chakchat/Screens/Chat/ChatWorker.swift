@@ -12,6 +12,7 @@ final class ChatWorker: ChatWorkerLogic {
         
     // MARK: - Properties
     private let keychainManager: KeychainManagerBusinessLogic
+    private let userDefaultsManager: UserDefaultsManagerProtocol
     private let coreDataManager: CoreDataManagerProtocol
     private let personalChatService: PersonalChatServiceProtocol
     private let secretPersonalChatService: SecretPersonalChatServiceProtocol
@@ -20,16 +21,34 @@ final class ChatWorker: ChatWorkerLogic {
     // MARK: - Initialization
     init(
         keychainManager: KeychainManagerBusinessLogic,
+        userDefaultsManager: UserDefaultsManagerProtocol,
         coreDataManager: CoreDataManagerProtocol,
         personalChatService: PersonalChatServiceProtocol,
         secretPersonalChatService: SecretPersonalChatServiceProtocol,
         updateService: PersonalUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
+        self.userDefaultsManager = userDefaultsManager
         self.coreDataManager = coreDataManager
         self.personalChatService = personalChatService
         self.secretPersonalChatService = secretPersonalChatService
         self.updateService = updateService
+    }
+    
+    func loadFirstMessages(_ chatID: UUID, _ from: Int64, _ to: Int64, completion: @escaping (Result<[UpdateData], any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        updateService.getUpdatesInRange(chatID, from, to, accessToken) { result in
+            switch result {
+            case .success(let response):
+                completion(.success(response.updates))
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func loadMoreMessages() {
+        print("FAWF")
     }
     
     // MARK: - Public Methods
@@ -149,6 +168,10 @@ final class ChatWorker: ChatWorkerLogic {
                 completion(.failure(failure))
             }
         }
+    }
+    
+    func getMyID() -> UUID {
+        return userDefaultsManager.loadID()
     }
     
     func saveSecretKey(_ key: String) -> Bool{

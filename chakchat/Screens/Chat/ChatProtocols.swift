@@ -23,10 +23,15 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
     func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
+    ///  chatID временно для лонг пуллинга
+    func loadFirstMessages(completion: @escaping (Result<[MessageForKit], Error>) -> Void)
+    func loadMoreMessages()
+
+    func startPolling(completion: @escaping ([MessageForKit]) -> Void)
 }
 
 protocol ChatPresentationLogic {
-    func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool)
+    func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID)
     func showSecretKeyFail()
     
     func presentMessage(_ message: ChatModels.Message)
@@ -49,6 +54,11 @@ protocol ChatWorkerLogic {
     func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    
+    func loadFirstMessages(_ chatID: UUID, _ from: Int64, _ to: Int64, completion: @escaping (Result<[UpdateData], Error>) -> Void)
+    func loadMoreMessages()
+    
+    func getMyID() -> UUID
 }
 
 protocol SendingMessagesProtocol: AnyObject {

@@ -39,7 +39,12 @@ final class ChatViewController: MessagesViewController {
     
     private var curUser: SenderPerson = SenderPerson(senderId: UUID().uuidString, displayName: "temp")
     
-    private var messages: [MessageForKit] = []
+    private var messages: [MessageForKit] = [] {
+        didSet {
+            newChatAlert.isHidden = true
+        }
+    }
+    private var isPollingActive = false
     
     // MARK: - Initialization
     init(interactor: ChatBusinessLogic) {
@@ -53,6 +58,26 @@ final class ChatViewController: MessagesViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        interactor.loadFirstMessages { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let messages):
+                    self.messages = messages
+                    self.messagesCollectionView.reloadData()
+                    self.messagesCollectionView.scrollToLastItem()
+                    self.interactor.startPolling { messages in
+                        DispatchQueue.main.async {
+                            self.messages.append(contentsOf: messages)
+                            self.messagesCollectionView.reloadData()
+                            self.messagesCollectionView.scrollToLastItem()
+                        }
+                    }
+                case .failure(let failure):
+                    print("CRY")
+                }
+            }
+        }
         configureUI()
         let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         messagesCollectionView.addGestureRecognizer(tap1)
@@ -84,7 +109,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     // MARK: - Public Methods
-    func configureWithData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool) {
+    func configureWithData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID) {
         let color = UIColor.random()
         let image = UIImage.imageWithText(
             text: userData.name,
@@ -121,7 +146,7 @@ final class ChatViewController: MessagesViewController {
             alert.addAction(ent)
             self.present(alert, animated: false)
         }
-        curUser = SenderPerson(senderId: userData.id.uuidString, displayName: userData.name)
+        curUser = SenderPerson(senderId: myID.uuidString, displayName: userData.name)
     }
     
     func showSecretKeyFail() {
