@@ -116,7 +116,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode)"
+        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode.rawValue)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

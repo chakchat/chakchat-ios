@@ -247,5 +247,5 @@ enum UpdateDataType: String, Codable {
     case textEdited = "text_message_edited"
     case file = "file"
     case reaction = "reaction"
-    case delete = "delete"
+    case delete = "update_deleted"
 }

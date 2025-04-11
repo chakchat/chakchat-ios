@@ -24,6 +24,7 @@ final class ChatViewController: MessagesViewController {
         static let messageInputViewHeigth: CGFloat = 50
         static let messageInputViewBottom: CGFloat = 0
         static let extraKeyboardIndent: CGFloat = 20
+        static let outgoingAvatarOverlap: CGFloat = 17.5
     }
     
     // MARK: - Properties
@@ -34,13 +35,14 @@ final class ChatViewController: MessagesViewController {
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
     private lazy var expirationButton: UIButton = UIButton(type: .system)
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
-    private var configuration: PHPickerConfiguration = PHPickerConfiguration(photoLibrary: .shared())
-    private var filter: PHPickerFilter = PHPickerFilter.any(of: [.images])
-    private lazy var picker: PHPickerViewController = PHPickerViewController(configuration: configuration)
     
     private var curUser: SenderPerson = SenderPerson(senderId: UUID().uuidString, displayName: "temp")
     
-    private var messages: [MessageForKit] = []
+    private var messages: [MessageForKit] = [] {
+        didSet {
+            newChatAlert.isHidden = true
+        }
+    }
     private var isPollingActive = false
     
     // MARK: - Initialization
@@ -48,7 +50,7 @@ final class ChatViewController: MessagesViewController {
         self.interactor = interactor
         super.init(nibName: nil, bundle: nil)
     }
-    
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -67,8 +69,8 @@ final class ChatViewController: MessagesViewController {
             }
         }
         configureUI()
-        let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        messagesCollectionView.addGestureRecognizer(tap1)
+//        let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+//        messagesCollectionView.addGestureRecognizer(tap1)
         let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         newChatAlert.addGestureRecognizer(tap2)
         interactor.passUserData()
@@ -78,11 +80,7 @@ final class ChatViewController: MessagesViewController {
         for message in newMessages {
             switch message.updateType {
             case .textMessage:
-                let changeset = StagedChangeset(source: self.messages, target: messages)
-                self.messagesCollectionView.reload(using: changeset) { data in
-                    self.messages = data
-                }
-                self.messagesCollectionView.scrollToLastItem()
+                self.messages.append(message)
             case .textEdited:
                 break
             case .file:
@@ -92,14 +90,32 @@ final class ChatViewController: MessagesViewController {
             case .delete:
                 if message.deleteMode == DeleteMode.DeleteModeForSender {
                     if message.sender.senderId == curUser.senderId {
-                        handleLocalDeletion(deleteId: message.messageId)
+                        guard let index = messages.firstIndex(where: { $0.messageId == message.messageId }) else {
+                            return
+                        }
+                        messages.remove(at: index)
+                        messagesCollectionView.performBatchUpdates({
+                            messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
+                        }, completion: nil)
                     }
                 } else {
-                    removeMessageCompletely(deleteId: message.messageId)
+                    guard let index = messages.firstIndex(where: { $0.messageId == message.messageId }) else {
+                        return
+                    }
+                    let changeset = StagedChangeset(
+                        source: messages,
+                        target: messages.enumerated().filter { $0.offset != index }.map { $0.element }
+                    )
+                    messagesCollectionView.reload(using: changeset) { updatedMessages in
+                        self.messages = updatedMessages
+                    }
                 }
             }
         }
+        self.messagesCollectionView.reloadData()
+        self.messagesCollectionView.scrollToLastItem(animated: false)
     }
+    
     private func removeMessageCompletely(deleteId: String) {
         guard let index = messages.firstIndex(where: { $0.messageId == deleteId }) else {
             return
@@ -185,29 +201,6 @@ final class ChatViewController: MessagesViewController {
             iconImageView.layer.cornerRadius = Constants.cornerRadius
         }
         nicknameLabel.text = userData.name
-        if isSecret {
-            //            view.addSubview(expirationButton)
-            //            messageInputView.addSubview(expirationButton)
-            //            expirationButton.setImage(UIImage(systemName: "timer"), for: .normal)
-            //            expirationButton.setHeight(24)
-            //            expirationButton.setWidth(24)
-            //            expirationButton.pinRight(messageInputView.trailingAnchor, 20)
-            //            expirationButton.pinCenterY(messageInputView)
-            
-            let alert = UIAlertController(title: "Input key", message: nil, preferredStyle: .alert)
-            alert.addTextField { tf in
-                tf.placeholder = "Key"
-            }
-            let ent = UIAlertAction(title: "Enter", style: .default) { _ in
-                if let key = alert.textFields?.first?.text {
-                    self.interactor.saveSecretKey(key)
-                } else {
-                    self.showEmptyDisclaimer()
-                }
-            }
-            alert.addAction(ent)
-            self.present(alert, animated: false)
-        }
         curUser = SenderPerson(senderId: myID.uuidString, displayName: userData.name)
     }
     
@@ -216,11 +209,6 @@ final class ChatViewController: MessagesViewController {
         let ok = UIAlertAction(title: "OK", style: .default)
         failAllert.addAction(ok)
     }
-    
-//    private func scrollToBottom() {
-//        guard !messages.isEmpty else { return }
-//        messagesCollectionView.scrollToItem(at: IndexPath(item: 0, section: messages.count - 1), at: .bottom, animated: true)
-//    }
     
     // MARK: - UI Configuration
     private func configureUI() {
@@ -317,6 +305,8 @@ final class ChatViewController: MessagesViewController {
         scrollsToLastItemOnKeyboardBeginsEditing = true // default false
         maintainPositionOnInputBarHeightChanged = true // default false
         messageInputBar.delegate = self
+        messagesCollectionView.isUserInteractionEnabled = true
+        messagesCollectionView.messageCellDelegate = self
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
             layout.textMessageSizeCalculator.incomingAvatarSize = .zero
@@ -514,7 +504,7 @@ extension ChatViewController: MessagesDataSource {
     }
 }
 
-extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate, MessageCellDelegate {
+extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         avatarView.isHidden = true
     }
@@ -525,7 +515,73 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate, M
     }
 }
 
-
+extension ChatViewController: MessageCellDelegate {
+    func didTapMessage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
+        let message = messages[indexPath.item]
+        let button = UIButton(type: .system)
+        cell.contentView.addSubview(button)
+        button.frame = cell.bounds
+        button.showsMenuAsPrimaryAction = true
+        
+        let subMenu = UIMenu(title: "Delete", children: [
+            UIAction(title: "For both") { [weak self] _ in
+                guard let self = self else { return }
+                guard let deleteID = Int64(message.messageId) else { return }
+                self.interactor.deleteMessage(deleteID, .DeleteModeForAll) { result in
+                    if result {
+                        guard let index = self.messages.firstIndex(where: { $0.messageId == message.messageId }) else {
+                            return
+                        }
+                        self.messages.remove(at: index)
+                        self.messagesCollectionView.performBatchUpdates({
+                            self.messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
+                        }, completion: nil)
+                        
+                        if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
+                            UIView.animate(withDuration: 0.25) {
+                                cell.alpha = 0
+                                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                            }
+                        }
+                    }
+                }
+            },
+            UIAction(title: "For me") { [weak self] _ in
+                guard let self = self else { return }
+                guard let deleteID = Int64(message.messageId) else { return }
+                self.interactor.deleteMessage(deleteID, .DeleteModeForSender) { result in
+                    if result {
+                        guard let index = self.messages.firstIndex(where: { $0.messageId == message.messageId }) else {
+                            return
+                        }
+                        self.messages.remove(at: index)
+                        self.messagesCollectionView.performBatchUpdates({
+                            self.messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
+                        }, completion: nil)
+                        
+                        if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
+                            UIView.animate(withDuration: 0.25) {
+                                cell.alpha = 0
+                                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                            }
+                        }
+                    }
+                }
+            }
+        ])
+        
+        button.menu = UIMenu(children: [
+            subMenu,
+            UIAction(title: "Edit message") { [weak self] _ in
+                let alert = UIAlertController(title: "Зачем так делать?", message: "Логика редактирования сообщения еще не присутствует понимаешь, так что не нажимай больше на эту кнопку хорошо? Спасибо...", preferredStyle: .actionSheet)
+                let cancel = UIAlertAction(title: "Ну окей...", style: .cancel)
+                alert.addAction(cancel)
+                self?.navigationController?.present(alert, animated: true)
+            }
+        ])
+    }
+}
 
 extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
@@ -546,6 +602,7 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                 self.messagesCollectionView.reloadItems(at: [IndexPath(item: index, section: 0)])
             }
         }
+        messagesCollectionView.scrollToLastItem(animated: true)
         dismissKeyboard()
     }
     
@@ -568,20 +625,5 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
             updateType: UpdateDataType.file
         )
         insertPhoto(photoMessage)
-    }
-}
-
-extension ChatViewController {
-    func updateMessages(_ newMessages: [MessageForKit], animated: Bool = true) {
-        let oldMessages = self.messages
-        let changeset = StagedChangeset(source: oldMessages, target: newMessages)
-        if animated {
-            messagesCollectionView.reload(using: changeset) { updatedMessages in
-                self.messages = updatedMessages
-            }
-        } else {
-            self.messages = newMessages
-            messagesCollectionView.reloadData()
-        }
     }
 }
