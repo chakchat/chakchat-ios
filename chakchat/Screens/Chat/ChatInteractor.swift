@@ -50,9 +50,9 @@ final class ChatInteractor: ChatBusinessLogic {
     func passUserData() {
         let myID = worker.getMyID()
         if let chatD = chatData {
-            presenter.passUserData(userData, chatD.type.rawValue == "personal_secret", myID)
+            presenter.passUserData(chatD, userData, chatD.type.rawValue == "personal_secret", myID)
         } else {
-            presenter.passUserData(userData, false, myID)
+            presenter.passUserData(nil, userData, false, myID)
         }
     }
     
@@ -246,7 +246,7 @@ final class ChatInteractor: ChatBusinessLogic {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
-                case .success(let data):
+                case .success(_):
                     os_log("Sent message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
                     completion(true)
                 case .failure(let failure):
@@ -265,7 +265,7 @@ final class ChatInteractor: ChatBusinessLogic {
     }
     
     func handleChatBlock(_ event: BlockedChatEvent) {
-        print("Handle block/unblock")
+        presenter.changeInputBar(event.blocked)
     }
     
     // MARK: - Routing

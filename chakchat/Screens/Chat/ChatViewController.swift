@@ -36,6 +36,8 @@ final class ChatViewController: MessagesViewController {
     private lazy var expirationButton: UIButton = UIButton(type: .system)
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
     
+    private let blockInputBar: UIView = UIView()
+    
     private var curUser: SenderPerson = SenderPerson(senderId: UUID().uuidString, displayName: "temp")
     
     private var messages: [MessageForKit] = [] {
@@ -76,10 +78,75 @@ final class ChatViewController: MessagesViewController {
         interactor.passUserData()
     }
     
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+//    }
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//
+//        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+//        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+//    }
+    
+    // MARK: - Changing image color
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            guard let text = nicknameLabel.text else { return }
+            let image = UIProfilePhoto(text, Constants.navigationItemHeight, Constants.borderWidth).getPhoto()
+            iconImageView.image = image
+        }
+    }
+    
+    // MARK: - Public Methods
+    func configureWithData(_ chatData: ChatsModels.GeneralChatModel.ChatData?, _ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID) {
+        let color = UIColor.random()
+        let image = UIImage.imageWithText(
+            text: userData.name,
+            size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
+            color: color,
+            borderWidth: Constants.borderWidth
+        )
+        iconImageView.image = image
+        if let photoURL = userData.photo {
+            iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
+            iconImageView.layer.cornerRadius = Constants.cornerRadius
+        }
+        nicknameLabel.text = userData.name
+        curUser = SenderPerson(senderId: myID.uuidString, displayName: userData.name)
+        if let cd = chatData {
+            if case .personal(let info) = cd.info {
+                if let blockedBy = info.blockedBy {
+                    configureBlockInputBar()
+                } else {
+                    configureInputBar()
+                }
+            }
+        }
+    }
+    
+    func changeInputBar(_ isBlocked: Bool) {
+        if isBlocked {
+            inputBarType = .custom(blockInputBar)
+        } else {
+            inputBarType = .custom(messageInputBar)
+        }
+    }
+    
+    func showSecretKeyFail() {
+        let failAllert = UIAlertController(title: "Failed to save secret key", message: "Try to save in again in profile", preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default)
+        failAllert.addAction(ok)
+    }
+    
     private func handleNewMessages(_ newMessages: [MessageForKit]) {
         for message in newMessages {
             switch message.updateType {
             case .textMessage:
+                print(message)
                 self.messages.append(message)
             case .textEdited:
                 break
@@ -163,52 +230,6 @@ final class ChatViewController: MessagesViewController {
             }
         }
     }
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-//    }
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//
-//        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-//        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-//    }
-    
-    // MARK: - Changing image color
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            guard let text = nicknameLabel.text else { return }
-            let image = UIProfilePhoto(text, Constants.navigationItemHeight, Constants.borderWidth).getPhoto()
-            iconImageView.image = image
-        }
-    }
-    
-    // MARK: - Public Methods
-    func configureWithData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID) {
-        let color = UIColor.random()
-        let image = UIImage.imageWithText(
-            text: userData.name,
-            size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
-            color: color,
-            borderWidth: Constants.borderWidth
-        )
-        iconImageView.image = image
-        if let photoURL = userData.photo {
-            iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
-            iconImageView.layer.cornerRadius = Constants.cornerRadius
-        }
-        nicknameLabel.text = userData.name
-        curUser = SenderPerson(senderId: myID.uuidString, displayName: userData.name)
-    }
-    
-    func showSecretKeyFail() {
-        let failAllert = UIAlertController(title: "Failed to save secret key", message: "Try to save in again in profile", preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: .default)
-        failAllert.addAction(ok)
-    }
     
     // MARK: - UI Configuration
     private func configureUI() {
@@ -218,7 +239,7 @@ final class ChatViewController: MessagesViewController {
         configureNicknameLabel()
         configureNewChatAlert()
         configureMessagesCollectionView()
-        configureInputBar()
+        configureBlockInputBar()
     }
     
     private func configureBackground() {
@@ -390,6 +411,24 @@ final class ChatViewController: MessagesViewController {
         
         // or InputTextView padding
         messageInputBar.inputTextView.textContainerInset.bottom = 8
+    }
+    
+    private func configureBlockInputBar() {
+        view.addSubview(blockInputBar)
+        blockInputBar.backgroundColor = .secondarySystemBackground
+        let customLabel = UILabel()
+        customLabel.translatesAutoresizingMaskIntoConstraints = false
+        customLabel.font = .preferredFont(forTextStyle: .headline)
+        customLabel.textAlignment = .center
+        customLabel.text = "This chat is read only."
+        customLabel.textColor = .primaryColor
+        blockInputBar.addSubview(customLabel)
+        
+        customLabel.pinTop(blockInputBar.topAnchor, 16)
+        customLabel.pinBottom(blockInputBar.safeAreaLayoutGuide.bottomAnchor, 16)
+        customLabel.pinLeft(blockInputBar.leadingAnchor, 0)
+        customLabel.pinRight(blockInputBar.trailingAnchor, 0)
+        inputBarType = .custom(blockInputBar)
     }
     
     private func makeButton(named: String) -> InputBarButtonItem {
@@ -627,3 +666,8 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
         insertPhoto(photoMessage)
     }
 }
+
+extension UIColor {
+  static let primaryColor = UIColor(red: 69 / 255, green: 193 / 255, blue: 89 / 255, alpha: 1)
+}
+

@@ -13,12 +13,15 @@ final class ChatPresenter: ChatPresentationLogic {
     
     weak var view: ChatViewController?
 
-    func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID) {
-        view?.configureWithData(userData, isSecret, myID)
+    func passUserData(_ chatData: ChatsModels.GeneralChatModel.ChatData? , _ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID) {
+        view?.configureWithData(chatData, userData, isSecret, myID)
     }
     
     func showSecretKeyFail() {
         view?.showSecretKeyFail()
     }
     
+    func changeInputBar(_ isBlocked: Bool) {
+        view?.changeInputBar(isBlocked)
+    }
 }
