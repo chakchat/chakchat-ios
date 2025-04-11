@@ -34,9 +34,6 @@ protocol ChatPresentationLogic {
     func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID)
     func showSecretKeyFail()
     
-    func presentMessage(_ message: ChatModels.Message)
-    func updateMessageStatus(_ id: String, _ newMessage: ChatModels.Message)
-    func updateMessageStatus(_ id: String)
 }
 
 protocol ChatWorkerLogic {

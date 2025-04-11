@@ -9,6 +9,7 @@ import UIKit
 import MessageKit
 import InputBarAccessoryView
 import PhotosUI
+import DifferenceKit
 
 // MARK: - ChatViewController
 final class ChatViewController: MessagesViewController {
@@ -59,17 +60,8 @@ final class ChatViewController: MessagesViewController {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let messages):
-                    self.messages = messages
-                    self.messagesCollectionView.reloadData()
-                    self.messagesCollectionView.scrollToLastItem()
-//                    self.interactor.startPolling { messages in
-//                        DispatchQueue.main.async {
-//                            self.messages.append(contentsOf: messages)
-//                            self.messagesCollectionView.reloadData()
-//                            self.messagesCollectionView.scrollToLastItem()
-//                        }
-//                    }
-                case .failure(let failure):
+                    self.handleNewMessages(messages)
+                case .failure(_):
                     print("CRY")
                 }
             }
@@ -80,6 +72,80 @@ final class ChatViewController: MessagesViewController {
         let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         newChatAlert.addGestureRecognizer(tap2)
         interactor.passUserData()
+    }
+    
+    private func handleNewMessages(_ newMessages: [MessageForKit]) {
+        for message in newMessages {
+            switch message.updateType {
+            case .textMessage:
+                let changeset = StagedChangeset(source: self.messages, target: messages)
+                self.messagesCollectionView.reload(using: changeset) { data in
+                    self.messages = data
+                }
+                self.messagesCollectionView.scrollToLastItem()
+            case .textEdited:
+                break
+            case .file:
+                break
+            case .reaction:
+                break
+            case .delete:
+                if message.deleteMode == DeleteMode.DeleteModeForSender {
+                    if message.sender.senderId == curUser.senderId {
+                        handleLocalDeletion(deleteId: message.messageId)
+                    }
+                } else {
+                    removeMessageCompletely(deleteId: message.messageId)
+                }
+            }
+        }
+    }
+    private func removeMessageCompletely(deleteId: String) {
+        guard let index = messages.firstIndex(where: { $0.messageId == deleteId }) else {
+            return
+        }
+        
+        let changeset = StagedChangeset(
+            source: messages,
+            target: messages.enumerated().filter { $0.offset != index }.map { $0.element }
+        )
+        
+        applyChangesetWithAnimation(changeset: changeset, indexToAnimate: index)
+    }
+    
+    private func handleLocalDeletion(deleteId: String) {
+        guard let index = messages.firstIndex(where: { $0.messageId == deleteId }) else {
+            return
+        }
+        messages.remove(at: index)
+        messagesCollectionView.performBatchUpdates({
+            messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
+        }, completion: nil)
+        
+        if let cell = messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
+            UIView.animate(withDuration: 0.25) {
+                cell.alpha = 0
+                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            }
+        }
+    }
+    
+    private func applyChangesetWithAnimation(changeset: StagedChangeset<[MessageForKit]>, indexToAnimate: Int) {
+        messagesCollectionView.reload(using: changeset) { updatedMessages in
+            self.messages = updatedMessages
+        }
+        let indexPath = IndexPath(item: indexToAnimate, section: 0)
+        if let cell = messagesCollectionView.cellForItem(at: indexPath) {
+            UIView.animate(withDuration: 0.3) {
+                cell.alpha = 0.5
+                cell.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+            } completion: { _ in
+                UIView.animate(withDuration: 0.2) {
+                    cell.transform = .identity
+                    cell.alpha = 1
+                }
+            }
+        }
     }
 //    override func viewWillAppear(_ animated: Bool) {
 //        super.viewWillAppear(animated)
@@ -151,34 +217,10 @@ final class ChatViewController: MessagesViewController {
         failAllert.addAction(ok)
     }
     
-    func displayNewMessage(_ message: MessageForKit) {
-        let newSectionIndex = messages.count
-        messages.append(message)
-        messagesCollectionView.performBatchUpdates {
-            messagesCollectionView.insertSections([newSectionIndex])
-        } completion: { _ in
-            self.messagesCollectionView.scrollToLastItem(animated: true)
-        }
-    }
-    
-    func updateMessage(_ id: String, _ newMessage: MessageForKit) {
-        messages.append(newMessage)
-        if let index = messages.firstIndex(where: { $0.messageId == id }) {
-            messages[index] = newMessage
-            messagesCollectionView.reloadSections([index])
-        }
-    }
-    
-    func markMessageAsFailed(_ id: String) {
-        if let index = messages.firstIndex(where: { $0.messageId == id }) {
-            messagesCollectionView.reloadSections([index])
-        }
-    }
-    
-    private func scrollToBottom() {
-        guard !messages.isEmpty else { return }
-        messagesCollectionView.scrollToItem(at: IndexPath(item: 0, section: messages.count - 1), at: .bottom, animated: true)
-    }
+//    private func scrollToBottom() {
+//        guard !messages.isEmpty else { return }
+//        messagesCollectionView.scrollToItem(at: IndexPath(item: 0, section: messages.count - 1), at: .bottom, animated: true)
+//    }
     
     // MARK: - UI Configuration
     private func configureUI() {
@@ -189,8 +231,6 @@ final class ChatViewController: MessagesViewController {
         configureNewChatAlert()
         configureMessagesCollectionView()
         configureInputBar()
-        configurePhppickerConfiguration()
-        configurePhppicker()
     }
     
     private func configureBackground() {
@@ -409,17 +449,6 @@ final class ChatViewController: MessagesViewController {
         return messagesCollectionView.indexPathsForVisibleItems.contains(lastIndexPath)
     }
     
-    private func configurePhppickerConfiguration() {
-        configuration.filter = filter
-        configuration.preferredAssetRepresentationMode = .current
-        configuration.selection = .ordered
-        configuration.selectionLimit = 5
-    }
-    
-    private func configurePhppicker() {
-        picker.delegate = self
-    }
-    
     private func showEmptyDisclaimer() {
         let disclaimer = UIAlertController(title: "You input empty key", message: "Try input key again", preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
@@ -504,7 +533,8 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
             text: text,
             sender: curUser,
             messageId: UUID().uuidString,
-            date: Date()
+            date: Date(),
+            updateType: UpdateDataType.textMessage
         )
         newChatAlert.isHidden = true
         messages.append(tempM)
@@ -534,14 +564,24 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
             image: photo,
             sender: currentSender,
             messageId: UUID().uuidString,
-            date: Date()
+            date: Date(),
+            updateType: UpdateDataType.file
         )
         insertPhoto(photoMessage)
     }
 }
 
-extension ChatViewController: PHPickerViewControllerDelegate {
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        print("FAWF")
+extension ChatViewController {
+    func updateMessages(_ newMessages: [MessageForKit], animated: Bool = true) {
+        let oldMessages = self.messages
+        let changeset = StagedChangeset(source: oldMessages, target: newMessages)
+        if animated {
+            messagesCollectionView.reload(using: changeset) { updatedMessages in
+                self.messages = updatedMessages
+            }
+        } else {
+            self.messages = newMessages
+            messagesCollectionView.reloadData()
+        }
     }
 }

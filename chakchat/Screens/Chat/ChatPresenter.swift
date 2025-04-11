@@ -21,33 +21,4 @@ final class ChatPresenter: ChatPresentationLogic {
         view?.showSecretKeyFail()
     }
     
-    func presentMessage(_ message: ChatModels.Message) {
-        let m = mapToMessageKit(message)
-        DispatchQueue.main.async {
-            self.view?.displayNewMessage(m)
-        }
-    }
-    
-    func updateMessageStatus(_ id: String, _ newMessage: ChatModels.Message) {
-        let m = mapToMessageKit(newMessage)
-        DispatchQueue.main.async {
-            self.view?.updateMessage(id, m)
-        }
-    }
-    
-    func updateMessageStatus(_ id: String) {
-        DispatchQueue.main.async {
-            self.view?.markMessageAsFailed(id)
-        }
-    }
-    // имя неважно в персональных чатах
-    private func mapToMessageKit(_ message: ChatModels.Message) -> MessageForKit {
-        let m = MessageForKit(
-            text: message.text,
-            sender: SenderPerson(senderId: message.senderID.uuidString, displayName: ""),
-            messageId: message.updateID,
-            date: message.sentAt
-        )
-        return m
-    }
 }

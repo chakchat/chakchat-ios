@@ -96,9 +96,20 @@ final class ChatInteractor: ChatBusinessLogic {
                     text: textContent.text,
                     sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
                     messageId: String(update.updateID),
-                    date: update.createdAt
+                    date: update.createdAt,
+                    updateType: update.type
                 )
                 mappedUpdates.append(mappedUpdate)
+            }
+            if case .deletedContent(let deletedContent) = update.content {
+                let mappedUpdate = MessageForKit(
+                    deleteText: "MESSAGE_DELETED\(deletedContent.deletedID)",
+                    sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                    deleteMessageId: String(deletedContent.deletedID),
+                    date: update.createdAt,
+                    updateType: update.type,
+                    deleteMode: deletedContent.deletedMode
+                )
             }
         }
         return mappedUpdates
