@@ -31,9 +31,10 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
 }
 
 protocol ChatPresentationLogic {
-    func passUserData(_ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID)
+    func passUserData(_ chatData: ChatsModels.GeneralChatModel.ChatData?, _ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID)
     func showSecretKeyFail()
     
+    func changeInputBar(_ isBlocked: Bool)
 }
 
 protocol ChatWorkerLogic {
