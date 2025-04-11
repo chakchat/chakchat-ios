@@ -25,8 +25,6 @@ final class ChatInteractor: ChatBusinessLogic {
     var onRouteToProfile: ((ProfileSettingsModels.ProfileUserData, ChatsModels.GeneralChatModel.ChatData?, ProfileConfiguration) -> Void)?
     
     private var cancellables = Set<AnyCancellable>()
-//    private var isPolling = false
-//    private var lastUpdateID: Int64 = 1
     
     // MARK: - Initialization
     init(
@@ -80,13 +78,6 @@ final class ChatInteractor: ChatBusinessLogic {
         worker.loadMoreMessages()
     }
     
-//    func startPolling(completion: @escaping ([MessageForKit]) -> Void) {
-//        if let cd = chatData {
-//            guard !isPolling else { return }
-//            isPolling = true
-//            poll(chatID: cd.chatID, onNewMessages: completion)
-//        }
-//    }
     
     private func mapToKit(_ updates: [UpdateData]) -> [MessageForKit] {
         var mappedUpdates: [MessageForKit] = []
@@ -96,35 +87,25 @@ final class ChatInteractor: ChatBusinessLogic {
                     text: textContent.text,
                     sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
                     messageId: String(update.updateID),
-                    date: update.createdAt
+                    date: update.createdAt,
+                    updateType: update.type
                 )
                 mappedUpdates.append(mappedUpdate)
+            }
+            if case .deletedContent(let deletedContent) = update.content {
+                let mappedUpdate = MessageForKit(
+                    deleteText: "MESSAGE_DELETED\(deletedContent.deletedID)",
+                    sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                    deleteMessageId: String(deletedContent.deletedID),
+                    date: update.createdAt,
+                    updateType: update.type,
+                    deleteMode: deletedContent.deletedMode
+                )
             }
         }
         return mappedUpdates
     }
-    
-//    private func poll(chatID: UUID, onNewMessages: @escaping ([MessageForKit]) -> Void) {
-//        worker.loadFirstMessages(chatID, lastUpdateID, 100) { [weak self] result in
-//            guard let self = self else { return }
-//            switch result {
-//            case .success(let updates):
-//                if !updates.isEmpty {
-//                    guard let lastUpdate = updates.last else { return }
-//                    let messages = self.mapToKit(updates)
-//                    lastUpdateID += (lastUpdate.updateID - lastUpdateID) + 1
-//                    print(lastUpdateID)
-//                    onNewMessages(messages)
-//                }
-//            case .failure(let error):
-//                print("Polling error: \(error.localizedDescription)")
-//            }
-//            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-//                self.poll(chatID: chatID, onNewMessages: onNewMessages)
-//            }
-//        }
-//    }
-    
+        
     // MARK: - Public Methods
     func createChat(_ memberID: UUID, completion: @escaping () -> Void) {
         worker.createChat(memberID) { [weak self] result in

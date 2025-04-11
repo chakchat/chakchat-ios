@@ -89,6 +89,7 @@
 		AA7BAE002D3FCA740030AC82 /* SettingsScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BADFF2D3FCA740030AC82 /* SettingsScreenViewController.swift */; };
 		AA7BAE032D3FD1900030AC82 /* SettingsMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BAE022D3FD1900030AC82 /* SettingsMenuCell.swift */; };
 		AA7BAE3D2D40E8920030AC82 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7BAE3C2D40E8920030AC82 /* UserDefaultsManager.swift */; };
+		AA82128E2DA906B500E0B064 /* DifferenceKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA82128D2DA906B500E0B064 /* DifferenceKit */; };
 		AA8312F82D91BA4B00924F56 /* AddUserAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312F72D91BA4B00924F56 /* AddUserAssembly.swift */; };
 		AA8312FA2D91BA5600924F56 /* AddUserInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312F92D91BA5600924F56 /* AddUserInteractor.swift */; };
 		AA8312FC2D91BA5D00924F56 /* AddUserWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8312FB2D91BA5D00924F56 /* AddUserWorker.swift */; };
@@ -683,6 +684,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA82128E2DA906B500E0B064 /* DifferenceKit in Frameworks */,
 				AA5F718D2DA3FA2200BC12AA /* MessageKit in Frameworks */,
 				AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */,
 				AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */,
@@ -1779,6 +1781,7 @@
 				AA5F718C2DA3FA2200BC12AA /* MessageKit */,
 				AA5F71972DA5BE8A00BC12AA /* CropViewController */,
 				AA5F71992DA5BE8A00BC12AA /* TOCropViewController */,
+				AA82128D2DA906B500E0B064 /* DifferenceKit */,
 			);
 			productName = chakchat;
 			productReference = AA9B62042D2D47CB0064CB23 /* chakchat.app */;
@@ -1819,6 +1822,7 @@
 				AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				AA5F718B2DA3FA2200BC12AA /* XCRemoteSwiftPackageReference "MessageKit" */,
 				AA5F71962DA5BE8A00BC12AA /* XCRemoteSwiftPackageReference "TOCropViewController" */,
+				AA82128C2DA906B500E0B064 /* XCRemoteSwiftPackageReference "DifferenceKit" */,
 			);
 			productRefGroup = AA9B62052D2D47CB0064CB23 /* Products */;
 			projectDirPath = "";
@@ -2497,6 +2501,14 @@
 				minimumVersion = 8.3.1;
 			};
 		};
+		AA82128C2DA906B500E0B064 /* XCRemoteSwiftPackageReference "DifferenceKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ra1028/DifferenceKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 		AAA839F02D638A3200C870A4 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire";
@@ -2527,6 +2539,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AA7140B82D921042007F5C23 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		AA82128D2DA906B500E0B064 /* DifferenceKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA82128C2DA906B500E0B064 /* XCRemoteSwiftPackageReference "DifferenceKit" */;
+			productName = DifferenceKit;
 		};
 		AAA839F12D638A3200C870A4 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
