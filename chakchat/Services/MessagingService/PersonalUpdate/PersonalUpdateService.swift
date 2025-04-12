@@ -31,7 +31,6 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
             "Authorization": "Bearer \(accessToken)",
             "Content-Type": "application/json"
         ]
-        
         AF.request(endpoint,
                    method: .get,
                    parameters: queryParams,
@@ -116,7 +115,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode.rawValue)"
+        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode.rawValue)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
