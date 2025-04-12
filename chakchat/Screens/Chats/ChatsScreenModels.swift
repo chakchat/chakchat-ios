@@ -452,7 +452,7 @@ enum ChatsModels {
 }
 
 enum DeleteMode: String, Codable {
-    case DeleteModeForSender = "for_delition_sender"
+    case DeleteModeForSender = "for_deletion_sender"
     case DeleteModeForAll = "for_all"
 }
 
