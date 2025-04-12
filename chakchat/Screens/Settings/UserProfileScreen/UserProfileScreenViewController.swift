@@ -64,10 +64,22 @@ final class UserProfileScreenViewController: UIViewController {
         guard let phone = userData.phone else { return }
         userTableViewData[0].value = userData.username
         userTableViewData[1].value = Format.number(phone) ?? ""
+        
         if let birth = userData.dateOfBirth {
-            let formattedBirth = birth.replacingOccurrences(of: "-", with: ".")
-            userTableViewData[2].value = formattedBirth
+            let inputFormatter = DateFormatter()
+            inputFormatter.dateFormat = "yyyy-MM-dd"
+            
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "dd.MM.yyyy"
+            
+            if let date = inputFormatter.date(from: birth) {
+                let formattedBirth = outputFormatter.string(from: date)
+                userTableViewData[2].value = formattedBirth
+            } else {
+                userTableViewData[2].value = birth // fallback
+            }
         }
+        
         if let photoURL = userData.photo {
             let image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
             iconImageView.image = image
@@ -82,9 +94,20 @@ final class UserProfileScreenViewController: UIViewController {
     func updateUserData(_ userData: ProfileSettingsModels.ChangeableProfileUserData) {
         nameLabel.text = userData.name
         userTableViewData[0].value = userData.username
+            
         if let birth = userData.dateOfBirth {
-            let formattedBirth = birth.replacingOccurrences(of: "-", with: ".")
-            userTableViewData[2].value = formattedBirth
+            let inputFormatter = DateFormatter()
+            inputFormatter.dateFormat = "yyyy-MM-dd"
+            
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "dd.MM.yyyy"
+            
+            if let date = inputFormatter.date(from: birth) {
+                let formattedBirth = outputFormatter.string(from: date)
+                userTableViewData[2].value = formattedBirth
+            } else {
+                userTableViewData[2].value = birth // fallback в случае ошибки парсинга
+            }
         }
         userTableView.reloadData()
     }

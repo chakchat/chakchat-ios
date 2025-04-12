@@ -102,9 +102,12 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
         phoneTextField.setText(formattedPhone)
         if let birth = userData.dateOfBirth {
             dateFormatter.dateFormat = "yyyy-MM-dd"
-            selectedDate = dateFormatter.date(from: birth)
-            let formattedData = birth.replacingOccurrences(of: "-", with: ".")
-            birthTextField.setText(formattedData)
+            if let date = dateFormatter.date(from: birth) {
+                selectedDate = date
+                dateFormatter.dateFormat = "dd.MM.yyyy"
+                let formattedData = dateFormatter.string(from: date)
+                birthTextField.setText(formattedData)
+            }
         }
         let editAction = UIAction(
             title: LocalizationManager.shared.localizedString(for: "edit"),
@@ -489,13 +492,11 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
     // TODO: - Probably it is interactor logic
     private func handleDateSelection(_ date: Date?) {
         if let date = date {
-            print("Selected Date: \(date)")
-            dateFormatter.dateFormat = UIConstants.dateFormat
+            dateFormatter.dateFormat = "dd.MM.yyyy"
             let formattedDate = dateFormatter.string(from: date)
             selectedDate = date
             birthTextField.setText(formattedDate)
         } else {
-            print("Date selection was reset")
             selectedDate = nil
             birthTextField.setText(nil)
         }

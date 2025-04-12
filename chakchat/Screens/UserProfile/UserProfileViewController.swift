@@ -87,8 +87,19 @@ final class UserProfileViewController: UIViewController {
         guard let phone = userData.phone else { return }
         userTableViewData[0].value = userData.username
         userTableViewData[1].value = Format.number(phone) ?? ""
+        
         if let birth = userData.dateOfBirth {
-            userTableViewData[2].value = birth
+            let inputFormatter = DateFormatter()
+            inputFormatter.dateFormat = "yyyy-MM-dd" // Формат, в котором приходит дата с сервера
+            
+            let outputFormatter = DateFormatter()
+            outputFormatter.dateFormat = "dd.MM.yyyy" // Желаемый формат отображения
+            
+            if let date = inputFormatter.date(from: birth) {
+                userTableViewData[2].value = outputFormatter.string(from: date)
+            } else {
+                userTableViewData[2].value = birth // fallback, если не удалось распарсить
+            }
         }
         switch (profileConfiguration.isSecret, profileConfiguration.fromGroupChat) {
         case (true, true):

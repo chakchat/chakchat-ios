@@ -58,7 +58,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func loadFirstMessages(completion: @escaping (Result<[MessageForKit], Error>) -> Void) {
         if let cd = chatData {
-            worker.loadFirstMessages(cd.chatID, 1, 100) { [weak self] result in
+            worker.loadFirstMessages(cd.chatID, 1, 200) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let data):
