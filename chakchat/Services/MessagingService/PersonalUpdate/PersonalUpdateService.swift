@@ -40,6 +40,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
             .responseDecodable(of: Updates.self) { response in
                 switch response.result {
                 case .success(let model):
+                    print(model)
                     completion(.success(model))
                 case .failure(let error):
                     completion(.failure(error))

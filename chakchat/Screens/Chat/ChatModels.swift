@@ -9,17 +9,25 @@ import UIKit
 import MessageKit
 import DifferenceKit
 
+protocol MessageStatusProtocol {
+    var sender: SenderType { get }
+    var sentDate: Date { get }
+    var isEdited: Bool { get }
+    var status: MessageStatus { get }
+}
 
 struct SenderPerson: SenderType {
     let senderId: String
     let displayName: String
 }
 
-struct MessageForKit: MessageType {
+struct MessageForKit: MessageType, MessageStatusProtocol {
     let sender: SenderType
     let messageId: String
     let sentDate: Date
     let kind: MessageKind
+    var status: MessageStatus
+    var isEdited: Bool
     
     let chatID: UUID
     let updateID: Int64
@@ -37,9 +45,9 @@ enum ChatMessageContent {
 
 struct ChatTextContent {
     let text: String
-    let edited: ChatTextEditedContent?
-    let replyTo: Int64?
-    let reactions: [ChatReactionContent]?
+    var edited: ChatTextEditedContent?
+    var replyTo: Int64?
+    var reactions: [ChatReactionContent]?
 }
 
 struct ChatFileContent {
@@ -125,11 +133,13 @@ struct ImageMediaItem: MediaItem {
     }
 }
 
-struct OutgoingMessage: MessageType {
+struct OutgoingMessage: MessageType, MessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
     var kind: MessageKind
+    var isEdited: Bool
+    var status: MessageStatus
     
     let text: String
     let replyTo: Int64?
@@ -138,4 +148,12 @@ struct OutgoingMessage: MessageType {
 struct DeleteKind {
     let deleteMessageID: Int64
     let deleteMode: DeleteMode
+}
+
+enum MessageStatus: String {
+    case sending = "Sending"
+    case sent = "✓"
+    case read = "✓✓"
+    case error = "!"
+    case edited = "upd"
 }
