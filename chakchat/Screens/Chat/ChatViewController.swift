@@ -45,8 +45,15 @@ final class ChatViewController: MessagesViewController {
             newChatAlert.isHidden = true
         }
     }
+    private var editingMessageID: String?
     private var deleteForAll: [MessageType] = []
     private var deleteForSender: [MessageType] = []
+    
+    private let formatter: DateFormatter = {
+      let formatter = DateFormatter()
+      formatter.dateStyle = .medium
+      return formatter
+    }()
     
     private var isPollingActive = false
     
@@ -62,6 +69,7 @@ final class ChatViewController: MessagesViewController {
     
     override func viewDidLoad() {
         messagesCollectionView.register(EmptyCell.self, forCellWithReuseIdentifier: "EmptyCell")
+        messagesCollectionView.register(MessageMenuButtonCell.self)
         super.viewDidLoad()
         interactor.loadFirstMessages { [weak self] result in
             guard let self = self else { return }
@@ -91,8 +99,13 @@ final class ChatViewController: MessagesViewController {
                 break
             case .reaction(_):
                 break
-            case .textEdited(_):
-                break
+            case .textEdited(let editedContent):
+                if let index = messages.firstIndex(where: {$0.messageId == String(editedContent.messageID)}) {
+                    guard var message = messages[index] as? MessageForKit else { return }
+                    message.isEdited = true
+                    messages[index] = message
+                    messagesCollectionView.reloadData()
+                }
             case .deleted(let chatDeletedUpdateContent):
                 if chatDeletedUpdateContent.deleteMode == .DeleteModeForAll {
                     deleteForAll.append(update)
@@ -309,6 +322,18 @@ final class ChatViewController: MessagesViewController {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
             layout.textMessageSizeCalculator.incomingAvatarSize = .zero
+            layout
+              .setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(
+                textAlignment: .right,
+                textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
+            layout
+              .setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(
+                textAlignment: .right,
+                textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
+            layout
+              .setMessageIncomingMessageTopLabelAlignment(LabelAlignment(
+                textAlignment: .left,
+                textInsets: UIEdgeInsets(top: 0, left: 18, bottom: 17.5, right: 0)))
         }
     }
     
@@ -455,6 +480,16 @@ final class ChatViewController: MessagesViewController {
         return messagesCollectionView.indexPathsForVisibleItems.contains(lastIndexPath)
     }
     
+    func isPreviousMessageSameSender(at indexPath: IndexPath) -> Bool {
+        guard indexPath.section - 1 >= 0 else { return false }
+        return messages[indexPath.section].sender.senderId == messages[indexPath.section - 1].sender.senderId
+    }
+    
+    func isNextMessageSameSender(at indexPath: IndexPath) -> Bool {
+        guard indexPath.section + 1 < messages.count else { return false }
+        return messages[indexPath.section].sender.senderId == messages[indexPath.section + 1].sender.senderId
+    }
+    
     private func showEmptyDisclaimer() {
         let disclaimer = UIAlertController(title: "You input empty key", message: "Try input key again", preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
@@ -538,9 +573,119 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         avatarView.isHidden = true
     }
     
-    func messageStyle(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
-        let tailCorner: MessageStyle.TailCorner = isFromCurrentSender(message: message) ? .bottomRight : .bottomLeft
-        return .bubbleTail(tailCorner, .curved)
+    func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
+      isFromCurrentSender(message: message) ? .white : .darkText
+    }
+    
+    
+    func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
+        return isFromCurrentSender(message: message)
+        ? UIColor(red: 0.25, green: 0.44, blue: 0.89, alpha: 1.0)
+        : UIColor.systemGray5 
+    }
+    
+    func messageBottomLabelAttributedText(for message: any MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        guard let message = message as? MessageStatusProtocol else { return nil}
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        let dateString = dateFormatter.string(from: message.sentDate)
+        
+        let attributedString = NSMutableAttributedString(string: dateString)
+        
+        if message.sender.senderId == curUser.senderId {
+            let statusText: String
+            switch message.status {
+            case .read:  statusText = " • read"
+            case .sent: statusText = " • sent"
+            case .error: statusText = " • failed ❗"
+            case .edited: statusText = " • edited"
+            case .sending: statusText = " • sending"
+            }
+            attributedString.append(NSAttributedString(string: statusText))
+        }
+        
+        if message.isEdited {
+            attributedString.append(NSAttributedString(string: " • edited"))
+        }
+        
+        let baseColor: UIColor = (message.status == .error) ? .systemRed : .lightGray
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 10),
+            .foregroundColor: baseColor
+        ]
+        attributedString.addAttributes(attributes, range: NSRange(location: 0, length: attributedString.length))
+        
+        return attributedString
+    }
+    
+    func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
+        let tail: MessageStyle.TailStyle = .pointedEdge
+        if isFromCurrentSender(message: message) {
+            return MessageStyle.bubbleTail(.bottomRight, tail)
+        } else {
+            return MessageStyle.bubbleTail(.bottomLeft, tail)
+        }
+    }
+    
+    func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return 18
+        }
+        return 0
+    }
+
+    func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+      0
+    }
+
+    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if isFromCurrentSender(message: message) {
+            return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
+        } else {
+            return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
+        }
+    }
+
+    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 10
+        
+    }
+    
+    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return NSAttributedString(
+                string: MessageKitDateFormatter.shared.string(from: message.sentDate),
+                attributes: [
+                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                ])
+        }
+        return nil
+    }
+    
+    func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
+        guard indexPath.section > 0 else { return true }
+        
+        let previousMessage = messages[indexPath.section - 1]
+        
+        return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
+    }
+
+    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
+        nil
+    }
+    
+
+    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
+      nil
+    }
+    
+    func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
+        if isFromCurrentSender(message: message) {
+            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16))
+        } else {
+            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
+        }
     }
 }
 
@@ -607,56 +752,90 @@ extension ChatViewController: MessageCellDelegate {
         button.menu = UIMenu(children: [
             subMenu,
             UIAction(title: "Edit message") { [weak self] _ in
-                let alert = UIAlertController(title: "Зачем так делать?", message: "Логика редактирования сообщения еще не присутствует понимаешь, так что не нажимай больше на эту кнопку хорошо? Спасибо...", preferredStyle: .actionSheet)
-                let cancel = UIAlertAction(title: "Ну окей...", style: .cancel)
-                alert.addAction(cancel)
-                self?.navigationController?.present(alert, animated: true)
+                guard let indexPath = self?.messagesCollectionView.indexPath(for: cell) else { return }
+                let message = self?.messages[indexPath.section]
+                if case .text(let text) = message?.kind {
+                    self?.messageInputBar.inputTextView.text = text
+                    self?.editingMessageID = message?.messageId
+                    self?.messageInputBar.inputTextView.becomeFirstResponder()
+                }
             }
         ])
         button.sendActions(for: .menuActionTriggered)
     }
 }
 
-extension ChatViewController: MessageLabelDelegate {
-    func messageLabel(_ label: MessageLabel, didConfigureFor message: MessageType, at indexPath: IndexPath) {
-        if let message = message as? MessageForKit {
-            if case .text(let textContent) = message.content {
-                if textContent.edited != nil {
-                    let attributed = NSMutableAttributedString(string: textContent.text, attributes: [
-                        .font: UIFont.systemFont(ofSize: 16),
-                        .foregroundColor: UIColor.label
-                    ])
-
-                    let editedSuffix = NSAttributedString(string: " (отредактировано)", attributes: [
-                        .font: UIFont.systemFont(ofSize: 12),
-                        .foregroundColor: UIColor.gray
-                    ])
-                    attributed.append(editedSuffix)
-                    label.attributedText = attributed
-                }
-            }
-        }
-    }
-}
-
 extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        let outgoingMessage = OutgoingMessage(
-            sender: curUser,
-            messageId: UUID().uuidString,
-            sentDate: Date(),
-            kind: .text(text),
-            text: text,
-            replyTo: nil
-        )
-        newChatAlert.isHidden = true
-        messages.append(outgoingMessage)
-        inputBar.inputTextView.text = ""
-        messagesCollectionView.insertSections([messages.count - 1])
-        interactor.sendTextMessage(text) { [weak self] isSent in
-            guard let self = self else { return }
-            if let index = self.messages.firstIndex(where: {$0.messageId == outgoingMessage.messageId}) {
-                self.messagesCollectionView.reloadItems(at: [IndexPath(item: index, section: 0)])
+        if let messageID = editingMessageID {
+            guard let index = messages.firstIndex(where: { $0.messageId == messageID}) else { return }
+            let oldMessageToEdit = messages[index]
+            
+            if case .text(let oldText) = oldMessageToEdit.kind {
+                if text == oldText {
+                    messagesCollectionView.reloadData()
+                } else {
+                    let textMessage = OutgoingMessage(
+                        sender: curUser,
+                        messageId: messageID,
+                        sentDate: oldMessageToEdit.sentDate,
+                        kind: .text(text),
+                        isEdited: true,
+                        status: .sending,
+                        text: text,
+                        replyTo: nil
+                    )
+                    
+                    messages[index] = textMessage
+                    
+                    self.messagesCollectionView.performBatchUpdates({
+                        messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    }, completion: nil)
+                    
+                    inputBar.inputTextView.text = ""
+                    
+                    interactor.editTextMessage(Int64(messageID) ?? 0, text) { [weak self] isEdited in
+                        DispatchQueue.main.async {
+                            guard let self = self else { return }
+                            if let index = self.messages.firstIndex(where: {$0.messageId == messageID}) {
+                                let editedMessage = self.messages[index]
+                                guard var editedMessage = editedMessage as? OutgoingMessage else { return }
+                                editedMessage.status = isEdited ? .sent : .error
+                                editedMessage.isEdited = isEdited ? true : false
+                                self.messages[index] = isEdited ? editedMessage : oldMessageToEdit
+                                self.messagesCollectionView.reloadSections([index])
+                            }
+                            self.editingMessageID = nil
+                        }
+                    }
+                }
+            }
+            
+        } else {
+            let outgoingMessage = OutgoingMessage(
+                sender: curUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(),
+                kind: .text(text),
+                isEdited: false,
+                status: .sending,
+                text: text,
+                replyTo: nil
+            )
+            newChatAlert.isHidden = true
+            messages.append(outgoingMessage)
+            inputBar.inputTextView.text = ""
+            messagesCollectionView.insertSections([messages.count - 1])
+            messagesCollectionView.reloadData()
+            interactor.sendTextMessage(text) { [weak self] isSent in
+                guard let self = self else { return }
+                if let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) {
+                    if var message = self.messages[index] as? OutgoingMessage {
+                        message.status = isSent ? .sent : .error
+                        self.messages[index] = message
+                        self.messagesCollectionView.reloadSections([index])
+                    }
+                }
             }
         }
         messagesCollectionView.scrollToLastItem(animated: true)
@@ -689,3 +868,17 @@ extension UIColor {
 }
 
 final class EmptyCell: UICollectionViewCell {}
+
+class MessageMenuButtonCell: MessageContentCell {
+    var messageButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.showsMenuAsPrimaryAction = true
+        return button
+    }()
+    
+    override func setupSubviews() {
+        super.setupSubviews()
+        messageContainerView.addSubview(messageButton)
+    }
+}
