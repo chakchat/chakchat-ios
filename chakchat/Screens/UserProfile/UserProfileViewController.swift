@@ -90,15 +90,15 @@ final class UserProfileViewController: UIViewController {
         
         if let birth = userData.dateOfBirth {
             let inputFormatter = DateFormatter()
-            inputFormatter.dateFormat = "yyyy-MM-dd" // Формат, в котором приходит дата с сервера
+            inputFormatter.dateFormat = "yyyy-MM-dd"
             
             let outputFormatter = DateFormatter()
-            outputFormatter.dateFormat = "dd.MM.yyyy" // Желаемый формат отображения
+            outputFormatter.dateFormat = "dd.MM.yyyy"
             
             if let date = inputFormatter.date(from: birth) {
                 userTableViewData[2].value = outputFormatter.string(from: date)
             } else {
-                userTableViewData[2].value = birth // fallback, если не удалось распарсить
+                userTableViewData[2].value = birth
             }
         }
         switch (profileConfiguration.isSecret, profileConfiguration.fromGroupChat) {
@@ -148,6 +148,48 @@ final class UserProfileViewController: UIViewController {
             optionsMenu = UIMenu(title: LocalizationManager.shared.localizedString(for: "choose_option"), children: [blockAction, deleteAction])
             setMenu(optionsMenu)
         }
+    }
+    
+    func updateBlockStatus(isBlock: Bool) {
+        if isBlock {
+            let unblockAction = UIAction(
+                title: LocalizationManager.shared.localizedString(for: "unblock_chat"),
+                image: UIImage(systemName: "lock.open.fill")
+            ) { _ in
+                self.unblockChat()
+            }
+            let deleteAction = UIAction(
+                title: LocalizationManager.shared.localizedString(for: "delete_chat"),
+                image: UIImage(systemName: "trash.fill"),
+                attributes: .destructive
+            ) { _ in
+                self.showBlockDeletion()
+            }
+            optionsMenu = UIMenu(
+                title: LocalizationManager.shared.localizedString(for: "choose_option"),
+                children: [unblockAction, deleteAction]
+            )
+        } else {
+            let blockAction = UIAction(
+                title: LocalizationManager.shared.localizedString(for: "block_chat"),
+                image: UIImage(systemName: "lock.fill")
+            ) { _ in
+                self.showBlockConfirmation()
+            }
+            let deleteAction = UIAction(
+                title: LocalizationManager.shared.localizedString(for: "delete_chat"),
+                image: UIImage(systemName: "trash.fill"),
+                attributes: .destructive
+            ) { _ in
+                self.showBlockDeletion()
+            }
+            optionsMenu = UIMenu(
+                title: LocalizationManager.shared.localizedString(for: "choose_option"),
+                children: [blockAction, deleteAction]
+            )
+        }
+        
+        setMenu(optionsMenu)
     }
     
     func passBlock() {

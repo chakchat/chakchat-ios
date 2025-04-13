@@ -35,7 +35,7 @@ protocol UserProfilePresentationLogic {
     )
     func passBlocked()
     func passUnblocked()
-    
+    func updateBlockStatus(isBlock: Bool)
     func showFailDisclaimer()
 }
 
