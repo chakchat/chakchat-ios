@@ -31,4 +31,8 @@ final class UserProfilePresenter: UserProfilePresentationLogic {
     func showFailDisclaimer() {
         view?.showFailDisclaimer()
     }
+    
+    func updateBlockStatus(isBlock: Bool) {
+        view?.updateBlockStatus(isBlock: isBlock)
+    }
 }

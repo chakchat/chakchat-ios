@@ -242,7 +242,6 @@ final class ChatViewController: MessagesViewController {
         } else {
             let colors = [
                 UIColor(hex: "ffffff") ?? Colors.background,
-                UIColor(hex: "ffffff") ?? Colors.background,
                 UIColor(hex: "ffe3b4") ?? Colors.background,
                 UIColor(hex: "ffc768") ?? Colors.background,
                 UIColor(hex: "ffb09c") ?? Colors.background,
@@ -341,20 +340,14 @@ final class ChatViewController: MessagesViewController {
     private func configureInputBar() {
         messageInputBar = CameraInputBarAccessoryView()
         messageInputBar.delegate = self
-        messageInputBar.inputTextView.tintColor = .blue
-        messageInputBar.sendButton.setTitleColor(.blue, for: .normal)
-        messageInputBar.sendButton.setTitleColor(
-            UIColor.blue.withAlphaComponent(0.3),
-            for: .highlighted)
         
         messageInputBar.isTranslucent = true
         messageInputBar.separatorLine.isHidden = true
-        messageInputBar.inputTextView.tintColor = .blue
-        messageInputBar.inputTextView.backgroundColor = UIColor(red: 245 / 255, green: 245 / 255, blue: 245 / 255, alpha: 1)
+        messageInputBar.inputTextView.backgroundColor = Colors.inputBar
         messageInputBar.inputTextView.placeholderTextColor = UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
         messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 36)
         messageInputBar.inputTextView.placeholderLabelInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 36)
-        messageInputBar.inputTextView.layer.borderColor = UIColor(red: 200 / 255, green: 200 / 255, blue: 200 / 255, alpha: 1).cgColor
+        messageInputBar.inputTextView.layer.borderColor = Colors.inputBarBorder.cgColor
         messageInputBar.inputTextView.layer.borderWidth = 1
         messageInputBar.inputTextView.layer.cornerRadius = 16
         messageInputBar.inputTextView.layer.masksToBounds = true
@@ -365,12 +358,11 @@ final class ChatViewController: MessagesViewController {
     
     private func configureInputBarItems() {
         messageInputBar.setRightStackViewWidthConstant(to: 36, animated: false)
-        messageInputBar.sendButton.imageView?.backgroundColor = UIColor(white: 0.85, alpha: 1)
-        messageInputBar.sendButton.contentEdgeInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
+        messageInputBar.sendButton.imageView?.backgroundColor = Colors.disableButton
         messageInputBar.sendButton.setSize(CGSize(width: 36, height: 36), animated: false)
         messageInputBar.sendButton.image = #imageLiteral(resourceName: "ic_up")
         messageInputBar.sendButton.title = nil
-        messageInputBar.sendButton.imageView?.layer.cornerRadius = 16
+        messageInputBar.sendButton.imageView?.layer.cornerRadius = 18
         let charCountButton = InputBarButtonItem()
             .configure {
                 $0.title = "0/2000"
@@ -402,7 +394,7 @@ final class ChatViewController: MessagesViewController {
                 })
             }.onDisabled { item in
                 UIView.animate(withDuration: 0.3, animations: {
-                    item.imageView?.backgroundColor = UIColor(white: 0.85, alpha: 1)
+                    item.imageView?.backgroundColor = Colors.disableButton
                 })
             }
     }
@@ -575,14 +567,13 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
-      isFromCurrentSender(message: message) ? .white : .darkText
+        return .black
     }
-    
     
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
         return isFromCurrentSender(message: message)
-        ? UIColor(red: 0.25, green: 0.44, blue: 0.89, alpha: 1.0)
-        : UIColor.systemGray5 
+        ? Colors.messageColor
+        : Colors.messageColor
     }
     
     func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
@@ -702,12 +693,65 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         return attributedString
     }
     
-    func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
+    func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
+        let tail: MessageStyle.TailStyle = .pointedEdge
         if isFromCurrentSender(message: message) {
-            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16))
+            return MessageStyle.bubbleTail(.bottomRight, tail)
         } else {
-            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
+            return MessageStyle.bubbleTail(.bottomLeft, tail)
         }
+    }
+    
+    func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return 18
+        }
+        return 0
+    }
+
+    func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+      0
+    }
+
+    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if isFromCurrentSender(message: message) {
+            return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
+        } else {
+            return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
+        }
+    }
+
+    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 21 : 15
+    }
+    
+    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return NSAttributedString(
+                string: MessageKitDateFormatter.shared.string(from: message.sentDate),
+                attributes: [
+                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                ])
+        }
+        return nil
+    }
+    
+    func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
+        guard indexPath.section > 0 else { return true }
+        
+        let previousMessage = messages[indexPath.section - 1]
+        
+        return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
+    }
+
+    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
+        nil
+    }
+    
+
+    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
+      nil
     }
 }
 
