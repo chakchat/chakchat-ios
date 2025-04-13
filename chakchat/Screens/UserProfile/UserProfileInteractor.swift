@@ -90,6 +90,7 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                     _ = self.errorHandler.handleError(failure)
                     os_log("Failed to block chat with %@", log: self.logger, type: .fault, chatID as CVarArg)
                     print(failure)
+                    self.presenter.updateBlockStatus(isBlock: true)
                 }
             }
         }

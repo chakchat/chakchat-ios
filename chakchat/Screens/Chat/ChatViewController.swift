@@ -119,7 +119,7 @@ final class ChatViewController: MessagesViewController {
         curUser = SenderPerson(senderId: myID.uuidString, displayName: userData.name)
         if let cd = chatData {
             if case .personal(let info) = cd.info {
-                if let blockedBy = info.blockedBy {
+                if ((info.blockedBy?.isEmpty) != nil) {
                     configureBlockInputBar()
                 } else {
                     configureInputBar()
@@ -239,7 +239,7 @@ final class ChatViewController: MessagesViewController {
         configureNicknameLabel()
         configureNewChatAlert()
         configureMessagesCollectionView()
-        configureBlockInputBar()
+        configureInputBar()
     }
     
     private func configureBackground() {
