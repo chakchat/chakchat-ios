@@ -36,4 +36,11 @@ enum Colors {
     static let picker: UIColor = UIColor(named: "PickerColor") ?? .tertiaryLabel
     // Used for user buttons
     static let userButtons: UIColor = UIColor(named: "UserButtonColor") ?? .systemGray6
+    // Used as messageViewBackground
+    static let messageColor: UIColor = UIColor(named: "MessageColor") ?? .white
+    // Used as messageInputBarBackground
+    static let inputBar: UIColor = UIColor(named: "InputMessageBarColor") ?? .white
+    
+    static let disableButton: UIColor = UIColor(named: "DisabledSendButtonColor") ?? .white
+    static let inputBarBorder: UIColor = UIColor(named: "InputBarBorderColor") ?? .white
 }
