@@ -108,15 +108,15 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    func sendTextMessage(_ message: String, completion: @escaping (Bool) -> Void)  {
+    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)  {
         if chatData == nil {
             createChat(userData.id) { [weak self] in
-                self?.send(message) { isSent in
+                self?.send(message, replyTo) { isSent in
                     completion(isSent)
                 }
             }
         } else {
-            send(message) { isSent in
+            send(message, replyTo) { isSent in
                 completion(isSent)
             }
         }
@@ -211,9 +211,9 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    private func send(_ message: String, completion: @escaping (Bool) -> Void) {
+    private func send(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
         guard let cd = chatData else { return }
-        worker.sendTextMessage(cd.chatID, message) { [weak self] result in
+        worker.sendTextMessage(cd.chatID, message, replyTo) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {

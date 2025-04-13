@@ -41,7 +41,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         subscribeToEvents()
     }
     
-    func sendTextMessage(_ message: String, completion: @escaping (Bool) -> Void) {
+    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
         worker.sendTextMessage(message)
     }
     

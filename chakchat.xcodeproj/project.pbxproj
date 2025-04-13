@@ -63,6 +63,7 @@
 		AA2781E52D80AB350049ACAF /* ChatsModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = AA2781E32D80AB350049ACAF /* ChatsModel.xcdatamodeld */; };
 		AA2781EB2D80FC380049ACAF /* DeletedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */; };
 		AA2781EF2D8112F50049ACAF /* BlockedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */; };
+		AA5758902DAC002200CC3331 /* UIReplyPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA57588F2DAC002200CC3331 /* UIReplyPreviewView.swift */; };
 		AA5F718D2DA3FA2200BC12AA /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F718C2DA3FA2200BC12AA /* MessageKit */; };
 		AA5F718F2DA3FE5A00BC12AA /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */; };
 		AA5F71952DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */; };
@@ -401,6 +402,7 @@
 		AA2781E42D80AB350049ACAF /* ChatsModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ChatsModel.xcdatamodel; sourceTree = "<group>"; };
 		AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedChatEvent.swift; sourceTree = "<group>"; };
 		AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedChatEvent.swift; sourceTree = "<group>"; };
+		AA57588F2DAC002200CC3331 /* UIReplyPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIReplyPreviewView.swift; sourceTree = "<group>"; };
 		AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 		AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICameraInputBarAccessoryView.swift; sourceTree = "<group>"; };
 		AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHiddenMessageCellSizeCalculator.swift; sourceTree = "<group>"; };
@@ -1088,6 +1090,7 @@
 				E14CFF402DA1395000B3A971 /* ChatBackgroundGradientView.swift */,
 				AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */,
 				AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */,
+				AA57588F2DAC002200CC3331 /* UIReplyPreviewView.swift */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -2043,6 +2046,7 @@
 				AA84F03D2D4CD86F00678ABA /* OnlineVisibilityScreenInteractor.swift in Sources */,
 				E19609FD2D627E9B008E27C0 /* FileStorageService.swift in Sources */,
 				AA9B62A32D33D6B50064CB23 /* ErrorHandler.swift in Sources */,
+				AA5758902DAC002200CC3331 /* UIReplyPreviewView.swift in Sources */,
 				AA7BADE52D3F9F220030AC82 /* ChatsScreenProtocols.swift in Sources */,
 				AAA839E22D62522F00C870A4 /* FileStorageEndpoints.swift in Sources */,
 				AA9B627B2D3004850064CB23 /* SignupWorker.swift in Sources */,
