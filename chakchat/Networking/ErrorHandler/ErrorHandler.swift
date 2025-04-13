@@ -49,7 +49,7 @@ final class ErrorHandler: ErrorHandlerLogic {
         return ErrorId(message: serverErrorMessage, type: ErrorOutput.Alert)
     }
     
-    func handleExpiredRefreshToken() {
+    func handleRefreshTokenError() {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {
             print("Can't load accessToken, missing probably")
             return
@@ -165,6 +165,7 @@ final class ErrorHandler: ErrorHandlerLogic {
             
         case ApiErrorType.refreshTokenInvalidated.rawValue:
             print("Error: Session invalidated. Please log in again.")
+            handleRefreshTokenError()
             return ErrorId(message: serverErrorMessage, type: ErrorOutput.Alert)
             
         case ApiErrorType.invalidToken.rawValue:

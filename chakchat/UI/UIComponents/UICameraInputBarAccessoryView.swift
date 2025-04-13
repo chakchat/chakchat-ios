@@ -67,8 +67,8 @@ class CameraInputBarAccessoryView: InputBarAccessoryView, CropViewControllerDele
         InputBarButtonItem()
             .configure {
                 $0.spacing = .fixed(10)
-                $0.image = UIImage(systemName: "camera.fill")?.withRenderingMode(.alwaysTemplate)
-                $0.setSize(CGSize(width: 30, height: 30), animated: false)
+                $0.image = UIImage(systemName: "paperclip")?.withRenderingMode(.alwaysTemplate)
+                $0.setSize(CGSize(width: 35, height: 35), animated: false)
             }.onSelected {
                 $0.tintColor = .systemBlue
             }.onDeselected {

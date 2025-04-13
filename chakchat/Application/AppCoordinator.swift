@@ -93,7 +93,7 @@ final class AppCoordinator {
                 case .failure(let failure):
                     if let error = failure as? APIErrorResponse,
                        error.errorType == ApiErrorType.refreshTokenExpired.rawValue {
-                        self.signupContext.errorHandler.handleExpiredRefreshToken()
+                        self.signupContext.errorHandler.handleRefreshTokenError()
                     }
                     completion(false)
                 }

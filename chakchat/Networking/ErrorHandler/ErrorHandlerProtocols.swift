@@ -10,5 +10,5 @@ import Foundation
 // MARK: - ErrorHandlerProtocols
 protocol ErrorHandlerLogic {
     func handleError(_ error: Error) -> ErrorId
-    func handleExpiredRefreshToken()
+    func handleRefreshTokenError()
 }
