@@ -62,10 +62,9 @@ final class ChatInteractor: ChatBusinessLogic {
                 guard let self = self else { return }
                 switch result {
                 case .success(let data):
-                    let updates = self.mapToKit(data)
-                    //lastUpdateID = Int64(updates.count) + 1
-                    completion(.success(updates))
-                    print(updates)
+                    let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
+                    let mappedSortedUpdates = self.mapToKit(sortedUpdates)
+                    completion(.success(mappedSortedUpdates))
                 case .failure(let failure):
                     completion(.failure(failure))
                     print(failure)
@@ -76,34 +75,6 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func loadMoreMessages() {
         worker.loadMoreMessages()
-    }
-    
-    
-    private func mapToKit(_ updates: [UpdateData]) -> [MessageForKit] {
-        var mappedUpdates: [MessageForKit] = []
-        for update in updates {
-            if case .textContent(let textContent) = update.content {
-                let mappedUpdate = MessageForKit(
-                    text: textContent.text,
-                    sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-                    messageId: String(update.updateID),
-                    date: update.createdAt,
-                    updateType: update.type
-                )
-                mappedUpdates.append(mappedUpdate)
-            }
-            if case .deletedContent(let deletedContent) = update.content {
-                let mappedUpdate = MessageForKit(
-                    deleteText: "MESSAGE_DELETED\(deletedContent.deletedID)",
-                    sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-                    deleteMessageId: String(deletedContent.deletedID),
-                    date: update.createdAt,
-                    updateType: update.type,
-                    deleteMode: deletedContent.deletedMode
-                )
-            }
-        }
-        return mappedUpdates
     }
         
     // MARK: - Public Methods
@@ -281,5 +252,145 @@ final class ChatInteractor: ChatBusinessLogic {
             let profileConfiguration = ProfileConfiguration(isSecret: false, fromGroupChat: false)
             onRouteToProfile?(userData, nil, profileConfiguration)
         }
+    }
+    
+    private func mapToKit(_ updates: [UpdateData]) -> [MessageForKit] {
+        var mappedUpdates: [MessageForKit] = []
+        for update in updates {
+            switch update.type {
+            case .textMessage:
+                if case .textContent(let textContent) = update.content {
+                    var edited: ChatTextEditedContent?
+                    var reactions: [ChatReactionContent]?
+                    if let editedC = textContent.edited {
+                        if case .editedContent(let editedContent) = editedC.content {
+                            let mappedEditedContent = ChatTextEditedContent(
+                                newText: editedContent.newText,
+                                messageID: editedContent.messageID
+                            )
+                            edited = mappedEditedContent
+                        }
+                    }
+                    if let reactionsC = textContent.reactions {
+                        var mappedReactions: [ChatReactionContent] = []
+                        for reaction in reactionsC {
+                            if case .reactionContent(let reactionContent) = reaction.content {
+                                let mappedReaction = ChatReactionContent(
+                                    reaction: reactionContent.reaction,
+                                    messageID: reactionContent.messageID
+                                )
+                                mappedReactions.append(mappedReaction)
+                            }
+                        }
+                        reactions = mappedReactions
+                    }
+                    
+                    let mappedTextContent = ChatTextContent(
+                        text: textContent.text,
+                        edited: edited,
+                        replyTo: textContent.replyTo,
+                        reactions: reactions
+                    )
+                    let mappedTextUpdate = MessageForKit(
+                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .text(edited?.newText ?? textContent.text),
+                        status: .sent,
+                        isEdited: false,
+                        chatID: update.chatID,
+                        updateID: update.updateID,
+                        contentType: .text,
+                        content: .text(mappedTextContent)
+                    )
+                    mappedUpdates.append(mappedTextUpdate)
+                }
+            case .textEdited:
+                if case .editedContent(let editedContent) = update.content {
+                    let mappedTextEditContent = ChatTextEditedContent(
+                        newText: editedContent.newText,
+                        messageID: editedContent.messageID
+                    )
+                    let mappedTextEditUpdate = MessageForKit(
+                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .text(editedContent.newText),
+                        status: .edited,
+                        isEdited: true,
+                        chatID: update.chatID,
+                        updateID: update.updateID,
+                        contentType: .textEdited,
+                        content: .textEdited(mappedTextEditContent)
+                    )
+                    mappedUpdates.append(mappedTextEditUpdate)
+                }
+            case .file: // пока что не поддерживается
+                if case .fileContent(let fileContent) = update.content {
+                    let mappedFileContent = ChatFileContent(
+                        fileID: fileContent.fileID,
+                        fileName: fileContent.fileName,
+                        mimeType: fileContent.mimeType,
+                        fileSize: fileContent.fileSize,
+                        fileURL: fileContent.fileURL,
+                        createdAt: fileContent.createdAt
+                    )
+                    let mappedFileUpdate = MessageForKit(
+                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .text(""),
+                        status: .sent,
+                        isEdited: false,
+                        chatID: update.chatID,
+                        updateID: update.updateID,
+                        contentType: .file,
+                        content: .file(mappedFileContent)
+                    )
+                    mappedUpdates.append(mappedFileUpdate)
+                }
+            case .reaction:
+                if case .reactionContent(let reactionContent) = update.content  {
+                    let mappedReactionContent = ChatReactionContent(
+                        reaction: reactionContent.reaction,
+                        messageID: reactionContent.messageID
+                    )
+                    let mappedReactionUpdate = MessageForKit(
+                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .emoji(mappedReactionContent.reaction),
+                        status: .sent,
+                        isEdited: false,
+                        chatID: update.chatID,
+                        updateID: update.updateID,
+                        contentType: .reaction,
+                        content: .reaction(mappedReactionContent)
+                    )
+                    mappedUpdates.append(mappedReactionUpdate)
+                }
+            case .delete:
+                if case .deletedContent(let deletedContent) = update.content {
+                    let mappedDeletedContent = ChatDeletedUpdateContent(
+                        deletedID: deletedContent.deletedID,
+                        deleteMode: deletedContent.deletedMode
+                    )
+                    let mappedDeletedUpdate = MessageForKit(
+                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .custom(DeleteKind(deleteMessageID: deletedContent.deletedID, deleteMode: deletedContent.deletedMode)),
+                        status: .sent,
+                        isEdited: false,
+                        chatID: update.chatID,
+                        updateID: update.updateID,
+                        contentType: .deleted,
+                        content: .deleted(mappedDeletedContent)
+                    )
+                    mappedUpdates.append(mappedDeletedUpdate)
+                }
+            }
+        }
+        return mappedUpdates
     }
 }

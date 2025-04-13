@@ -40,11 +40,21 @@ final class ChatViewController: MessagesViewController {
     
     private var curUser: SenderPerson = SenderPerson(senderId: UUID().uuidString, displayName: "temp")
     
-    private var messages: [MessageForKit] = [] {
+    private var messages: [MessageType] = [] {
         didSet {
             newChatAlert.isHidden = true
         }
     }
+    private var editingMessageID: String?
+    private var deleteForAll: [MessageType] = []
+    private var deleteForSender: [MessageType] = []
+    
+    private let formatter: DateFormatter = {
+      let formatter = DateFormatter()
+      formatter.dateStyle = .medium
+      return formatter
+    }()
+    
     private var isPollingActive = false
     
     // MARK: - Initialization
@@ -58,24 +68,90 @@ final class ChatViewController: MessagesViewController {
     }
     
     override func viewDidLoad() {
+        messagesCollectionView.register(EmptyCell.self, forCellWithReuseIdentifier: "EmptyCell")
+        messagesCollectionView.register(MessageMenuButtonCell.self)
         super.viewDidLoad()
         interactor.loadFirstMessages { [weak self] result in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 switch result {
                 case .success(let messages):
-                    self.handleNewMessages(messages)
+                    self.handleMessages(messages)
                 case .failure(_):
-                    print("CRY")
+                    break
                 }
             }
         }
         configureUI()
-//        let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-//        messagesCollectionView.addGestureRecognizer(tap1)
+        //        let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        //        messagesCollectionView.addGestureRecognizer(tap1)
         let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         newChatAlert.addGestureRecognizer(tap2)
         interactor.passUserData()
+    }
+    
+    private func handleMessages(_ updates: [MessageForKit]) {
+        for update in updates {
+            switch update.content {
+            case .text(_):
+                messages.append(update)
+            case .file(_):
+                break
+            case .reaction(_):
+                break
+            case .textEdited(let editedContent):
+                if let index = messages.firstIndex(where: {$0.messageId == String(editedContent.messageID)}) {
+                    guard var message = messages[index] as? MessageForKit else { return }
+                    message.isEdited = true
+                    messages[index] = message
+                    messagesCollectionView.reloadData()
+                }
+            case .deleted(let chatDeletedUpdateContent):
+                if chatDeletedUpdateContent.deleteMode == .DeleteModeForAll {
+                    deleteForAll.append(update)
+                } else {
+                    deleteForSender.append(update)
+                }
+            }
+        }
+        deleteForAll(deleteForAll)
+        deleteForSender(deleteForSender)
+        messagesCollectionView.reloadData()
+        messagesCollectionView.scrollToLastItem(animated: false)
+    }
+    
+    private func deleteForAll(_ messagesToDelete: [MessageType]) {
+        let messagesToDelete: [String] = messagesToDelete.compactMap { message in
+            if case .custom(let customData) = message.kind, let deleteKind = customData as? DeleteKind {
+                return String(deleteKind.deleteMessageID)
+            }
+            return nil
+        }
+        
+        messages = messages.filter { message in
+            if let m = message as? MessageForKit {
+                return !messagesToDelete.contains(m.messageId)
+            }
+            return true
+        }
+    }
+    
+    private func deleteForSender(_ messagesToDelete: [MessageType]) {
+        let messagesToDelete: [String] = messagesToDelete.compactMap { message in
+            if case .custom(let customData) = message.kind, let deleteKind = customData as? DeleteKind {
+                if message.sender.senderId == curUser.senderId {
+                    return String(deleteKind.deleteMessageID)
+                }
+            }
+            return nil
+        }
+        
+        messages = messages.filter { message in
+            if let m = message as? MessageForKit {
+                return !messagesToDelete.contains(m.messageId)
+            }
+            return true
+        }
     }
     
 //    override func viewWillAppear(_ animated: Bool) {
@@ -122,7 +198,7 @@ final class ChatViewController: MessagesViewController {
                 if ((info.blockedBy?.isEmpty) != nil) {
                     configureBlockInputBar()
                 } else {
-                    configureInputBar()
+                    inputBarType = .custom(messageInputBar)
                 }
             }
         }
@@ -141,95 +217,7 @@ final class ChatViewController: MessagesViewController {
         let ok = UIAlertAction(title: "OK", style: .default)
         failAllert.addAction(ok)
     }
-    
-    private func handleNewMessages(_ newMessages: [MessageForKit]) {
-        for message in newMessages {
-            switch message.updateType {
-            case .textMessage:
-                print(message)
-                self.messages.append(message)
-            case .textEdited:
-                break
-            case .file:
-                break
-            case .reaction:
-                break
-            case .delete:
-                if message.deleteMode == DeleteMode.DeleteModeForSender {
-                    if message.sender.senderId == curUser.senderId {
-                        guard let index = messages.firstIndex(where: { $0.messageId == message.messageId }) else {
-                            return
-                        }
-                        messages.remove(at: index)
-                        messagesCollectionView.performBatchUpdates({
-                            messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
-                        }, completion: nil)
-                    }
-                } else {
-                    guard let index = messages.firstIndex(where: { $0.messageId == message.messageId }) else {
-                        return
-                    }
-                    let changeset = StagedChangeset(
-                        source: messages,
-                        target: messages.enumerated().filter { $0.offset != index }.map { $0.element }
-                    )
-                    messagesCollectionView.reload(using: changeset) { updatedMessages in
-                        self.messages = updatedMessages
-                    }
-                }
-            }
-        }
-        self.messagesCollectionView.reloadData()
-        self.messagesCollectionView.scrollToLastItem(animated: false)
-    }
-    
-    private func removeMessageCompletely(deleteId: String) {
-        guard let index = messages.firstIndex(where: { $0.messageId == deleteId }) else {
-            return
-        }
-        
-        let changeset = StagedChangeset(
-            source: messages,
-            target: messages.enumerated().filter { $0.offset != index }.map { $0.element }
-        )
-        
-        applyChangesetWithAnimation(changeset: changeset, indexToAnimate: index)
-    }
-    
-    private func handleLocalDeletion(deleteId: String) {
-        guard let index = messages.firstIndex(where: { $0.messageId == deleteId }) else {
-            return
-        }
-        messages.remove(at: index)
-        messagesCollectionView.performBatchUpdates({
-            messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
-        }, completion: nil)
-        
-        if let cell = messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
-            UIView.animate(withDuration: 0.25) {
-                cell.alpha = 0
-                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-            }
-        }
-    }
-    
-    private func applyChangesetWithAnimation(changeset: StagedChangeset<[MessageForKit]>, indexToAnimate: Int) {
-        messagesCollectionView.reload(using: changeset) { updatedMessages in
-            self.messages = updatedMessages
-        }
-        let indexPath = IndexPath(item: indexToAnimate, section: 0)
-        if let cell = messagesCollectionView.cellForItem(at: indexPath) {
-            UIView.animate(withDuration: 0.3) {
-                cell.alpha = 0.5
-                cell.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-            } completion: { _ in
-                UIView.animate(withDuration: 0.2) {
-                    cell.transform = .identity
-                    cell.alpha = 1
-                }
-            }
-        }
-    }
+
     
     // MARK: - UI Configuration
     private func configureUI() {
@@ -239,7 +227,7 @@ final class ChatViewController: MessagesViewController {
         configureNicknameLabel()
         configureNewChatAlert()
         configureMessagesCollectionView()
-        configureInputBar()
+        configureBlockInputBar()
     }
     
     private func configureBackground() {
@@ -313,9 +301,7 @@ final class ChatViewController: MessagesViewController {
         newChatAlert.pinCenterX(view)
         newChatAlert.pinCenterY(view)
         newChatAlert.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.8).isActive = true
-        if !messages.isEmpty {
-            newChatAlert.isHidden = true
-        }
+        newChatAlert.isHidden = true // нужно придумать как исправить все баги
     }
     
     private func configureMessagesCollectionView() {
@@ -331,6 +317,18 @@ final class ChatViewController: MessagesViewController {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
             layout.textMessageSizeCalculator.incomingAvatarSize = .zero
+            layout
+              .setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(
+                textAlignment: .right,
+                textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
+            layout
+              .setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(
+                textAlignment: .right,
+                textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
+            layout
+              .setMessageIncomingMessageTopLabelAlignment(LabelAlignment(
+                textAlignment: .left,
+                textInsets: UIEdgeInsets(top: 0, left: 18, bottom: 17.5, right: 0)))
         }
     }
     
@@ -455,9 +453,8 @@ final class ChatViewController: MessagesViewController {
             }
     }
     
-    private func insertPhoto(_ message: MessageForKit) {
+    private func insertPhoto(_ message: MessageType) {
         messages.append(message)
-        // Reload last section to update header/footer labels and insert a new one
         messagesCollectionView.performBatchUpdates({
             messagesCollectionView.insertSections([messages.count - 1])
             if messages.count >= 2 {
@@ -476,6 +473,16 @@ final class ChatViewController: MessagesViewController {
         let lastIndexPath = IndexPath(item: 0, section: messages.count - 1)
         
         return messagesCollectionView.indexPathsForVisibleItems.contains(lastIndexPath)
+    }
+    
+    func isPreviousMessageSameSender(at indexPath: IndexPath) -> Bool {
+        guard indexPath.section - 1 >= 0 else { return false }
+        return messages[indexPath.section].sender.senderId == messages[indexPath.section - 1].sender.senderId
+    }
+    
+    func isNextMessageSameSender(at indexPath: IndexPath) -> Bool {
+        guard indexPath.section + 1 < messages.count else { return false }
+        return messages[indexPath.section].sender.senderId == messages[indexPath.section + 1].sender.senderId
     }
     
     private func showEmptyDisclaimer() {
@@ -541,6 +548,19 @@ extension ChatViewController: MessagesDataSource {
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
         return messages[indexPath.section]
     }
+    
+    func customCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell {
+        if case .custom(let custom) = message.kind {
+            if custom is DeleteKind {
+                return messagesCollectionView.dequeueReusableCell(withReuseIdentifier: "EmptyCell", for: indexPath)
+            }
+        }
+        return UICollectionViewCell() // будет ошибка но в этот кейс не зайдет
+    }
+    
+    func customCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
+        return HiddenMessageSizeCalculator(layout: messagesCollectionView.messagesCollectionViewFlowLayout)
+    }
 }
 
 extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
@@ -548,16 +568,126 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         avatarView.isHidden = true
     }
     
-    func messageStyle(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
-        let tailCorner: MessageStyle.TailCorner = isFromCurrentSender(message: message) ? .bottomRight : .bottomLeft
-        return .bubbleTail(tailCorner, .curved)
+    func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
+      isFromCurrentSender(message: message) ? .white : .darkText
+    }
+    
+    
+    func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
+        return isFromCurrentSender(message: message)
+        ? UIColor(red: 0.25, green: 0.44, blue: 0.89, alpha: 1.0)
+        : UIColor.systemGray5 
+    }
+    
+    func messageBottomLabelAttributedText(for message: any MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        guard let message = message as? MessageStatusProtocol else { return nil}
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        let dateString = dateFormatter.string(from: message.sentDate)
+        
+        let attributedString = NSMutableAttributedString(string: dateString)
+        
+        if message.sender.senderId == curUser.senderId {
+            let statusText: String
+            switch message.status {
+            case .read:  statusText = " • read"
+            case .sent: statusText = " • sent"
+            case .error: statusText = " • failed ❗"
+            case .edited: statusText = " • edited"
+            case .sending: statusText = " • sending"
+            }
+            attributedString.append(NSAttributedString(string: statusText))
+        }
+        
+        if message.isEdited {
+            attributedString.append(NSAttributedString(string: " • edited"))
+        }
+        
+        let baseColor: UIColor = (message.status == .error) ? .systemRed : .lightGray
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 10),
+            .foregroundColor: baseColor
+        ]
+        attributedString.addAttributes(attributes, range: NSRange(location: 0, length: attributedString.length))
+        
+        return attributedString
+    }
+    
+    func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
+        let tail: MessageStyle.TailStyle = .pointedEdge
+        if isFromCurrentSender(message: message) {
+            return MessageStyle.bubbleTail(.bottomRight, tail)
+        } else {
+            return MessageStyle.bubbleTail(.bottomLeft, tail)
+        }
+    }
+    
+    func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return 18
+        }
+        return 0
+    }
+
+    func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+      0
+    }
+
+    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if isFromCurrentSender(message: message) {
+            return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
+        } else {
+            return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
+        }
+    }
+
+    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 10
+        
+    }
+    
+    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return NSAttributedString(
+                string: MessageKitDateFormatter.shared.string(from: message.sentDate),
+                attributes: [
+                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                ])
+        }
+        return nil
+    }
+    
+    func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
+        guard indexPath.section > 0 else { return true }
+        
+        let previousMessage = messages[indexPath.section - 1]
+        
+        return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
+    }
+
+    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
+        nil
+    }
+    
+
+    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
+      nil
+    }
+    
+    func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
+        if isFromCurrentSender(message: message) {
+            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16))
+        } else {
+            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
+        }
     }
 }
 
 extension ChatViewController: MessageCellDelegate {
     func didTapMessage(in cell: MessageCollectionViewCell) {
         guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
-        let message = messages[indexPath.item]
+        let message = messages[indexPath.section]
         let button = UIButton(type: .system)
         cell.contentView.addSubview(button)
         button.frame = cell.bounds
@@ -568,19 +698,21 @@ extension ChatViewController: MessageCellDelegate {
                 guard let self = self else { return }
                 guard let deleteID = Int64(message.messageId) else { return }
                 self.interactor.deleteMessage(deleteID, .DeleteModeForAll) { result in
-                    if result {
-                        guard let index = self.messages.firstIndex(where: { $0.messageId == message.messageId }) else {
-                            return
-                        }
-                        self.messages.remove(at: index)
-                        self.messagesCollectionView.performBatchUpdates({
-                            self.messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
-                        }, completion: nil)
-                        
-                        if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
-                            UIView.animate(withDuration: 0.25) {
-                                cell.alpha = 0
-                                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                    DispatchQueue.main.async {
+                        if result {
+                            guard let index = self.messages.firstIndex(where: { $0.messageId == message.messageId }) else {
+                                return
+                            }
+                            self.messages.remove(at: index)
+                            self.messagesCollectionView.performBatchUpdates({
+                                self.messagesCollectionView.deleteSections(IndexSet(integer: index))
+                            }, completion: nil)
+                            
+                            if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
+                                UIView.animate(withDuration: 0.25) {
+                                    cell.alpha = 0
+                                    cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                                }
                             }
                         }
                     }
@@ -590,19 +722,21 @@ extension ChatViewController: MessageCellDelegate {
                 guard let self = self else { return }
                 guard let deleteID = Int64(message.messageId) else { return }
                 self.interactor.deleteMessage(deleteID, .DeleteModeForSender) { result in
-                    if result {
-                        guard let index = self.messages.firstIndex(where: { $0.messageId == message.messageId }) else {
-                            return
-                        }
-                        self.messages.remove(at: index)
-                        self.messagesCollectionView.performBatchUpdates({
-                            self.messagesCollectionView.deleteItems(at: [IndexPath(item: index, section: 0)])
-                        }, completion: nil)
-                        
-                        if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
-                            UIView.animate(withDuration: 0.25) {
-                                cell.alpha = 0
-                                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                    DispatchQueue.main.async {
+                        if result {
+                            guard let index = self.messages.firstIndex(where: { $0.messageId == message.messageId }) else {
+                                return
+                            }
+                            self.messages.remove(at: index)
+                            self.messagesCollectionView.performBatchUpdates({
+                                self.messagesCollectionView.deleteSections(IndexSet(integer: index))
+                            }, completion: nil)
+                            
+                            if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: index, section: 0)) {
+                                UIView.animate(withDuration: 0.25) {
+                                    cell.alpha = 0
+                                    cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                                }
                             }
                         }
                     }
@@ -613,36 +747,93 @@ extension ChatViewController: MessageCellDelegate {
         button.menu = UIMenu(children: [
             subMenu,
             UIAction(title: "Edit message") { [weak self] _ in
-                let alert = UIAlertController(title: "Зачем так делать?", message: "Логика редактирования сообщения еще не присутствует понимаешь, так что не нажимай больше на эту кнопку хорошо? Спасибо...", preferredStyle: .actionSheet)
-                let cancel = UIAlertAction(title: "Ну окей...", style: .cancel)
-                alert.addAction(cancel)
-                self?.navigationController?.present(alert, animated: true)
+                guard let indexPath = self?.messagesCollectionView.indexPath(for: cell) else { return }
+                let message = self?.messages[indexPath.section]
+                if case .text(let text) = message?.kind {
+                    self?.messageInputBar.inputTextView.text = text
+                    self?.editingMessageID = message?.messageId
+                    self?.messageInputBar.inputTextView.becomeFirstResponder()
+                }
             }
         ])
+        button.sendActions(for: .menuActionTriggered)
     }
 }
 
 extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        let tempM = MessageForKit(
-            text: text,
-            sender: curUser,
-            messageId: UUID().uuidString,
-            date: Date(),
-            updateType: UpdateDataType.textMessage
-        )
-        newChatAlert.isHidden = true
-        messages.append(tempM)
-        inputBar.inputTextView.text = ""
-        messagesCollectionView.insertSections([messages.count - 1])
-        interactor.sendTextMessage(text) { [weak self] isSent in
-            guard let self = self else { return }
-            if let index = self.messages.firstIndex(where: {$0.messageId == tempM.messageId}) {
-                self.messagesCollectionView.reloadItems(at: [IndexPath(item: index, section: 0)])
+        if let messageID = editingMessageID {
+            guard let index = messages.firstIndex(where: { $0.messageId == messageID}) else { return }
+            let oldMessageToEdit = messages[index]
+            
+            if case .text(let oldText) = oldMessageToEdit.kind {
+                if text == oldText {
+                    messagesCollectionView.reloadData()
+                } else {
+                    let textMessage = OutgoingMessage(
+                        sender: curUser,
+                        messageId: messageID,
+                        sentDate: oldMessageToEdit.sentDate,
+                        kind: .text(text),
+                        isEdited: true,
+                        status: .sending,
+                        text: text,
+                        replyTo: nil
+                    )
+                    
+                    messages[index] = textMessage
+                    
+                    self.messagesCollectionView.performBatchUpdates({
+                        messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    }, completion: nil)
+                    
+                    inputBar.inputTextView.text = ""
+                    
+                    interactor.editTextMessage(Int64(messageID) ?? 0, text) { [weak self] isEdited in
+                        DispatchQueue.main.async {
+                            guard let self = self else { return }
+                            if let index = self.messages.firstIndex(where: {$0.messageId == messageID}) {
+                                let editedMessage = self.messages[index]
+                                guard var editedMessage = editedMessage as? OutgoingMessage else { return }
+                                editedMessage.status = isEdited ? .sent : .error
+                                editedMessage.isEdited = isEdited ? true : false
+                                self.messages[index] = isEdited ? editedMessage : oldMessageToEdit
+                                self.messagesCollectionView.reloadSections([index])
+                            }
+                            self.editingMessageID = nil
+                        }
+                    }
+                }
+            }
+            
+        } else {
+            let outgoingMessage = OutgoingMessage(
+                sender: curUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(),
+                kind: .text(text),
+                isEdited: false,
+                status: .sending,
+                text: text,
+                replyTo: nil
+            )
+            newChatAlert.isHidden = true
+            messages.append(outgoingMessage)
+            inputBar.inputTextView.text = ""
+            messagesCollectionView.insertSections([messages.count - 1])
+            messagesCollectionView.reloadData()
+            interactor.sendTextMessage(text) { [weak self] isSent in
+                guard let self = self else { return }
+                if let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) {
+                    if var message = self.messages[index] as? OutgoingMessage {
+                        message.status = isSent ? .sent : .error
+                        self.messages[index] = message
+                        self.messagesCollectionView.reloadSections([index])
+                    }
+                }
             }
         }
         messagesCollectionView.scrollToLastItem(animated: true)
-        dismissKeyboard()
     }
     
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith attachments: [AttachmentManager.Attachment]) {
@@ -656,18 +847,33 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     }
     
     func sendImageMessage(photo: UIImage) {
-        let photoMessage = MessageForKit(
-            image: photo,
-            sender: currentSender,
+        let imageMediaItem = ImageMediaItem(image: photo)
+        let photoMessage = PhotoMessage(
+            sender: curUser,
             messageId: UUID().uuidString,
-            date: Date(),
-            updateType: UpdateDataType.file
+            sentDate: Date(),
+            media: imageMediaItem
         )
         insertPhoto(photoMessage)
     }
 }
 
 extension UIColor {
-  static let primaryColor = UIColor(red: 69 / 255, green: 193 / 255, blue: 89 / 255, alpha: 1)
+    static let primaryColor = UIColor(red: 69 / 255, green: 193 / 255, blue: 89 / 255, alpha: 1)
 }
 
+final class EmptyCell: UICollectionViewCell {}
+
+class MessageMenuButtonCell: MessageContentCell {
+    var messageButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.showsMenuAsPrimaryAction = true
+        return button
+    }()
+    
+    override func setupSubviews() {
+        super.setupSubviews()
+        messageContainerView.addSubview(messageButton)
+    }
+}

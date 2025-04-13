@@ -65,11 +65,11 @@
 		AA2781EF2D8112F50049ACAF /* BlockedChatEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */; };
 		AA5F718D2DA3FA2200BC12AA /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F718C2DA3FA2200BC12AA /* MessageKit */; };
 		AA5F718F2DA3FE5A00BC12AA /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */; };
-		AA5F71912DA411C600BC12AA /* UIMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F71902DA411C600BC12AA /* UIMessageCell.swift */; };
 		AA5F71952DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */; };
 		AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71972DA5BE8A00BC12AA /* CropViewController */; };
 		AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71992DA5BE8A00BC12AA /* TOCropViewController */; };
 		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
+		AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
 		AA75DCBB2D81C71E00775199 /* DeletedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */; };
 		AA75DCBF2D81E42400775199 /* UpdatedGroupInfoEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCBE2D81E42400775199 /* UpdatedGroupInfoEvent.swift */; };
@@ -402,8 +402,8 @@
 		AA2781EA2D80FC380049ACAF /* DeletedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedChatEvent.swift; sourceTree = "<group>"; };
 		AA2781EE2D8112F50049ACAF /* BlockedChatEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedChatEvent.swift; sourceTree = "<group>"; };
 		AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
-		AA5F71902DA411C600BC12AA /* UIMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIMessageCell.swift; sourceTree = "<group>"; };
 		AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICameraInputBarAccessoryView.swift; sourceTree = "<group>"; };
+		AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHiddenMessageCellSizeCalculator.swift; sourceTree = "<group>"; };
 		AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBE2D81E42400775199 /* UpdatedGroupInfoEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatedGroupInfoEvent.swift; sourceTree = "<group>"; };
@@ -1086,8 +1086,8 @@
 				AA75DCC22D89876C00775199 /* UIProfilePhoto.swift */,
 				E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */,
 				E14CFF402DA1395000B3A971 /* ChatBackgroundGradientView.swift */,
-				AA5F71902DA411C600BC12AA /* UIMessageCell.swift */,
 				AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */,
+				AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -1888,6 +1888,7 @@
 				AA07A67B2D5E596500CFE124 /* OnlineVisibilityScreenModels.swift in Sources */,
 				AAB300BA2D6DEA8900BECA3B /* UIShimmerView.swift in Sources */,
 				AA1C0E432D43C968008E47D8 /* ProfileSettingsInteractor.swift in Sources */,
+				AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */,
 				AA2781852D7DE3770049ACAF /* GroupProfileEditModels.swift in Sources */,
 				E1960A202D6B49C4008E27C0 /* CachePresenter.swift in Sources */,
 				AA2781602D7DA1540049ACAF /* GroupChatInteractor.swift in Sources */,
@@ -2079,7 +2080,6 @@
 				AAA839F52D65B96600C870A4 /* IdentityServiceProtocols.swift in Sources */,
 				E1960A1B2D6A3666008E27C0 /* AppTheme.swift in Sources */,
 				AA7BADF62D3FCA2A0030AC82 /* SettingsScreenInteractor.swift in Sources */,
-				AA5F71912DA411C600BC12AA /* UIMessageCell.swift in Sources */,
 				AA07A67D2D5E5CC800CFE124 /* UpdateOnlineRestrictionEvent.swift in Sources */,
 				E19609D12D60E879008E27C0 /* LanguageAssembly.swift in Sources */,
 				E14CFF412DA1395000B3A971 /* ChatBackgroundGradientView.swift in Sources */,

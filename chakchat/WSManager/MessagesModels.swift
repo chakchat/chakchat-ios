@@ -202,7 +202,7 @@ struct FileContent: Codable {
     let mimeType: String
     let fileSize: Int64
     let fileURL: URL
-    let messageID: Int64
+    let createdAt: Date
 }
 
 struct ReactionContent: Codable {
