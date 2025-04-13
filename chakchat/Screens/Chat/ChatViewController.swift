@@ -195,8 +195,12 @@ final class ChatViewController: MessagesViewController {
         curUser = SenderPerson(senderId: myID.uuidString, displayName: userData.name)
         if let cd = chatData {
             if case .personal(let info) = cd.info {
-                if ((info.blockedBy?.isEmpty) != nil) {
-                    configureBlockInputBar()
+                if let b = info.blockedBy {
+                    if !b.isEmpty {
+                        inputBarType = .custom(blockInputBar)
+                    } else {
+                        inputBarType = .custom(messageInputBar)
+                    }
                 } else {
                     inputBarType = .custom(messageInputBar)
                 }
@@ -228,6 +232,7 @@ final class ChatViewController: MessagesViewController {
         configureNewChatAlert()
         configureMessagesCollectionView()
         configureBlockInputBar()
+        configureInputBar()
     }
     
     private func configureBackground() {
@@ -576,7 +581,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
         return isFromCurrentSender(message: message)
         ? UIColor(red: 0.25, green: 0.44, blue: 0.89, alpha: 1.0)
-        : UIColor.systemGray5 
+        : UIColor.systemGray5
     }
     
     func messageBottomLabelAttributedText(for message: any MessageType, at indexPath: IndexPath) -> NSAttributedString? {
