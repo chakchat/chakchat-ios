@@ -373,7 +373,7 @@ enum ChatsModels {
     enum UpdateModels {
         struct SendMessageRequest: Codable {
             let text: String
-            let replyTo: UUID?
+            let replyTo: Int64?
             
             enum CodingKeys: String, CodingKey {
                 case text = "text"

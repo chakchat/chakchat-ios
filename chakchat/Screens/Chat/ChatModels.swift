@@ -150,10 +150,22 @@ struct DeleteKind {
     let deleteMode: DeleteMode
 }
 
-enum MessageStatus: String {
-    case sending = "Sending"
-    case sent = "✓"
-    case read = "✓✓"
-    case error = "!"
-    case edited = "upd"
+enum MessageStatus {
+    case sending
+    case sent
+    case read
+    case error
+    case edited
 }
+
+struct ReplyMessage: MessageType, MessageStatusProtocol {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind
+    var isEdited: Bool
+    var status: MessageStatus
+    let replyTo: MessageType
+}
+
+

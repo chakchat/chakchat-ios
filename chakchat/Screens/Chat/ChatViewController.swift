@@ -46,6 +46,9 @@ final class ChatViewController: MessagesViewController {
         }
     }
     private var editingMessageID: String?
+    private var replyPreviewView: ReplyPreviewView?
+    private var repliedMessage: MessageType?
+    
     private var deleteForAll: [MessageType] = []
     private var deleteForSender: [MessageType] = []
     
@@ -55,7 +58,7 @@ final class ChatViewController: MessagesViewController {
       return formatter
     }()
     
-    private var isPollingActive = false
+    private let attachmentManager: AttachmentManager = AttachmentManager()
     
     // MARK: - Initialization
     init(interactor: ChatBusinessLogic) {
@@ -68,8 +71,6 @@ final class ChatViewController: MessagesViewController {
     }
     
     override func viewDidLoad() {
-        messagesCollectionView.register(EmptyCell.self, forCellWithReuseIdentifier: "EmptyCell")
-        messagesCollectionView.register(MessageMenuButtonCell.self)
         super.viewDidLoad()
         interactor.loadFirstMessages { [weak self] result in
             guard let self = self else { return }
@@ -83,10 +84,10 @@ final class ChatViewController: MessagesViewController {
             }
         }
         configureUI()
-        //        let tap1 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        //        messagesCollectionView.addGestureRecognizer(tap1)
+        
         let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         newChatAlert.addGestureRecognizer(tap2)
+        
         interactor.passUserData()
     }
     
@@ -434,30 +435,6 @@ final class ChatViewController: MessagesViewController {
         inputBarType = .custom(blockInputBar)
     }
     
-    private func makeButton(named: String) -> InputBarButtonItem {
-        InputBarButtonItem()
-            .configure {
-                $0.spacing = .fixed(10)
-                $0.image = UIImage(named: named)?.withRenderingMode(.alwaysTemplate)
-                $0.setSize(CGSize(width: 25, height: 25), animated: false)
-                $0.tintColor = UIColor(white: 0.8, alpha: 1)
-            }.onSelected {
-                $0.tintColor = .blue
-            }.onDeselected {
-                $0.tintColor = UIColor(white: 0.8, alpha: 1)
-            }.onTouchUpInside {
-                print("Item Tapped")
-                let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-                let action = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-                actionSheet.addAction(action)
-                if let popoverPresentationController = actionSheet.popoverPresentationController {
-                    popoverPresentationController.sourceView = $0
-                    popoverPresentationController.sourceRect = $0.frame
-                }
-                self.navigationController?.present(actionSheet, animated: true, completion: nil)
-            }
-    }
-    
     private func insertPhoto(_ message: MessageType) {
         messages.append(message)
         messagesCollectionView.performBatchUpdates({
@@ -495,6 +472,30 @@ final class ChatViewController: MessagesViewController {
         let ok = UIAlertAction(title: "OK", style: .default)
         disclaimer.addAction(ok)
         self.present(disclaimer, animated: true)
+    }
+    
+    private func showReplyPreview(for message: MessageType) {
+        replyPreviewView?.removeFromSuperview()
+        
+        let preview = ReplyPreviewView(message: message)
+        preview.onClose = { [weak self] in
+            self?.removeReplyPreview()
+        }
+        
+        messageInputBar.topStackView.addArrangedSubview(preview)
+        messageInputBar.topStackView.layoutIfNeeded()
+        
+        messageInputBar.topStackView.becomeFirstResponder()
+        
+        replyPreviewView = preview
+        repliedMessage = message
+    }
+    
+    private func removeReplyPreview() {
+        replyPreviewView?.removeFromSuperview()
+        messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        messageInputBar.setNeedsLayout()
+        replyPreviewView = nil
     }
     
     @objc private func handleTitleTap() {
@@ -557,7 +558,7 @@ extension ChatViewController: MessagesDataSource {
     func customCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell {
         if case .custom(let custom) = message.kind {
             if custom is DeleteKind {
-                return messagesCollectionView.dequeueReusableCell(withReuseIdentifier: "EmptyCell", for: indexPath)
+                return messagesCollectionView.dequeueReusableCell(withReuseIdentifier: "CustomTextCell", for: indexPath)
             }
         }
         return UICollectionViewCell() // будет ошибка но в этот кейс не зайдет
@@ -582,6 +583,89 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         return isFromCurrentSender(message: message)
         ? UIColor(red: 0.25, green: 0.44, blue: 0.89, alpha: 1.0)
         : UIColor.systemGray5 
+    }
+    
+    func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
+        let tail: MessageStyle.TailStyle = .pointedEdge
+        if isFromCurrentSender(message: message) {
+            return MessageStyle.bubbleTail(.bottomRight, tail)
+        } else {
+            return MessageStyle.bubbleTail(.bottomLeft, tail)
+        }
+    }
+    
+    func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return 18
+        }
+        return 0
+    }
+
+    func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+      0
+    }
+
+        
+    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        if shouldShowDateLabel(for: message, at: indexPath) {
+            return NSAttributedString(
+                string: MessageKitDateFormatter.shared.string(from: message.sentDate),
+                attributes: [
+                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                ])
+        }
+        if let message = message as? ReplyMessage {
+            return NSAttributedString(
+                string: "You replied",
+                attributes: [
+                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                ]
+            )
+        }
+        return nil
+    }
+    
+    func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
+        guard indexPath.section > 0 else { return true }
+        
+        let previousMessage = messages[indexPath.section - 1]
+        
+        return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
+    }
+
+    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
+        nil
+    }
+    
+    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        if let message = message as? ReplyMessage {
+            return 40
+        } else if let message = message as? MessageForKit {
+            if case .text(let textContent) = message.content {
+                if textContent.replyTo != nil {
+                    return 40
+                } else {
+                    if isFromCurrentSender(message: message) {
+                        return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
+                    } else {
+                        return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
+                    }
+                }
+            }
+        }
+        return 0
+    }
+    
+
+    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
+        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 10
+        
+    }
+    
+    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
+        nil
     }
     
     func messageBottomLabelAttributedText(for message: any MessageType, at indexPath: IndexPath) -> NSAttributedString? {
@@ -616,68 +700,6 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         attributedString.addAttributes(attributes, range: NSRange(location: 0, length: attributedString.length))
         
         return attributedString
-    }
-    
-    func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
-        let tail: MessageStyle.TailStyle = .pointedEdge
-        if isFromCurrentSender(message: message) {
-            return MessageStyle.bubbleTail(.bottomRight, tail)
-        } else {
-            return MessageStyle.bubbleTail(.bottomLeft, tail)
-        }
-    }
-    
-    func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if shouldShowDateLabel(for: message, at: indexPath) {
-            return 18
-        }
-        return 0
-    }
-
-    func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-      0
-    }
-
-    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if isFromCurrentSender(message: message) {
-            return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
-        } else {
-            return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
-        }
-    }
-
-    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 10
-        
-    }
-    
-    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        if shouldShowDateLabel(for: message, at: indexPath) {
-            return NSAttributedString(
-                string: MessageKitDateFormatter.shared.string(from: message.sentDate),
-                attributes: [
-                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
-                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
-                ])
-        }
-        return nil
-    }
-    
-    func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
-        guard indexPath.section > 0 else { return true }
-        
-        let previousMessage = messages[indexPath.section - 1]
-        
-        return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
-    }
-
-    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
-        nil
-    }
-    
-
-    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
-      nil
     }
     
     func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
@@ -759,6 +781,11 @@ extension ChatViewController: MessageCellDelegate {
                     self?.editingMessageID = message?.messageId
                     self?.messageInputBar.inputTextView.becomeFirstResponder()
                 }
+            },
+            UIAction(title: "Reply to") { [weak self] _ in
+                guard let indexPath = self?.messagesCollectionView.indexPath(for: cell),
+                      let message = self?.messages[indexPath.section] else { return }
+                self?.showReplyPreview(for: message)
             }
         ])
         button.sendActions(for: .menuActionTriggered)
@@ -767,7 +794,34 @@ extension ChatViewController: MessageCellDelegate {
 
 extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        if let messageID = editingMessageID {
+        if let _ = replyPreviewView,
+           let repliedMessage = repliedMessage {
+            let replyMessage = ReplyMessage(
+                sender: curUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(),
+                kind: .text(text),
+                isEdited: false,
+                status: .sending,
+                replyTo: repliedMessage
+            )
+            messages.append(replyMessage)
+            inputBar.inputTextView.text = ""
+            messagesCollectionView.insertSections([messages.count - 1])
+            messagesCollectionView.reloadData()
+            
+            interactor.sendTextMessage(text, Int64(repliedMessage.messageId) ?? 0) { [weak self] isReply in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    let editedMessage = self.messages[self.messages.count - 1]
+                    guard var editedMessage = editedMessage as? ReplyMessage else { return }
+                    editedMessage.status = isReply ? .sent : .error
+                    self.messagesCollectionView.reloadSections([self.messages.count - 1])
+                    self.replyPreviewView = nil
+                    self.repliedMessage = nil
+                }
+            }
+        } else if let messageID = editingMessageID {
             guard let index = messages.firstIndex(where: { $0.messageId == messageID}) else { return }
             let oldMessageToEdit = messages[index]
             
@@ -810,7 +864,6 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                     }
                 }
             }
-            
         } else {
             let outgoingMessage = OutgoingMessage(
                 sender: curUser,
@@ -827,7 +880,7 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
             inputBar.inputTextView.text = ""
             messagesCollectionView.insertSections([messages.count - 1])
             messagesCollectionView.reloadData()
-            interactor.sendTextMessage(text) { [weak self] isSent in
+            interactor.sendTextMessage(text, nil) { [weak self] isSent in
                 guard let self = self else { return }
                 if let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) {
                     if var message = self.messages[index] as? OutgoingMessage {
@@ -867,18 +920,14 @@ extension UIColor {
     static let primaryColor = UIColor(red: 69 / 255, green: 193 / 255, blue: 89 / 255, alpha: 1)
 }
 
-final class EmptyCell: UICollectionViewCell {}
-
-class MessageMenuButtonCell: MessageContentCell {
-    var messageButton: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.showsMenuAsPrimaryAction = true
-        return button
-    }()
+final class EmptyCell: UICollectionViewCell {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .red
+    }
     
-    override func setupSubviews() {
-        super.setupSubviews()
-        messageContainerView.addSubview(messageButton)
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
