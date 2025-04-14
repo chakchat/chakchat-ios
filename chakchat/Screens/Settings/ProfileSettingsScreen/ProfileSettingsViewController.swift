@@ -458,7 +458,21 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
                 self.deleteButton.transform = CGAffineTransform.identity
             }
         })
-//        interactor.
+        showDeleteAccountConfirmation()
+    }
+    
+    private func showDeleteAccountConfirmation() {
+        let alert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "delete_account"), message: LocalizationManager.shared.localizedString(for: "are_you_sure_delete_account"), preferredStyle: .alert)
+  
+        let deleteAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "delete_account"), style: .destructive) { _ in
+            // TODO: delete account
+        }
+        let cancelAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel, handler: nil)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
     }
     
     @objc

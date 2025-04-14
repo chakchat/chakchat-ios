@@ -111,3 +111,6 @@
 "cache_size" = "Cache size:";
 "device_storage" = "of device storage";
 "delete_account" = "Delete account";
+"are_you_sure_delete_account" = "Are you sure you want to delete account? All your data will be deleted.";
+"logout_account" = "Log out of account";
+"are_you_sure_logout" = "Are you sure you want to log out of account?";

@@ -252,7 +252,21 @@ final class UserProfileScreenViewController: UIViewController {
                 self.logOutButton.transform = CGAffineTransform.identity
             }
         })
-        interactor.signOut()
+        showLogoutAccountConfirmation()
+    }
+    
+    private func showLogoutAccountConfirmation() {
+        let alert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "logout_account"), message: LocalizationManager.shared.localizedString(for: "are_you_sure_logout"), preferredStyle: .alert)
+  
+        let logoutAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "logout_account"), style: .destructive) { _ in
+            self.interactor.signOut()
+        }
+        let cancelAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel, handler: nil)
+        
+        alert.addAction(logoutAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
     }
 }
 
