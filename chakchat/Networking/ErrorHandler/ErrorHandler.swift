@@ -15,10 +15,9 @@ final class ErrorHandler: ErrorHandlerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let identityService: IdentityServiceProtocol
     
-    init(keychainManager: KeychainManagerBusinessLogic, identityService: IdentityServiceProtocol, appCoordinator: AppCoordinator) {
+    init(keychainManager: KeychainManagerBusinessLogic, identityService: IdentityServiceProtocol) {
         self.keychainManager = keychainManager
         self.identityService = identityService
-        self.appCoordinator = appCoordinator
     }
     
     func handleError(_ error: Error) -> ErrorId {
