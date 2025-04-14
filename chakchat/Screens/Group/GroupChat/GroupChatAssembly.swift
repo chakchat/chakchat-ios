@@ -11,10 +11,12 @@ enum GroupChatAssembly {
     static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator, _ chatData: ChatsModels.GeneralChatModel.ChatData) -> UIViewController {
         let presenter = GroupChatPresenter()
         let updateService = UpdateService()
+        let groupUpdateService = GroupUpdateService()
         let worker = GroupChatWorker(
             keychainManager: context.keychainManager,
             coreDataManager: context.coreDataManager,
-            updateService: updateService
+            updateService: updateService,
+            groupUpdateService: groupUpdateService
         )
         let interactor = GroupChatInteractor(
             presenter: presenter,

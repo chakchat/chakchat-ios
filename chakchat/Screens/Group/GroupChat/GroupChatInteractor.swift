@@ -42,6 +42,11 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         subscribeToEvents()
     }
     
+    func passChatData() {
+        presenter.passChatData(chatData)
+    }
+       
+    
     func loadFirstMessages(completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
         worker.loadFirstMessages(chatData.chatID, 1, 200) { [weak self] result in
             guard let self = self else { return }
@@ -57,14 +62,77 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
-    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
-        worker.sendTextMessage(message)
+    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        worker.sendTextMessage(chatData.chatID, message, replyTo) { result in
+            switch result {
+            case .success(let data):
+                completion(.success(data))
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
     }
     
-    func passChatData() {
-        presenter.passChatData(chatData)
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void) {
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
     }
-        
+    
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void) {
+        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void) {
+        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void) {
+        worker.deleteReaction(chatData.chatID, updateID) { result in
+            switch result {
+            case .success(let data):
+                completion(true)
+            case .failure(let failure):
+                completion(false)
+                print(failure)
+            }
+        }
+    }
+    
     func handleAddedMemberEvent(_ event: AddedMemberEvent) {
         print("Handle new member")
     }
@@ -92,37 +160,42 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }.store(in: &cancellables)
     }
     
+    func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage {
+        var mappedTextUpdate = GroupTextMessage()
+        if case .textContent(let tc) = update.content {
+            mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+            mappedTextUpdate.messageId = String(update.updateID)
+            mappedTextUpdate.sentDate = update.createdAt
+            mappedTextUpdate.kind = .custom(Kind.GroupTextMessageKind)
+            mappedTextUpdate.text = tc.text
+            mappedTextUpdate.replyTo = nil // на этапе ViewController'a
+            mappedTextUpdate.replyToID = tc.replyTo
+            mappedTextUpdate.isEdited = tc.edited != nil ? true : false
+            if let edited = tc.edited {
+                if case .editedContent(let ec) = edited.content {
+                    mappedTextUpdate.editedMessage = ec.newText
+                    mappedTextUpdate.text = ec.newText
+                }
+            }
+            if let reactions = tc.reactions {
+                var reactionsDict: [Int64: String] = [:]
+                for reaction in reactions {
+                    if case .reactionContent(let rc) = reaction.content {
+                        reactionsDict.updateValue(rc.reaction, forKey: reaction.updateID)
+                    }
+                }
+                mappedTextUpdate.reactions = reactionsDict
+            }
+        }
+        return mappedTextUpdate
+    }
+    
     private func mapToMessageType(_ updates: [UpdateData]) -> [MessageType] {
         var mappedUpdates: [MessageType] = []
         for update in updates {
             switch update.type {
             case .textMessage:
-                var mappedTextUpdate: GroupTextMessage!
-                if case .textContent(let tc) = update.content {
-                    mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
-                    mappedTextUpdate.messageId = String(update.updateID)
-                    mappedTextUpdate.sentDate = update.createdAt
-                    mappedTextUpdate.kind = .custom(Kind.GroupTextMessageKind)
-                    mappedTextUpdate.text = tc.text
-                    mappedTextUpdate.replyTo = nil // на этапе ViewController'a
-                    mappedTextUpdate.replyToID = tc.replyTo
-                    mappedTextUpdate.isEdited = tc.edited != nil ? true : false
-                    if let edited = tc.edited {
-                        if case .editedContent(let ec) = edited.content {
-                            mappedTextUpdate.editedMessage = ec.newText
-                            mappedTextUpdate.text = ec.newText
-                        }
-                    }
-                    if let reactions = tc.reactions {
-                        var reactionsDict: [Int64: String] = [:]
-                        for reaction in reactions {
-                            if case .reactionContent(let rc) = reaction.content {
-                                reactionsDict.updateValue(rc.reaction, forKey: reaction.updateID)
-                            }
-                        }
-                        mappedTextUpdate.reactions = reactionsDict
-                    }
-                }
+                let mappedTextUpdate = mapToTextMessage(update)
                 mappedUpdates.append(mappedTextUpdate)
             case .textEdited:
                 var mappedTextEditedUpdate: GroupTextMessageEdited!

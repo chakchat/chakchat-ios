@@ -36,6 +36,19 @@ struct GroupTextMessage: MessageType {
     var editedMessage: String?
     
     var reactions: [Int64: String]?
+    
+    init() {
+        sender = GroupSender(senderId: "", displayName: "")
+        messageId = ""
+        sentDate = Date()
+        kind = .text("")
+        text = ""
+        replyTo = nil
+        replyToID = nil
+        isEdited = true
+        editedMessage = nil
+        reactions = nil
+    }
 }
 
 struct GroupTextMessageEdited: MessageType {
@@ -82,4 +95,11 @@ struct GroupMessageDelete: MessageType {
     
     var deletedMessageID: Int64
     var deleteMode: DeleteMode
+}
+
+struct GroupOutgoingMessage: MessageType {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind
 }

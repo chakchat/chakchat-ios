@@ -21,6 +21,7 @@ final class GroupChatViewController: MessagesViewController {
         static let messageInputViewHorizontal: CGFloat = 8
         static let messageInputViewHeigth: CGFloat = 50
         static let messageInputViewBottom: CGFloat = 0
+        static let outgoingAvatarOverlap: CGFloat = 17.5
     }
     
     // MARK: - Properties
@@ -45,8 +46,28 @@ final class GroupChatViewController: MessagesViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    public override func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath)
+    -> UICollectionViewCell
+    {
+        guard let messagesDataSource = messagesCollectionView.messagesDataSource else {
+            fatalError("Ouch. nil data source for messages")
+        }
+        
+        let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
+        if case .custom = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(CustomCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        }
+        return super.collectionView(collectionView, cellForItemAt: indexPath)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        //messagesCollectionView = MessagesCollectionView(frame: .zero, collectionViewLayout: CustomMessagesFlowLayout())
+        messagesCollectionView.register(CustomCell.self)
         loadFirstMessages()
         configureUI()
         interactor.passChatData()
@@ -80,7 +101,7 @@ final class GroupChatViewController: MessagesViewController {
                     messages[index] = message
                 }
             }
-            if let update = update as? GroupFileMessage {
+            if update is GroupFileMessage {
                 // пока что пусто
             }
             if let update = update as? GroupReaction {
@@ -150,6 +171,7 @@ final class GroupChatViewController: MessagesViewController {
         configureNicknameLabel()
         //configureNewChatAlert()
         configureMessagesCollectionView()
+        configureInputBar()
     }
     
     private func configureBackground() {
@@ -195,7 +217,7 @@ final class GroupChatViewController: MessagesViewController {
         iconImageView.setWidth(Constants.navigationItemHeight)
         iconImageView.setHeight(Constants.navigationItemHeight)
         addTapGesture(to: iconImageView)
-
+        
         let barButtonItem = UIBarButtonItem(customView: iconImageView)
         navigationItem.rightBarButtonItem = barButtonItem
     }
@@ -211,7 +233,7 @@ final class GroupChatViewController: MessagesViewController {
     
     private func configureNewChatAlert() {
         newChatAlert.configure(title: LocalizationManager.shared.localizedString(for: "alert_group_title"),
-                             message: LocalizationManager.shared.localizedString(for: "alert_group"))
+                               message: LocalizationManager.shared.localizedString(for: "alert_group"))
         view.addSubview(newChatAlert)
         
         newChatAlert.pinCenterX(view)
@@ -229,22 +251,34 @@ final class GroupChatViewController: MessagesViewController {
         messageInputBar.delegate = self
         messagesCollectionView.isUserInteractionEnabled = true
         messagesCollectionView.messageCellDelegate = self
-        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
-            layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
-            layout.textMessageSizeCalculator.incomingAvatarSize = .zero
-            layout
-              .setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(
+        let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
+        layout?.sectionInset = UIEdgeInsets(top: 1, left: 8, bottom: 1, right: 8)
+        layout?.setMessageOutgoingAvatarSize(.zero)
+        layout?
+            .setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(
                 textAlignment: .right,
                 textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
-            layout
-              .setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(
+        layout?
+            .setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(
                 textAlignment: .right,
                 textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
-            layout
-              .setMessageIncomingMessageTopLabelAlignment(LabelAlignment(
+        layout?
+            .setMessageIncomingMessageTopLabelAlignment(LabelAlignment(
                 textAlignment: .left,
-                textInsets: UIEdgeInsets(top: 0, left: 18, bottom: 17.5, right: 0)))
-        }
+                textInsets: UIEdgeInsets(top: 0, left: 18, bottom: Constants.outgoingAvatarOverlap, right: 0)))
+        layout?.setMessageIncomingAvatarSize(CGSize(width: 30, height: 30))
+        layout?
+            .setMessageIncomingMessagePadding(UIEdgeInsets(
+                top: -Constants.outgoingAvatarOverlap,
+                left: -18,
+                bottom: Constants.outgoingAvatarOverlap,
+                right: 18))
+        
+        layout?.setMessageIncomingAccessoryViewSize(CGSize(width: 30, height: 30))
+        layout?.setMessageIncomingAccessoryViewPadding(HorizontalEdgeInsets(left: 8, right: 0))
+        layout?.setMessageIncomingAccessoryViewPosition(.messageBottom)
+        layout?.setMessageOutgoingAccessoryViewSize(CGSize(width: 30, height: 30))
+        layout?.setMessageOutgoingAccessoryViewPadding(HorizontalEdgeInsets(left: 0, right: 8))
     }
     
     private func configureInputBar() {
@@ -341,6 +375,38 @@ final class GroupChatViewController: MessagesViewController {
         return messages[indexPath.section].sender.senderId == messages[indexPath.section + 1].sender.senderId
     }
     
+    private func sendTextMessage(_ inputBar: InputBarAccessoryView, _ text: String) {
+        let outgoingMessage = GroupOutgoingMessage(
+            sender: curUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            kind: .text(text)
+        )
+        print("Sending")
+        
+        messages.append(outgoingMessage)
+        inputBar.inputTextView.text = ""
+        messagesCollectionView.insertSections([messages.count - 1])
+        messagesCollectionView.reloadData()
+        
+        interactor.sendTextMessage(text, nil) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) else { return }
+                
+                switch result {
+                case .success(let data):
+                    let textMessage = self.interactor.mapToTextMessage(data)
+                    self.messages[index] = textMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    print("Sent")
+                case .failure(_):
+                    print("Failed")
+                }
+            }
+        }
+    }
+    
     @objc private func handleTitleTap() {
         interactor.routeToChatProfile()
     }
@@ -368,26 +434,12 @@ extension GroupChatViewController: MessagesDataSource {
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
         return messages[indexPath.section]
     }
-    
-    func customCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell {
-        if case .custom(let custom) = message.kind {
-            if custom is DeleteKind {
-                return messagesCollectionView.dequeueReusableCell(withReuseIdentifier: "CustomTextCell", for: indexPath)
-            }
-        }
-        return UICollectionViewCell()
-    }
 }
 
 extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
-    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
-        avatarView.isHidden = true
-    }
-    
     func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
         isFromCurrentSender(message: message) ? .white : .darkText
     }
-    
     
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
         return isFromCurrentSender(message: message)
@@ -425,15 +477,6 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
                     NSAttributedString.Key.foregroundColor: UIColor.darkGray,
                 ])
         }
-        if let message = message as? ReplyMessage {
-            return NSAttributedString(
-                string: "You replied",
-                attributes: [
-                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
-                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
-                ]
-            )
-        }
         return nil
     }
     
@@ -450,22 +493,7 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     }
     
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if let message = message as? ReplyMessage {
-            return 40
-        } else if let message = message as? MessageForKit {
-            if case .text(let textContent) = message.content {
-                if textContent.replyTo != nil {
-                    return 40
-                } else {
-                    if isFromCurrentSender(message: message) {
-                        return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
-                    } else {
-                        return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
-                    }
-                }
-            }
-        }
-        return 0
+        0
     }
     
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
@@ -473,42 +501,23 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
         
     }
     
-    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
-        nil
+    func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        if !isPreviousMessageSameSender(at: indexPath) {
+            let name = message.sender.displayName
+            return NSAttributedString(
+                string: name,
+                attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1)])
+        }
+        return nil
     }
     
     func messageBottomLabelAttributedText(for message: any MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        guard let message = message as? MessageStatusProtocol else { return nil}
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm"
-        let dateString = dateFormatter.string(from: message.sentDate)
-        
-        let attributedString = NSMutableAttributedString(string: dateString)
-        
-        if message.sender.senderId == curUser.senderId {
-            let statusText: String
-            switch message.status {
-            case .read:  statusText = " • read"
-            case .sent: statusText = " • sent"
-            case .error: statusText = " • failed ❗"
-            case .edited: statusText = " • edited"
-            case .sending: statusText = " • sending"
-            }
-            attributedString.append(NSAttributedString(string: statusText))
+        if !isNextMessageSameSender(at: indexPath), isFromCurrentSender(message: message) {
+            return NSAttributedString(
+                string: "Delivered",
+                attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1)])
         }
-        
-        if message.isEdited {
-            attributedString.append(NSAttributedString(string: " • edited"))
-        }
-        
-        let baseColor: UIColor = (message.status == .error) ? .systemRed : .lightGray
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 10),
-            .foregroundColor: baseColor
-        ]
-        attributedString.addAttributes(attributes, range: NSRange(location: 0, length: attributedString.length))
-        
-        return attributedString
+        return nil
     }
     
     func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
@@ -518,6 +527,13 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
             return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
         }
     }
+    
+    func customCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
+        if message is GroupTextMessage {
+            return CustomMessageSizeCalculator(layout: messagesCollectionView.messagesCollectionViewFlowLayout)
+        }
+        return MessageSizeCalculator()
+    }
 }
 
 extension GroupChatViewController: MessageCellDelegate {
@@ -525,6 +541,114 @@ extension GroupChatViewController: MessageCellDelegate {
 }
 
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
-   
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
+        sendTextMessage(inputBar, text)
+    }
 }
 
+class CustomCell: UICollectionViewCell {
+    
+    let replyLabel = UILabel()
+    let messageLabel = UILabel()
+    let reactionsStackView = UIStackView()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        contentView.layer.cornerRadius = 16
+        contentView.clipsToBounds = true
+        contentView.backgroundColor = UIColor(red: 30/255, green: 32/255, blue: 38/255, alpha: 1) // Telegram-style bubble
+        
+        setupViews()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupViews() {
+        replyLabel.numberOfLines = 0
+        replyLabel.font = UIFont.systemFont(ofSize: 13)
+        replyLabel.textColor = .lightGray
+        
+        messageLabel.numberOfLines = 0
+        messageLabel.font = UIFont.systemFont(ofSize: 16)
+        messageLabel.textColor = .white
+        
+        reactionsStackView.axis = .horizontal
+        reactionsStackView.spacing = 4
+        reactionsStackView.alignment = .center
+        
+        let stack = UIStackView(arrangedSubviews: [replyLabel, messageLabel, reactionsStackView])
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        
+        contentView.addSubview(stack)
+        
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
+            stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+        ])
+    }
+    
+    func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
+        if let message = message as? GroupTextMessage {
+            replyLabel.text = message.replyTo
+            replyLabel.isHidden = message.replyToID == nil
+            
+            messageLabel.text = message.text
+            
+            reactionsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            if let reactions = message.reactions {
+                for emoji in reactions {
+                    let label = UILabel()
+                    label.text = emoji.value
+                    label.font = UIFont.systemFont(ofSize: 16)
+                    reactionsStackView.addArrangedSubview(label)
+                }
+                reactionsStackView.isHidden = false
+            } else {
+                reactionsStackView.isHidden = true
+            }
+        }
+    }
+}
+
+class CustomMessagesFlowLayout: MessagesCollectionViewFlowLayout {
+    lazy var customMessageSizeCalculator = CustomMessageSizeCalculator(layout: self)
+    
+    override func cellSizeCalculatorForItem(at indexPath: IndexPath) -> CellSizeCalculator {
+        if isSectionReservedForTypingIndicator(indexPath.section) {
+            return typingIndicatorSizeCalculator
+        }
+        let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
+        if case .custom = message.kind {
+            return customMessageSizeCalculator
+        }
+        return super.cellSizeCalculatorForItem(at: indexPath)
+    }
+    
+    override func messageSizeCalculators() -> [MessageSizeCalculator] {
+        var superCalculators = super.messageSizeCalculators()
+        superCalculators.append(customMessageSizeCalculator)
+        return superCalculators
+    }
+}
+
+class CustomMessageSizeCalculator: MessageSizeCalculator {
+    override init(layout: MessagesCollectionViewFlowLayout? = nil) {
+        super.init()
+        self.layout = layout
+    }
+    
+    override func sizeForItem(at _: IndexPath) -> CGSize {
+        guard let layout = layout else { return .zero }
+        let collectionViewWidth = layout.collectionView?.bounds.width ?? 0
+        let contentInset = layout.collectionView?.contentInset ?? .zero
+        let inset = layout.sectionInset.left + layout.sectionInset.right + contentInset.left + contentInset.right
+        return CGSize(width: collectionViewWidth - inset, height: 44)
+    }
+}
