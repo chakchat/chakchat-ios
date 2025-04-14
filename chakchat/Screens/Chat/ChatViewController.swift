@@ -606,7 +606,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
                     NSAttributedString.Key.foregroundColor: UIColor.darkGray,
                 ])
         }
-        if let message = message as? ReplyMessage {
+        if message is ReplyMessage {
             return NSAttributedString(
                 string: "You replied",
                 attributes: [
@@ -631,7 +631,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if let message = message as? ReplyMessage {
+        if message is ReplyMessage {
             return 40
         } else if let message = message as? MessageForKit {
             if case .text(let textContent) = message.content {
@@ -691,67 +691,6 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         attributedString.addAttributes(attributes, range: NSRange(location: 0, length: attributedString.length))
         
         return attributedString
-    }
-    
-    func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
-        let tail: MessageStyle.TailStyle = .pointedEdge
-        if isFromCurrentSender(message: message) {
-            return MessageStyle.bubbleTail(.bottomRight, tail)
-        } else {
-            return MessageStyle.bubbleTail(.bottomLeft, tail)
-        }
-    }
-    
-    func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if shouldShowDateLabel(for: message, at: indexPath) {
-            return 18
-        }
-        return 0
-    }
-
-    func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-      0
-    }
-
-    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if isFromCurrentSender(message: message) {
-            return !isPreviousMessageSameSender(at: indexPath) ? 20 : 0
-        } else {
-            return !isPreviousMessageSameSender(at: indexPath) ? (20) : 0
-        }
-    }
-
-    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 21 : 15
-    }
-    
-    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        if shouldShowDateLabel(for: message, at: indexPath) {
-            return NSAttributedString(
-                string: MessageKitDateFormatter.shared.string(from: message.sentDate),
-                attributes: [
-                    NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
-                    NSAttributedString.Key.foregroundColor: UIColor.darkGray,
-                ])
-        }
-        return nil
-    }
-    
-    func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
-        guard indexPath.section > 0 else { return true }
-        
-        let previousMessage = messages[indexPath.section - 1]
-        
-        return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
-    }
-
-    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
-        nil
-    }
-    
-
-    func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
-      nil
     }
 }
 

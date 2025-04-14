@@ -18,10 +18,15 @@ final class UserProfileScreenViewController: UIViewController {
         static let iconTop: CGFloat = 10
         static let nameLabelTop: CGFloat = 10
         static let userTableHorizontal: CGFloat = -15
-        static let userTableBottom: CGFloat = 20
+        static let userTableBottom: CGFloat = 200
         static let userTableYop: CGFloat = 0
         static let estimateRowHeight: CGFloat = 60
         static let cornerRadius: CGFloat = 50
+        static let logOutButtonRadius: CGFloat = 18
+        static let logOutButtonTop: CGFloat = 25
+        static let logOutButtonHeight: CGFloat = 38
+        static let logOutButtonWidth: CGFloat = 100
+        static let logOutBorderWidth: CGFloat = 1
     }
     
     // MARK: - Properties
@@ -35,6 +40,7 @@ final class UserProfileScreenViewController: UIViewController {
         (LocalizationManager.shared.localizedString(for: "phone"), ""),
         (LocalizationManager.shared.localizedString(for: "date_of_birth"), "")
     ]
+    private var logOutButton: UIButton = UIButton(type: .system)
     
     let interactor: UserProfileScreenBusinessLogic
     
@@ -130,6 +136,7 @@ final class UserProfileScreenViewController: UIViewController {
         configureIcon()
         configureNameLabel()
         configureProfileTableView()
+        configureLogOutButton()
     }
     
     private func configureBackButton() {
@@ -183,12 +190,29 @@ final class UserProfileScreenViewController: UIViewController {
         userTableView.separatorInset = .zero
         userTableView.isUserInteractionEnabled = false
         userTableView.pinHorizontal(view, Constants.userTableHorizontal)
-        userTableView.pinBottom(view.safeAreaLayoutGuide.bottomAnchor, Constants.userTableBottom)
         userTableView.pinTop(nameLabel.bottomAnchor, Constants.userTableYop)
+        userTableView.setHeight(250)
         userTableView.register(UserProfileCell.self, forCellReuseIdentifier: UserProfileCell.cellIdentifier)
         userTableView.backgroundColor = view.backgroundColor
         userTableView.rowHeight = UITableView.automaticDimension
         userTableView.estimatedRowHeight = Constants.estimateRowHeight
+    }
+    
+    private func configureLogOutButton() {
+        logOutButton.setTitle(LocalizationManager.shared.localizedString(for: "log_out"), for: .normal)
+        logOutButton.setTitleColor(.systemRed, for: .normal)
+        logOutButton.titleLabel?.font = Fonts.systemB20
+        logOutButton.backgroundColor = .clear
+        logOutButton.layer.cornerRadius = Constants.logOutButtonRadius
+        logOutButton.layer.borderWidth = Constants.logOutBorderWidth
+        logOutButton.layer.borderColor = UIColor.systemRed.cgColor
+        logOutButton.addTarget(self, action: #selector(logOutButtonPressed), for: .touchUpInside)
+        logOutButton.setHeight(Constants.logOutButtonHeight)
+        logOutButton.setWidth(Constants.logOutButtonWidth)
+        
+        view.addSubview(logOutButton)
+        logOutButton.pinCenterX(view)
+        logOutButton.pinTop(userTableView.bottomAnchor, Constants.logOutButtonTop)
     }
     
     // MARK: - Actions
@@ -216,6 +240,19 @@ final class UserProfileScreenViewController: UIViewController {
         userTableViewData[1].title = LocalizationManager.shared.localizedString(for: "phone")
         userTableViewData[2].title = LocalizationManager.shared.localizedString(for: "date_of_birth")
         userTableView.reloadData()
+    }
+    
+    @objc
+    private func logOutButtonPressed() {
+        // TODO: show alert "Are u sure?" and log out of from account.
+        UIView.animate(withDuration: UIConstants.animationDuration, animations: {
+            self.logOutButton.transform = CGAffineTransform(scaleX: UIConstants.buttonScale, y: UIConstants.buttonScale)
+            }, completion: { _ in
+            UIView.animate(withDuration: UIConstants.animationDuration) {
+                self.logOutButton.transform = CGAffineTransform.identity
+            }
+        })
+        interactor.signOut()
     }
 }
 

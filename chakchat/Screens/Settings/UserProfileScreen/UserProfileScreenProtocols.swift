@@ -19,6 +19,7 @@ protocol UserProfileScreenBusinessLogic {
     
     func handleUserDataChangedEvent(_ event: UpdateProfileDataEvent)
     func handlePhotoChangedEvent(_ event: UpdatePhotoEvent)
+    func signOut()
 }
 
 protocol UserProfileScreenPresentationLogic {
@@ -29,4 +30,5 @@ protocol UserProfileScreenPresentationLogic {
 
 protocol UserProfileScreenWorkerLogic {
     func getUserData() -> ProfileSettingsModels.ProfileUserData
+    func signOut(completion: @escaping (Result<Void, Error>) -> Void)
 }
