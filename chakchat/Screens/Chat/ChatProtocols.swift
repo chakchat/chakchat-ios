@@ -60,5 +60,5 @@ protocol ChatWorkerLogic {
 }
 
 protocol SendingMessagesProtocol: AnyObject {
-    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)
+    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
 }

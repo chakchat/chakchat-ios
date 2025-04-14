@@ -23,7 +23,7 @@ protocol GroupUpdateServiceProtocol {
         _ request: ChatsModels.UpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func deleteMessage(
@@ -31,7 +31,7 @@ protocol GroupUpdateServiceProtocol {
         _ updateID: Int64,
         _ deleteMode: DeleteMode,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func editTextMessage(
@@ -39,28 +39,28 @@ protocol GroupUpdateServiceProtocol {
         _ updateID: Int64,
         _ request: ChatsModels.UpdateModels.EditMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func sendFileMessage(
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.FileMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func sendReaction(
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ReactionRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Reaction>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func deleteReaction(
         _ chatID: UUID,
         _ updateID: Int64,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func forwardTextMessage(

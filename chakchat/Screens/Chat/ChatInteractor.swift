@@ -11,6 +11,10 @@ import Combine
 
 // MARK: - ChatInteractor
 final class ChatInteractor: ChatBusinessLogic {
+    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        print("Hello world")
+    }
+    
     
     // MARK: - Properties
     private let presenter: ChatPresentationLogic

@@ -808,7 +808,7 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                     guard let self = self else { return }
                     let editedMessage = self.messages[self.messages.count - 1]
                     guard var editedMessage = editedMessage as? ReplyMessage else { return }
-                    editedMessage.status = isReply ? .sent : .error
+                    //editedMessage.status = isReply ? .sent : .error
                     self.messagesCollectionView.reloadSections([self.messages.count - 1])
                     self.replyPreviewView = nil
                     self.repliedMessage = nil
@@ -877,9 +877,9 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                 guard let self = self else { return }
                 if let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) {
                     if var message = self.messages[index] as? OutgoingMessage {
-                        message.status = isSent ? .sent : .error
-                        self.messages[index] = message
-                        self.messagesCollectionView.reloadSections([index])
+//                        message.status = isSent ? .sent : .error
+//                        self.messages[index] = message
+//                        self.messagesCollectionView.reloadSections([index])
                     }
                 }
             }
