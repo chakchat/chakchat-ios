@@ -23,6 +23,7 @@ final class UserProfileScreenInteractor: UserProfileScreenBusinessLogic {
     
     var onRouteToSettingsScreen: (() -> Void)?
     var onRouteToProfileSettingsScreen: (() -> Void)?
+    var onRouteToRegistration: (() -> Void)?
     
     // MARK: Initialization
     init(preseter: UserProfileScreenPresentationLogic,
@@ -87,6 +88,21 @@ final class UserProfileScreenInteractor: UserProfileScreenBusinessLogic {
         onRouteToProfileSettingsScreen?()
     }
     
+    func signOut() {
+        worker.signOut { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(_):
+                os_log("Signout from account, data deleted", log: logger, type: .info)
+                backToRegistration()
+            case .failure(let failure):
+                _ = self.errorHandler.handleError(failure)
+                os_log("Failed to signout:\n", log: logger, type: .fault)
+                print(failure)
+            }
+        }
+    }
+    
     private func subscribeToEvents() {
         eventSubscriber.subscribe(UpdateProfileDataEvent.self) { [weak self] event in
             self?.handleUserDataChangedEvent(event)
@@ -94,5 +110,12 @@ final class UserProfileScreenInteractor: UserProfileScreenBusinessLogic {
         eventSubscriber.subscribe(UpdatePhotoEvent.self) { [weak self] event in
             self?.handlePhotoChangedEvent(event)
         }.store(in: &cancellables)
+    }
+    
+    func backToRegistration() {
+        os_log("Routed to registration", log: logger, type: .default)
+        DispatchQueue.main.async {
+            self.onRouteToRegistration?()
+        }
     }
 }

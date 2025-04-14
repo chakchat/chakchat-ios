@@ -126,7 +126,7 @@ final class ChatInteractor: ChatBusinessLogic {
         guard let cd = chatData else { return }
         worker.deleteMessage(cd.chatID, updateID, deleteMode) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
@@ -139,7 +139,7 @@ final class ChatInteractor: ChatBusinessLogic {
         guard let cd = chatData else { return }
         worker.editTextMessage(cd.chatID, updateID, text) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
@@ -152,7 +152,7 @@ final class ChatInteractor: ChatBusinessLogic {
         guard let cd = chatData else { return }
         worker.sendFileMessage(cd.chatID, fileID, replyTo) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
@@ -165,7 +165,7 @@ final class ChatInteractor: ChatBusinessLogic {
         guard let cd = chatData else { return }
         worker.sendReaction(cd.chatID, reaction, messageID) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
@@ -178,7 +178,7 @@ final class ChatInteractor: ChatBusinessLogic {
         guard let cd = chatData else { return }
         worker.deleteReaction(cd.chatID, updateID) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
