@@ -12,7 +12,6 @@ import Combine
 // MARK: - ProfileSettings Protocol
 protocol ProfileSettingsScreenBusinessLogic {
     func backToSettingsMenu()
-    func backToRegistration()
     func putNewData(_ newUserData: ProfileSettingsModels.ChangeableProfileUserData)
   
     func loadUserData()
@@ -21,7 +20,6 @@ protocol ProfileSettingsScreenBusinessLogic {
                        completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
     func putProfilePhoto(_ image: UIImage, completion: @escaping (Result<Void, Error>) -> Void)
     func deleteProfilePhoto()
-    func signOut()
 }
 
 protocol ProfileSettingsScreenPresentationLogic {
@@ -34,7 +32,6 @@ protocol ProfileSettingsScreenWorkerLogic {
     func getUserData() -> ProfileSettingsModels.ProfileUserData
     func checkUsername(_ username: String, completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
     
-    func signOut(completion: @escaping (Result<Void, Error>) -> Void)
     
     func uploadImage(_ fileData: Data,
                      _ fileName: String,
