@@ -56,8 +56,8 @@ final class GroupChatViewController: MessagesViewController {
         }
         
         let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
-        if case .custom = message.kind {
-            let cell = messagesCollectionView.dequeueReusableCell(CustomCell.self, for: indexPath)
+        if case .text = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
         }
@@ -66,8 +66,7 @@ final class GroupChatViewController: MessagesViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //messagesCollectionView = MessagesCollectionView(frame: .zero, collectionViewLayout: CustomMessagesFlowLayout())
-        messagesCollectionView.register(CustomCell.self)
+        messagesCollectionView.register(ReactionTextMessageCell.self)
         loadFirstMessages()
         configureUI()
         interactor.passChatData()
@@ -434,6 +433,17 @@ extension GroupChatViewController: MessagesDataSource {
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
         return messages[indexPath.section]
     }
+    
+    func textCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
+        let message = messages[indexPath.section]
+        
+        if case .text = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        }
+        return UICollectionViewCell()
+    }
 }
 
 extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
@@ -528,11 +538,11 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
         }
     }
     
-    func customCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
-        if message is GroupTextMessage {
-            return CustomMessageSizeCalculator(layout: messagesCollectionView.messagesCollectionViewFlowLayout)
+    func textCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
+        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
+            return ReactionMessageSizeCalculator(layout: layout)
         }
-        return MessageSizeCalculator()
+        return nil
     }
 }
 
@@ -546,109 +556,51 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
     }
 }
 
-class CustomCell: UICollectionViewCell {
+class ReactionTextMessageCell: TextMessageCell {
     
-    let replyLabel = UILabel()
-    let messageLabel = UILabel()
-    let reactionsStackView = UIStackView()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        contentView.layer.cornerRadius = 16
-        contentView.clipsToBounds = true
-        contentView.backgroundColor = UIColor(red: 30/255, green: 32/255, blue: 38/255, alpha: 1) // Telegram-style bubble
-        
-        setupViews()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupViews() {
-        replyLabel.numberOfLines = 0
-        replyLabel.font = UIFont.systemFont(ofSize: 13)
-        replyLabel.textColor = .lightGray
-        
-        messageLabel.numberOfLines = 0
-        messageLabel.font = UIFont.systemFont(ofSize: 16)
-        messageLabel.textColor = .white
-        
-        reactionsStackView.axis = .horizontal
-        reactionsStackView.spacing = 4
-        reactionsStackView.alignment = .center
-        
-        let stack = UIStackView(arrangedSubviews: [replyLabel, messageLabel, reactionsStackView])
-        stack.axis = .vertical
-        stack.spacing = 4
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        
-        contentView.addSubview(stack)
-        
+    let reactionView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .red
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 4
+        return view
+    }()
+
+    override func setupSubviews() {
+        super.setupSubviews()
+
+        messageContainerView.addSubview(reactionView)
+
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-            stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+            reactionView.widthAnchor.constraint(equalToConstant: 20),
+            reactionView.heightAnchor.constraint(equalToConstant: 20),
+            reactionView.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor, constant: -4),
+            reactionView.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -4)
         ])
     }
     
-    func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
+    override func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
+        super.configure(with: message, at: indexPath, and: messagesCollectionView)
+        
         if let message = message as? GroupTextMessage {
-            replyLabel.text = message.replyTo
-            replyLabel.isHidden = message.replyToID == nil
-            
-            messageLabel.text = message.text
-            
-            reactionsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
             if let reactions = message.reactions {
-                for emoji in reactions {
-                    let label = UILabel()
-                    label.text = emoji.value
-                    label.font = UIFont.systemFont(ofSize: 16)
-                    reactionsStackView.addArrangedSubview(label)
-                }
-                reactionsStackView.isHidden = false
+                reactionView.isHidden = false
             } else {
-                reactionsStackView.isHidden = true
+                reactionView.isHidden = true
             }
         }
     }
 }
 
-class CustomMessagesFlowLayout: MessagesCollectionViewFlowLayout {
-    lazy var customMessageSizeCalculator = CustomMessageSizeCalculator(layout: self)
+class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
-    override func cellSizeCalculatorForItem(at indexPath: IndexPath) -> CellSizeCalculator {
-        if isSectionReservedForTypingIndicator(indexPath.section) {
-            return typingIndicatorSizeCalculator
+    open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
+        var size = super.messageContainerSize(for: message, at: indexPath)
+        if let message = message as? GroupTextMessage {
+            if let reactions = message.reactions {
+                size.height += 20
+            }
         }
-        let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
-        if case .custom = message.kind {
-            return customMessageSizeCalculator
-        }
-        return super.cellSizeCalculatorForItem(at: indexPath)
-    }
-    
-    override func messageSizeCalculators() -> [MessageSizeCalculator] {
-        var superCalculators = super.messageSizeCalculators()
-        superCalculators.append(customMessageSizeCalculator)
-        return superCalculators
-    }
-}
-
-class CustomMessageSizeCalculator: MessageSizeCalculator {
-    override init(layout: MessagesCollectionViewFlowLayout? = nil) {
-        super.init()
-        self.layout = layout
-    }
-    
-    override func sizeForItem(at _: IndexPath) -> CGSize {
-        guard let layout = layout else { return .zero }
-        let collectionViewWidth = layout.collectionView?.bounds.width ?? 0
-        let contentInset = layout.collectionView?.contentInset ?? .zero
-        let inset = layout.sectionInset.left + layout.sectionInset.right + contentInset.left + contentInset.right
-        return CGSize(width: collectionViewWidth - inset, height: 44)
+        return size
     }
 }

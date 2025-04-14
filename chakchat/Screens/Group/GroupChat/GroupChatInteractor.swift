@@ -166,7 +166,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
             mappedTextUpdate.messageId = String(update.updateID)
             mappedTextUpdate.sentDate = update.createdAt
-            mappedTextUpdate.kind = .custom(Kind.GroupTextMessageKind)
+            mappedTextUpdate.kind = .text(tc.text)
             mappedTextUpdate.text = tc.text
             mappedTextUpdate.replyTo = nil // на этапе ViewController'a
             mappedTextUpdate.replyToID = tc.replyTo
