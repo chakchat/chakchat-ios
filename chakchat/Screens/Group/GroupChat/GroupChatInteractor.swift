@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import Combine
+import MessageKit
 
 final class GroupChatInteractor: GroupChatBusinessLogic {
     
@@ -39,6 +40,21 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         self.logger = logger
         
         subscribeToEvents()
+    }
+    
+    func loadFirstMessages(completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
+        worker.loadFirstMessages(chatData.chatID, 1, 200) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
+                let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
+                completion(.success(mappedSortedUpdates))
+            case .failure(let failure):
+                completion(.failure(failure))
+                print(failure)
+            }
+        }
     }
     
     func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
@@ -74,5 +90,98 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         eventSubscriber.subscribe(DeletedMemberEvent.self) { [weak self] event in
             self?.handleDeletedMemberEvent(event)
         }.store(in: &cancellables)
+    }
+    
+    private func mapToMessageType(_ updates: [UpdateData]) -> [MessageType] {
+        var mappedUpdates: [MessageType] = []
+        for update in updates {
+            switch update.type {
+            case .textMessage:
+                var mappedTextUpdate: GroupTextMessage!
+                if case .textContent(let tc) = update.content {
+                    mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedTextUpdate.messageId = String(update.updateID)
+                    mappedTextUpdate.sentDate = update.createdAt
+                    mappedTextUpdate.kind = .custom(Kind.GroupTextMessageKind)
+                    mappedTextUpdate.text = tc.text
+                    mappedTextUpdate.replyTo = nil // на этапе ViewController'a
+                    mappedTextUpdate.replyToID = tc.replyTo
+                    mappedTextUpdate.isEdited = tc.edited != nil ? true : false
+                    if let edited = tc.edited {
+                        if case .editedContent(let ec) = edited.content {
+                            mappedTextUpdate.editedMessage = ec.newText
+                            mappedTextUpdate.text = ec.newText
+                        }
+                    }
+                    if let reactions = tc.reactions {
+                        var reactionsDict: [Int64: String] = [:]
+                        for reaction in reactions {
+                            if case .reactionContent(let rc) = reaction.content {
+                                reactionsDict.updateValue(rc.reaction, forKey: reaction.updateID)
+                            }
+                        }
+                        mappedTextUpdate.reactions = reactionsDict
+                    }
+                }
+                mappedUpdates.append(mappedTextUpdate)
+            case .textEdited:
+                var mappedTextEditedUpdate: GroupTextMessageEdited!
+                if case .editedContent(let ec) = update.content {
+                    mappedTextEditedUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedTextEditedUpdate.messageId = String(update.updateID)
+                    mappedTextEditedUpdate.sentDate = update.createdAt
+                    mappedTextEditedUpdate.kind = .custom(Kind.GroupTextMessageEditedKind)
+                    mappedTextEditedUpdate.newText = ec.newText
+                    mappedTextEditedUpdate.oldTextUpdateID = ec.messageID
+                }
+                mappedUpdates.append(mappedTextEditedUpdate)
+            case .file:
+                var mappedFileUpdate: GroupFileMessage!
+                if case .fileContent(let fc) = update.content {
+                    mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedFileUpdate.messageId = String(update.updateID)
+                    mappedFileUpdate.sentDate = update.createdAt
+                    mappedFileUpdate.kind = .custom(Kind.GroupFileMessageKind)
+                    mappedFileUpdate.fileID = fc.fileID
+                    mappedFileUpdate.fileName = fc.fileName
+                    mappedFileUpdate.mimeType = fc.mimeType
+                    mappedFileUpdate.fileSize = fc.fileSize
+                    mappedFileUpdate.fileURL = fc.fileURL
+                    if let reactions = fc.reactions {
+                        var reactionsDict: [Int64: String] = [:]
+                        for reaction in reactions {
+                            if case .reactionContent(let rc) = reaction.content {
+                                reactionsDict.updateValue(rc.reaction, forKey: reaction.updateID)
+                            }
+                        }
+                        mappedFileUpdate.reactions = reactionsDict
+                    }
+                }
+                mappedUpdates.append(mappedFileUpdate)
+            case .reaction:
+                var mappedReactionUpdate: GroupReaction!
+                if case .reactionContent(let rc) = update.content {
+                    mappedReactionUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedReactionUpdate.messageId = String(update.updateID)
+                    mappedReactionUpdate.sentDate = update.createdAt
+                    mappedReactionUpdate.kind = .custom(Kind.GroupReactionKind)
+                    mappedReactionUpdate.onMessageID = rc.messageID
+                    mappedReactionUpdate.reaction = rc.reaction
+                }
+                mappedUpdates.append(mappedReactionUpdate)
+            case .delete:
+                var mappedDeleteUpdate: GroupMessageDelete!
+                if case .deletedContent(let dc) = update.content {
+                    mappedDeleteUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedDeleteUpdate.messageId = String(update.updateID)
+                    mappedDeleteUpdate.sentDate = update.createdAt
+                    mappedDeleteUpdate.kind = .custom(Kind.GroupMessageDeleteKind)
+                    mappedDeleteUpdate.deletedMessageID = dc.deletedID
+                    mappedDeleteUpdate.deleteMode = dc.deletedMode
+                }
+                mappedUpdates.append(mappedDeleteUpdate)
+            }
+        }
+        return mappedUpdates
     }
 }
