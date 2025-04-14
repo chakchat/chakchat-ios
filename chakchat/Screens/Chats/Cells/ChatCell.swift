@@ -31,6 +31,10 @@ final class ChatCell: UITableViewCell {
             height: Constants.size
         )
     )
+    private let messageLabel: UILabel = UILabel()
+    private let uncheckCircleView: UIView = UIView()
+    private let messageAmountLabel: UILabel = UILabel()
+    private let dateLabel: UILabel = UILabel()
     
     // MARK: - Initialization
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -43,8 +47,9 @@ final class ChatCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(_ image: URL?, _ name: String) {
+    func configure(_ image: URL?, _ name: String, _ message: String, _ uncheckAmount: Int, _ date: Date) {
         self.nicknameLabel.text = name
+        update(message: message, messagesAmount: uncheckAmount, date: date)
         if let url = image {
             loadImage(from: url)
         } else {
@@ -65,6 +70,38 @@ final class ChatCell: UITableViewCell {
         configureShimmerView()
         configurePhoto()
         configureName()
+        configureMessage()
+        configureUncheck()
+        configureMessageAmountLabel()
+        configureDateLabel()
+    }
+    
+    func update(message: String, messagesAmount: Int, date: Date) {
+        messageLabel.text = message
+        dateLabel.text = formatDate(date)
+        if messagesAmount < 1 {
+            uncheckCircleView.isHidden = true
+            messageAmountLabel.isHidden = true
+        } else {
+            uncheckCircleView.isHidden = false
+            messageAmountLabel.isHidden = false
+            messageAmountLabel.text = String(messagesAmount)
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        
+        let dateFormatter = DateFormatter()
+        
+        if calendar.isDateInToday(date) {
+            dateFormatter.timeStyle = .short
+            dateFormatter.dateStyle = .none
+        } else {
+            dateFormatter.dateFormat = "dd.MM.yyyy"
+        }
+        
+        return dateFormatter.string(from: date)
     }
     
     private func configureShimmerView() {
@@ -87,8 +124,46 @@ final class ChatCell: UITableViewCell {
         contentView.addSubview(nicknameLabel)
         nicknameLabel.font = Fonts.systemR20
         nicknameLabel.textColor = Colors.text
-        nicknameLabel.pinCenterY(contentView)
+        nicknameLabel.pinTop(contentView, 16)
         nicknameLabel.pinLeft(iconImageView.trailingAnchor, 10)
+    }
+    
+    private func configureMessage() {
+        contentView.addSubview(messageLabel)
+        messageLabel.font =  Fonts.systemR16
+        messageLabel.textColor = .gray
+        messageLabel.pinBottom(contentView, 16)
+        messageLabel.pinLeft(iconImageView.trailingAnchor, 10)
+    }
+    
+    private func configureUncheck() {
+        uncheckCircleView.setHeight(20)
+        uncheckCircleView.setWidth(20)
+        uncheckCircleView.layer.cornerRadius = 10
+        uncheckCircleView.backgroundColor = .systemBlue
+        uncheckCircleView.clipsToBounds = true
+        contentView.addSubview(uncheckCircleView)
+        uncheckCircleView.pinRight(contentView, 5)
+        uncheckCircleView.pinBottom(contentView, 16)
+    }
+    
+    private func configureMessageAmountLabel() {
+        messageAmountLabel.textColor = .white
+        messageAmountLabel.font = Fonts.systemR16
+        messageAmountLabel.textAlignment = .center
+        uncheckCircleView.addSubview(messageAmountLabel)
+        messageAmountLabel.pinTop(uncheckCircleView.topAnchor, 0)
+        messageAmountLabel.pinLeft(uncheckCircleView.leadingAnchor, 0)
+        messageAmountLabel.pinRight(uncheckCircleView.trailingAnchor, 0)
+        messageAmountLabel.pinBottom(uncheckCircleView.bottomAnchor, 0)
+    }
+    
+    private func configureDateLabel() {
+        contentView.addSubview(dateLabel)
+        dateLabel.font =  Fonts.systemR16
+        dateLabel.textColor = .gray
+        dateLabel.pinTop(contentView, 16)
+        dateLabel.pinRight(contentView, 5)
     }
     
     // MARK: - Supporting Methods
