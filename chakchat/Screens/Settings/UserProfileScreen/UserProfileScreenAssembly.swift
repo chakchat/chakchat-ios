@@ -13,7 +13,7 @@ enum UserProfileScreenAssembly {
     
     static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
         let presenter = UserProfileScreenPresenter()
-        let worker = UserProfileScreenWorker(userDefaultsManager: context.userDefaultsManager)
+        let worker = UserProfileScreenWorker(userDefaultsManager: context.userDefaultsManager, identityService: IdentityService(), keychainManager: context.keychainManager)
         let interactor = UserProfileScreenInteractor(preseter: presenter,
                                                      worker: worker,
                                                      eventSubscriber: context.eventManager,
@@ -25,6 +25,9 @@ enum UserProfileScreenAssembly {
         }
         interactor.onRouteToProfileSettingsScreen = { [weak coordinator] in
             coordinator?.showProfileSettingsScreen()
+        }
+        interactor.onRouteToRegistration = { [weak coordinator] in
+            coordinator?.showSendCodeScreen()
         }
         let view = UserProfileScreenViewController(interactor: interactor)
         presenter.view = view

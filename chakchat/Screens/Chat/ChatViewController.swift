@@ -609,7 +609,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
                     NSAttributedString.Key.foregroundColor: UIColor.darkGray,
                 ])
         }
-        if let message = message as? ReplyMessage {
+        if message is ReplyMessage {
             return NSAttributedString(
                 string: "You replied",
                 attributes: [
@@ -634,7 +634,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if let message = message as? ReplyMessage {
+        if message is ReplyMessage {
             return 40
         } else if let message = message as? MessageForKit {
             if case .text(let textContent) = message.content {
@@ -653,8 +653,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 10
-        
+        return 18
     }
     
     func messageTopLabelAttributedText(for message: MessageType, at _: IndexPath) -> NSAttributedString? {
@@ -697,9 +696,9 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     
     func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
         if isFromCurrentSender(message: message) {
-            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16))
+            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 2, left: 0, bottom: 0, right: 16))
         } else {
-            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
+            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 2, left: 16, bottom: 0, right: 0))
         }
     }
 }

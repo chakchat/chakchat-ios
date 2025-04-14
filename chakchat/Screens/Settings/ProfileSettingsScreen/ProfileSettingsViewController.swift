@@ -26,11 +26,11 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
         static let fieldsTrailing: CGFloat = 0
         static let defaultText: String = "default"
         
-        static let logOutButtonRadius: CGFloat = 18
-        static let logOutButtonTop: CGFloat = 25
-        static let logOutButtonHeight: CGFloat = 38
-        static let logOutButtonWidth: CGFloat = 100
-        static let logOutBorderWidth: CGFloat = 1
+        static let deleteButtonRadius: CGFloat = 18
+        static let deleteButtonTop: CGFloat = 25
+        static let deleteButtonHeight: CGFloat = 38
+        static let deleteButtonWidth: CGFloat = 200
+        static let deleteBorderWidth: CGFloat = 1
         
         static let dateButtonTop: CGFloat = 2.5
         static let dateButtonX: CGFloat = 20
@@ -48,7 +48,7 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
     private var usernameTextField: UIProfileTextField = UIProfileTextField(title: "username", placeholder: "username", isEditable: true)
     private var phoneTextField: UIProfileTextField = UIProfileTextField(title: "phone", placeholder: "phone", isEditable: false)
     private var birthTextField: UIProfileTextField = UIProfileTextField(title: "date_of_birth", placeholder: "choose", isEditable: false)
-    private var logOutButton: UIButton = UIButton(type: .system)
+    private var deleteButton: UIButton = UIButton(type: .system)
     private var dateButton: UIButton = UIButton(type: .system)
     private let dateFormatter: DateFormatter = DateFormatter()
     let interactor: ProfileSettingsScreenBusinessLogic
@@ -165,7 +165,7 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
         
         configureCancelButton()
         configureApplyButton()
-        configureLogOutButton()
+        configureDeleteButton()
         
         bindDynamicCheck()
     }
@@ -254,21 +254,21 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
         birthTextField.pinRight(view.trailingAnchor, Constants.birthTextFieldTrailing)
     }
     
-    private func configureLogOutButton() {
-        logOutButton.setTitle(LocalizationManager.shared.localizedString(for: "log_out"), for: .normal)
-        logOutButton.setTitleColor(.systemRed, for: .normal)
-        logOutButton.titleLabel?.font = Fonts.systemB20
-        logOutButton.backgroundColor = .clear
-        logOutButton.layer.cornerRadius = Constants.logOutButtonRadius
-        logOutButton.layer.borderWidth = Constants.logOutBorderWidth
-        logOutButton.layer.borderColor = UIColor.systemRed.cgColor
-        logOutButton.addTarget(self, action: #selector(logOutButtonPressed), for: .touchUpInside)
-        logOutButton.setHeight(Constants.logOutButtonHeight)
-        logOutButton.setWidth(Constants.logOutButtonWidth)
+    private func configureDeleteButton() {
+        deleteButton.setTitle(LocalizationManager.shared.localizedString(for: "delete_account"), for: .normal)
+        deleteButton.setTitleColor(.systemRed, for: .normal)
+        deleteButton.titleLabel?.font = Fonts.systemB20
+        deleteButton.backgroundColor = .clear
+        deleteButton.layer.cornerRadius = Constants.deleteButtonRadius
+        deleteButton.layer.borderWidth = Constants.deleteBorderWidth
+        deleteButton.layer.borderColor = UIColor.systemRed.cgColor
+        deleteButton.addTarget(self, action: #selector(deleteButtonPressed), for: .touchUpInside)
+        deleteButton.setHeight(Constants.deleteButtonHeight)
+        deleteButton.setWidth(Constants.deleteButtonWidth)
         
-        view.addSubview(logOutButton)
-        logOutButton.pinCenterX(view)
-        logOutButton.pinTop(dateButton.bottomAnchor, Constants.logOutButtonTop)
+        view.addSubview(deleteButton)
+        deleteButton.pinCenterX(view)
+        deleteButton.pinTop(dateButton.bottomAnchor, Constants.deleteButtonTop)
     }
     
     private func configureDateButton() {
@@ -449,16 +449,30 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
     }
     
     @objc
-    private func logOutButtonPressed() {
-        // TODO: show alert "Are u sure?" and log out of from account.
+    private func deleteButtonPressed() {
+        // TODO: show alert "Are u sure?" and delete account.
         UIView.animate(withDuration: UIConstants.animationDuration, animations: {
-            self.logOutButton.transform = CGAffineTransform(scaleX: UIConstants.buttonScale, y: UIConstants.buttonScale)
+            self.deleteButton.transform = CGAffineTransform(scaleX: UIConstants.buttonScale, y: UIConstants.buttonScale)
             }, completion: { _ in
             UIView.animate(withDuration: UIConstants.animationDuration) {
-                self.logOutButton.transform = CGAffineTransform.identity
+                self.deleteButton.transform = CGAffineTransform.identity
             }
         })
-        interactor.signOut()
+        showDeleteAccountConfirmation()
+    }
+    
+    private func showDeleteAccountConfirmation() {
+        let alert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "delete_account"), message: LocalizationManager.shared.localizedString(for: "are_you_sure_delete_account"), preferredStyle: .alert)
+  
+        let deleteAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "delete_account"), style: .destructive) { _ in
+            // TODO: delete account
+        }
+        let cancelAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel, handler: nil)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
     }
     
     @objc
@@ -482,7 +496,7 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
     private func languageDidChange() {
         navigationItem.rightBarButtonItem?.title = LocalizationManager.shared.localizedString(for: "apply")
         navigationItem.leftBarButtonItem?.title = LocalizationManager.shared.localizedString(for: "cancel")
-        logOutButton.titleLabel?.text = LocalizationManager.shared.localizedString(for: "log_out")
+        deleteButton.titleLabel?.text = LocalizationManager.shared.localizedString(for: "delete_account")
         nameTextField.localize()
         usernameTextField.localize()
         phoneTextField.localize()

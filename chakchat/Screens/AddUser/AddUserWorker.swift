@@ -24,7 +24,7 @@ final class AddUserWorker: AddUserWorkerLogic {
     }
     
     func loadUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void) {
-        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {
+        guard (keychainManager.getString(key: KeychainManager.keyForSaveAccessToken)) != nil else {
             completion(nil)
             return
         }

@@ -15,9 +15,7 @@ final class ErrorHandler: ErrorHandlerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let identityService: IdentityServiceProtocol
     
-    init(keychainManager: KeychainManagerBusinessLogic,
-         identityService: IdentityServiceProtocol
-    ) {
+    init(keychainManager: KeychainManagerBusinessLogic, identityService: IdentityServiceProtocol) {
         self.keychainManager = keychainManager
         self.identityService = identityService
     }
@@ -50,20 +48,9 @@ final class ErrorHandler: ErrorHandlerLogic {
     }
     
     func handleRefreshTokenError() {
-        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else {
-            print("Can't load accessToken, missing probably")
-            return
-        }
-        guard let refreshToken = keychainManager.getString(key: KeychainManager.keyForSaveRefreshToken) else {
-            print("Can't load refreshToken, missing probably")
-            return
-        }
-        let request = RefreshRequest(refreshToken: refreshToken)
-        identityService.sendSignoutRequest(request, accessToken) { [weak self] result in
-            guard let self = self else { return }
-            ImageCacheManager.shared.clearCache()
-            _ = keychainManager.deleteTokens()
-        }
+        ImageCacheManager.shared.clearCache()
+        _ = keychainManager.deleteTokens()
+        // TODO: go to sendcodeScreen
     }
     
     private func handleAccessTokenAbsence() {

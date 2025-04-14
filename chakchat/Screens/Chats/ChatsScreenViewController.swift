@@ -253,7 +253,8 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                     guard let self = self else { return }
                     switch result {
                     case .success(let chatInfo):
-                        cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName)
+                        // TODO: Add message, amount, date
+                        cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, "Hello world!", 1, Date.now)
                         cell.backgroundColor = .clear
                         cell.selectionStyle = .none
                     case .failure(let failure):
