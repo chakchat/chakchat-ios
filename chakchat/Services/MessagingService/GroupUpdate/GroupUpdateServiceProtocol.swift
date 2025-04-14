@@ -8,13 +8,6 @@
 import Foundation
 
 protocol GroupUpdateServiceProtocol {
-    func getUpdatesInRange(
-        _ chatID: UUID,
-        _ from: Int64,
-        _ to: Int64,
-        _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
-    )
     
     func searchForMessages(
         _ chatID: UUID,

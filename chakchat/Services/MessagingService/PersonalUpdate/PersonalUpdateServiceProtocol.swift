@@ -9,14 +9,6 @@ import Foundation
 
 // MARK: - UpdateServiceProtocol
 protocol PersonalUpdateServiceProtocol {
-    func getUpdatesInRange(
-        _ chatID: UUID,
-        _ from: Int64,
-        _ to: Int64,
-        _ accessToken: String,
-        completion: @escaping (Result<Updates, Error>) -> Void
-    )
-    
     func searchForMessages(
         _ chatID: UUID,
         _ offset: Int64,

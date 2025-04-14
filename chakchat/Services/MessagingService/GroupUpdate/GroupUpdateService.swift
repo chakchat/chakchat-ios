@@ -11,37 +11,6 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
     
     private let baseAPI: String = "/api/messaging/v1.0/chat/group/"
     
-    func getUpdatesInRange(
-        _ chatID: UUID,
-        _ from: Int64,
-        _ to: Int64,
-        _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
-    ) {
-        let endpoint = "\(baseAPI)\(chatID)/update"
-        
-        var components = URLComponents(string: endpoint)
-        var queryItems: [URLQueryItem] = []
-        queryItems.append(URLQueryItem(name: "from", value: String(from)))
-        queryItems.append(URLQueryItem(name: "to", value: String(to)))
-        
-        components?.queryItems = queryItems
-        
-        guard let url = components?.url else {
-            completion(.failure(APIError.invalidURL))
-            return
-        }
-        
-        let endpointWithQuery = url.absoluteString
-        
-        let headers = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type": "application/json"
-        ]
-        
-        Sender.send(endpoint: endpointWithQuery, method: .get, headers: headers, completion: completion)
-    }
-    
     func searchForMessages(
         _ chatID: UUID,
         _ offset: Int64,

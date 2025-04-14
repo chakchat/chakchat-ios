@@ -203,6 +203,7 @@ struct FileContent: Codable {
     let fileSize: Int64
     let fileURL: URL
     let createdAt: Date
+    let reactions: [UpdateData]?
 }
 
 struct ReactionContent: Codable {
