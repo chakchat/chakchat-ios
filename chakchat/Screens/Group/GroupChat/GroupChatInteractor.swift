@@ -184,6 +184,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 }
                 mappedTextUpdate.reactions = reactionsDict
             }
+            mappedTextUpdate.status = .sent
         }
         return mappedTextUpdate
     }
@@ -197,6 +198,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedTextEditedUpdate.kind = .custom(Kind.GroupTextMessageEditedKind)
             mappedTextEditedUpdate.newText = ec.newText
             mappedTextEditedUpdate.oldTextUpdateID = ec.messageID
+            mappedTextEditedUpdate.status = .sent
         }
         return mappedTextEditedUpdate
     }
@@ -232,7 +234,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         }
                         mappedFileUpdate.reactions = reactionsDict
                     }
+                    mappedFileUpdate.status = .sent
                 }
+                
                 mappedUpdates.append(mappedFileUpdate)
             case .reaction:
                 var mappedReactionUpdate: GroupReaction!
@@ -243,6 +247,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     mappedReactionUpdate.kind = .custom(Kind.GroupReactionKind)
                     mappedReactionUpdate.onMessageID = rc.messageID
                     mappedReactionUpdate.reaction = rc.reaction
+                    mappedReactionUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedReactionUpdate)
             case .delete:
@@ -254,6 +259,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     mappedDeleteUpdate.kind = .custom(Kind.GroupMessageDeleteKind)
                     mappedDeleteUpdate.deletedMessageID = dc.deletedID
                     mappedDeleteUpdate.deleteMode = dc.deletedMode
+                    mappedDeleteUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedDeleteUpdate)
             }

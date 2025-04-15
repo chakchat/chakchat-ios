@@ -150,11 +150,11 @@ struct DeleteKind {
     let deleteMode: DeleteMode
 }
 
-enum MessageStatus {
-    case sending
-    case sent
-    case read
-    case error
+enum MessageStatus: String {
+    case sending = "↻"
+    case sent = "✓"
+    case read = "✓✓"
+    case error = "!"
     case edited
 }
 

@@ -16,13 +16,17 @@ enum Kind {
     case GroupMessageDeleteKind
 }
 
+protocol GroupMessageStatusProtocol {
+    var status: MessageStatus { get set }
+}
+
 struct GroupSender: SenderType {
     var senderId: String
     var displayName: String
     var avatar: UIImage?
 }
 
-struct GroupTextMessage: MessageType {
+struct GroupTextMessage: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -37,6 +41,8 @@ struct GroupTextMessage: MessageType {
     
     var reactions: [Int64: String]?
     
+    var status: MessageStatus
+    
     init() {
         sender = GroupSender(senderId: "", displayName: "")
         messageId = ""
@@ -48,10 +54,11 @@ struct GroupTextMessage: MessageType {
         isEdited = true
         editedMessage = nil
         reactions = nil
+        status = .sending
     }
 }
 
-struct GroupTextMessageEdited: MessageType {
+struct GroupTextMessageEdited: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -60,6 +67,8 @@ struct GroupTextMessageEdited: MessageType {
     var newText: String
     var oldTextUpdateID: Int64
     
+    var status: MessageStatus
+    
     init() {
         sender = GroupSender(senderId: "", displayName: "")
         messageId = ""
@@ -67,10 +76,11 @@ struct GroupTextMessageEdited: MessageType {
         kind = .text("")
         newText = ""
         oldTextUpdateID = 0
+        status = .sending
     }
 }
 
-struct GroupFileMessage: MessageType {
+struct GroupFileMessage: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -84,9 +94,11 @@ struct GroupFileMessage: MessageType {
     
     var reactions: [Int64: String]?
     
+    var status: MessageStatus
+    
 }
 
-struct GroupReaction: MessageType {
+struct GroupReaction: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -94,9 +106,11 @@ struct GroupReaction: MessageType {
     
     var onMessageID: Int64
     var reaction: String
+    
+    var status: MessageStatus
 }
 
-struct GroupMessageDelete: MessageType {
+struct GroupMessageDelete: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -105,6 +119,8 @@ struct GroupMessageDelete: MessageType {
     var deletedMessageID: Int64
     var deleteMode: DeleteMode
     
+    var status: MessageStatus
+    
     init() {
         sender = GroupSender(senderId: "", displayName: "")
         messageId = ""
@@ -112,14 +128,17 @@ struct GroupMessageDelete: MessageType {
         kind = .text("")
         deletedMessageID = 1
         deleteMode = .DeleteModeForAll
+        status = .sending
     }
 }
 
-struct GroupOutgoingMessage: MessageType {
+struct GroupOutgoingMessage: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
     var kind: MessageKind
     
     var replyTo: MessageType?
+    
+    var status: MessageStatus
 }

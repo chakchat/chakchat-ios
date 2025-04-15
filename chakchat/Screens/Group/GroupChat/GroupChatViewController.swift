@@ -388,9 +388,9 @@ final class GroupChatViewController: MessagesViewController {
             messageId: UUID().uuidString,
             sentDate: Date(),
             kind: .text(text),
-            replyTo: nil
+            replyTo: nil,
+            status: .sending
         )
-        print("Sending")
         
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
@@ -404,7 +404,8 @@ final class GroupChatViewController: MessagesViewController {
                 
                 switch result {
                 case .success(let data):
-                    let textMessage = self.interactor.mapToTextMessage(data)
+                    var textMessage = self.interactor.mapToTextMessage(data)
+                    textMessage.status = .sent
                     self.messages[index] = textMessage
                     self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                     print(data)
@@ -424,6 +425,8 @@ final class GroupChatViewController: MessagesViewController {
                 messagesCollectionView.reloadData()
             } else {
                 message.text = text
+                message.status = .sending
+                messages[index] = message
                 self.messagesCollectionView.performBatchUpdates({
                     messagesCollectionView.reloadSections(IndexSet(integer: index))
                 }, completion: nil)
@@ -434,12 +437,13 @@ final class GroupChatViewController: MessagesViewController {
                         guard let self = self else { return }
                         switch result {
                         case .success(let data):
-                            let editedText = self.interactor.mapToEditedMessage(data)
-                            if let index = self.messages.firstIndex(where: {$0.messageId == String(editedText.oldTextUpdateID)}) {
+                            let editedText = self.interactor.mapToTextMessage(data)
+                            if let index = self.messages.firstIndex(where: {$0.messageId == editingMessageID}) {
                                 guard var message = self.messages[index] as? GroupTextMessage else { return }
                                 message.isEdited = true
-                                message.editedMessage = editedText.newText
-                                message.text = editedText.newText
+                                message.editedMessage = editedText.editedMessage
+                                message.text = editedText.editedMessage ?? editedText.text
+                                message.status = .sent
                                 self.messages[index] = message
                                 self.messagesCollectionView.reloadSections([index])
                             }
@@ -464,7 +468,8 @@ final class GroupChatViewController: MessagesViewController {
             messageId: UUID().uuidString,
             sentDate: Date(),
             kind: .text(text),
-            replyTo: repliedMessage
+            replyTo: repliedMessage,
+            status: .sending
         )
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
@@ -477,7 +482,8 @@ final class GroupChatViewController: MessagesViewController {
                       let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) else { return }
                 switch result {
                 case .success(let data):
-                    let textMessage = self.interactor.mapToTextMessage(data)
+                    var textMessage = self.interactor.mapToTextMessage(data)
+                    textMessage.status = .sent
                     self.messages[index] = textMessage
                     self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                     print(data)
@@ -675,17 +681,23 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     }
     
     func messageBottomLabelAttributedText(for message: any MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        if !isNextMessageSameSender(at: indexPath), isFromCurrentSender(message: message) {
-            return NSAttributedString(
-                string: "Delivered",
-                attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1)])
+        if let message = message as? GroupTextMessage {
+            if message.isEdited == true {
+                return NSAttributedString(
+                    string: " • edited",
+                    attributes: [
+                        NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                        NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                    ]
+                )
+            }
         }
         return nil
     }
     
     func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
         if isFromCurrentSender(message: message) {
-            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 16))
+            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 30))
         } else {
             return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
         }
@@ -742,9 +754,21 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
 class ReactionTextMessageCell: TextMessageCell {
     
     weak var cellDelegate: MessageEditMenuDelegate?
+    private var messageStatus: UILabel = UILabel()
         
     override func setupSubviews() {
         super.setupSubviews()
+        configureCell()
+    }
+    
+    private func configureCell() {
+        messageContainerView.addSubview(messageStatus)
+        messageStatus.setWidth(10)
+        messageStatus.setHeight(10)
+        messageStatus.pinBottom(messageContainerView.bottomAnchor, 1)
+        messageStatus.pinRight(messageContainerView.trailingAnchor, 5)
+        messageStatus.font = UIFont.systemFont(ofSize: 10)
+        messageStatus.textColor = .white
     }
     
     private func addLongPressMenu() {
@@ -756,6 +780,26 @@ class ReactionTextMessageCell: TextMessageCell {
     override func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
         addLongPressMenu()
+        if let message = message as? GroupMessageStatusProtocol {
+            messageStatus.text = message.status.rawValue
+            if message.status == .sending {
+                startSendingAnimation(in: self)
+            } else {
+                if message.status == .read {
+                    messageStatus.textColor = .chakChat
+                }
+                messageStatus.layer.removeAllAnimations()
+            }
+        }
+    }
+    
+    func startSendingAnimation(in cell: ReactionTextMessageCell) {
+        let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
+        rotation.toValue = NSNumber(value: Double.pi * 2)
+        rotation.duration = 1
+        rotation.isCumulative = true
+        rotation.repeatCount = .infinity
+        cell.messageStatus.layer.add(rotation, forKey: "rotationAnimation")
     }
     
     override var canBecomeFirstResponder: Bool {
