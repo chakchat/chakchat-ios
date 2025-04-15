@@ -876,10 +876,18 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
             }
             self.window?.rootViewController?.present(reactionsVC, animated: true)
         }
+  
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, previewForHighlightingMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        let params = UIPreviewParameters()
+        params.backgroundColor = .clear
+        params.shadowPath = UIBezierPath(rect: .zero)
+        params.visiblePath = UIBezierPath(rect: self.messageContainerView.bounds)
+        return UITargetedPreview(view: self.messageContainerView, parameters: params)
+    }
 }
 
 class ReactionsPreviewViewController: UIViewController {
-    private let emojis = ["❤️", "😂", "👍", "😮", "👎"]
+    private let emojis = ["❤️", "👍", "⚡️", "😭", "👎"]
     private var stackView: UIStackView!
     var reactionSelected: ((String) -> Void)?
     
