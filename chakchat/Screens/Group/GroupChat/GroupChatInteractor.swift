@@ -246,7 +246,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 }
                 mappedUpdates.append(mappedReactionUpdate)
             case .delete:
-                var mappedDeleteUpdate: GroupMessageDelete!
+                var mappedDeleteUpdate: GroupMessageDelete = GroupMessageDelete()
                 if case .deletedContent(let dc) = update.content {
                     mappedDeleteUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
                     mappedDeleteUpdate.messageId = String(update.updateID)

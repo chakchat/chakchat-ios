@@ -407,9 +407,9 @@ final class GroupChatViewController: MessagesViewController {
                     let textMessage = self.interactor.mapToTextMessage(data)
                     self.messages[index] = textMessage
                     self.messagesCollectionView.reloadSections(IndexSet(integer: index))
-                    print("Sent")
-                case .failure(_):
-                    print("Failed")
+                    print(data)
+                case .failure(let failure):
+                    print(failure)
                 }
             }
         }
@@ -443,9 +443,9 @@ final class GroupChatViewController: MessagesViewController {
                                 self.messages[index] = message
                                 self.messagesCollectionView.reloadSections([index])
                             }
-                            print("Edited")
+                            print(data)
                         case .failure(let failure):
-                            print("Failed to edit")
+                            print(failure)
                         }
                         self.editingMessage = nil
                         self.editingMessageID = nil
@@ -468,6 +468,7 @@ final class GroupChatViewController: MessagesViewController {
         )
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
+        self.replyPreviewView = nil
         messagesCollectionView.insertSections([messages.count - 1])
         messagesCollectionView.reloadData()
         interactor.sendTextMessage(text, Int64(repliedMessage.messageId) ?? 0) { [weak self] result in
@@ -479,12 +480,11 @@ final class GroupChatViewController: MessagesViewController {
                     let textMessage = self.interactor.mapToTextMessage(data)
                     self.messages[index] = textMessage
                     self.messagesCollectionView.reloadSections(IndexSet(integer: index))
-                    print("Sent")
-                case .failure(_):
-                    print("Failed")
+                    print(data)
+                case .failure(let failure):
+                    print(failure)
                 }
                 self.repliedMessage = nil
-                self.replyPreviewView = nil
             }
         }
     }
@@ -520,13 +520,15 @@ final class GroupChatViewController: MessagesViewController {
         self.interactor.deleteMessage(Int64(deletedMessage.messageId) ?? 0, mode) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self,
-                      let index = self.messages.firstIndex(where: { $0.messageId == deletedMessage.messageId }) else { return }
+                      let _ = self.messages.firstIndex(where: { $0.messageId == deletedMessage.messageId }) else { return }
                 switch result {
                 case .success(let data):
-                    print("Deleted")
-                case .failure(_):
+                    print(data)
+                case .failure(let failure):
+                    self.messages.append(deletedMessage)
                     self.messagesCollectionView.insertSections([self.messages.count - 1])
                     self.messagesCollectionView.reloadData()
+                    print(failure)
                 }
             }
         }
@@ -719,6 +721,10 @@ extension GroupChatViewController: MessageEditMenuDelegate {
     func didTapDelete(for message: IndexPath, mode: DeleteMode) {
         deleteMessage(message, mode: mode)
     }
+    
+    func didSelectReaction(_ emoji: String, for indexPath: IndexPath) {
+        print("Reaction")
+    }
 }
 
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
@@ -726,7 +732,7 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
         if editingMessageID != nil {
             sendEditRequest(inputBar, text)
         } else if repliedMessage != nil {
-            
+            sendReplyRequest(inputBar, text)
         } else {
             sendTextMessage(inputBar, text)
         }
@@ -780,6 +786,11 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
         }
         
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            
+            let reactions = UIAction(title: "Add Reaction", image: UIImage(systemName: "face.smiling")) { _ in
+                   self.showReactionsMenu(for: indexPath)
+            }
+            
             let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
                 self.cellDelegate?.didTapCopy(for: indexPath)
             }
@@ -792,17 +803,105 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
                 self.cellDelegate?.didTapEdit(for: indexPath)
             }
             
-            let deleteForMe = UIAction(title: "Удалить для меня", image: UIImage(systemName: "person")) { _ in
+            let deleteForMe = UIAction(title: "Delete for me", image: UIImage(systemName: "person")) { _ in
                 self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForSender)
             }
 
-            let deleteForEveryone = UIAction(title: "Удалить для всех", image: UIImage(systemName: "person.3.fill")) { _ in
+            let deleteForEveryone = UIAction(title: "Delete for all", image: UIImage(systemName: "person.3.fill")) { _ in
                 self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForAll)
             }
 
-            let deleteMenu = UIMenu(title: "Удалить", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
+            let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
             
-            return UIMenu(title: "", children: [copy, reply, edit, deleteMenu])
+            return UIMenu(title: "", children: [copy, reactions, reply, edit, deleteMenu])
         }
+    }
+    
+    private func showReactionsMenu(for indexPath: IndexPath) {
+            let reactionsVC = ReactionsPreviewViewController()
+            reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
+            reactionsVC.modalPresentationStyle = .popover
+            reactionsVC.reactionSelected = { [weak self] emoji in
+                self?.cellDelegate?.didSelectReaction(emoji, for: indexPath)
+            }
+            if let popover = reactionsVC.popoverPresentationController {
+                popover.sourceView = self
+                popover.sourceRect = self.bounds
+                popover.permittedArrowDirections = []
+                popover.delegate = self
+            }
+            self.window?.rootViewController?.present(reactionsVC, animated: true)
+        }
+}
+
+class ReactionsPreviewViewController: UIViewController {
+    private let emojis = ["❤️", "😂", "👍", "😮", "👎"]
+    private var stackView: UIStackView!
+    var reactionSelected: ((String) -> Void)?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupView()
+    }
+    
+    private func setupView() {
+        view.backgroundColor = .clear
+        
+        let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+        blurView.layer.cornerRadius = 20
+        blurView.clipsToBounds = true
+        view.addSubview(blurView)
+        
+        stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 12
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+        
+        blurView.contentView.addSubview(stackView)
+        
+        // Constraints
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            blurView.widthAnchor.constraint(equalToConstant: 240),
+            blurView.heightAnchor.constraint(equalToConstant: 50),
+            blurView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            blurView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            
+            stackView.centerXAnchor.constraint(equalTo: blurView.centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: blurView.centerYAnchor)
+        ])
+        
+        // Add reaction buttons
+        emojis.forEach { emoji in
+            let button = UIButton(type: .system)
+            button.setTitle(emoji, for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 28)
+            button.addTarget(self, action: #selector(reactionTapped(_:)), for: .touchUpInside)
+            stackView.addArrangedSubview(button)
+        }
+    }
+    
+    @objc private func reactionTapped(_ sender: UIButton) {
+        guard let emoji = sender.title(for: .normal) else { return }
+        
+        UIView.animate(withDuration: 0.1, animations: {
+            sender.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+        }) { _ in
+            UIView.animate(withDuration: 0.2) {
+                sender.transform = .identity
+            } completion: { _ in
+                self.reactionSelected?(emoji)
+                self.dismiss(animated: true)
+            }
+        }
+    }
+}
+
+extension ReactionTextMessageCell: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
     }
 }

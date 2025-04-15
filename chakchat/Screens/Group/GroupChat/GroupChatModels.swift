@@ -104,6 +104,15 @@ struct GroupMessageDelete: MessageType {
     
     var deletedMessageID: Int64
     var deleteMode: DeleteMode
+    
+    init() {
+        sender = GroupSender(senderId: "", displayName: "")
+        messageId = ""
+        sentDate = Date()
+        kind = .text("")
+        deletedMessageID = 1
+        deleteMode = .DeleteModeForAll
+    }
 }
 
 struct GroupOutgoingMessage: MessageType {
