@@ -16,13 +16,14 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     func handleDeletedMemberEvent(_ event: DeletedMemberEvent)
     
     func loadFirstMessages(completion: @escaping (Result<[MessageType], Error>) -> Void)
-    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void)
-    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void)
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
     func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
     
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage
+    func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited
 }
 
 protocol GroupChatPresentationLogic {
@@ -37,4 +38,11 @@ protocol GroupChatWorkerLogic {
     func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+}
+
+protocol MessageEditMenuDelegate: AnyObject {
+    func didTapCopy(for message: IndexPath)
+    func didTapReply(for message: IndexPath)
+    func didTapEdit(for message: IndexPath)
+    func didTapDelete(for message: IndexPath, mode: DeleteMode)
 }

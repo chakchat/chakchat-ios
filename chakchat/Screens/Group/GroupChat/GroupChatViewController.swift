@@ -30,11 +30,18 @@ final class GroupChatViewController: MessagesViewController {
     private let groupNameLabel: UILabel = UILabel()
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
+    
     private var curUser: GroupSender = GroupSender(senderId: "", displayName: "", avatar: nil)
     private var messages: [MessageType] = []
     
     private var deleteForAll: [GroupMessageDelete] = []
     private var deleteForSender: [GroupMessageDelete] = []
+    
+    private var replyPreviewView: ReplyPreviewView?
+    private var repliedMessage: MessageType?
+    
+    private var editingMessageID: String?
+    private var editingMessage: String?
     
     // MARK: - Initialization
     init(interactor: GroupChatBusinessLogic) {
@@ -58,6 +65,7 @@ final class GroupChatViewController: MessagesViewController {
         let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
         if case .text = message.kind {
             let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
+            cell.cellDelegate = self
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
         }
@@ -379,7 +387,8 @@ final class GroupChatViewController: MessagesViewController {
             sender: curUser,
             messageId: UUID().uuidString,
             sentDate: Date(),
-            kind: .text(text)
+            kind: .text(text),
+            replyTo: nil
         )
         print("Sending")
         
@@ -404,6 +413,147 @@ final class GroupChatViewController: MessagesViewController {
                 }
             }
         }
+    }
+    
+    private func sendEditRequest(_ inputBar: InputBarAccessoryView, _ text: String) {
+        guard let index = messages.firstIndex(where: { $0.messageId == editingMessageID}),
+              let editingMessageID = editingMessageID
+                else { return }
+        if var message = messages[index] as? GroupTextMessage {
+            if text == message.text {
+                messagesCollectionView.reloadData()
+            } else {
+                message.text = text
+                self.messagesCollectionView.performBatchUpdates({
+                    messagesCollectionView.reloadSections(IndexSet(integer: index))
+                }, completion: nil)
+                inputBar.inputTextView.text = ""
+                
+                interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        switch result {
+                        case .success(let data):
+                            let editedText = self.interactor.mapToEditedMessage(data)
+                            if let index = self.messages.firstIndex(where: {$0.messageId == String(editedText.oldTextUpdateID)}) {
+                                guard var message = self.messages[index] as? GroupTextMessage else { return }
+                                message.isEdited = true
+                                message.editedMessage = editedText.newText
+                                message.text = editedText.newText
+                                self.messages[index] = message
+                                self.messagesCollectionView.reloadSections([index])
+                            }
+                            print("Edited")
+                        case .failure(let failure):
+                            print("Failed to edit")
+                        }
+                        self.editingMessage = nil
+                        self.editingMessageID = nil
+                    }
+                }
+            }
+        }
+    }
+    
+    private func sendReplyRequest(_ inputBar: InputBarAccessoryView, _ text: String) {
+        guard let _ = replyPreviewView,
+              let repliedMessage = repliedMessage else { return }
+        
+        let outgoingMessage = GroupOutgoingMessage(
+            sender: curUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            kind: .text(text),
+            replyTo: repliedMessage
+        )
+        messages.append(outgoingMessage)
+        inputBar.inputTextView.text = ""
+        messagesCollectionView.insertSections([messages.count - 1])
+        messagesCollectionView.reloadData()
+        interactor.sendTextMessage(text, Int64(repliedMessage.messageId) ?? 0) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) else { return }
+                switch result {
+                case .success(let data):
+                    let textMessage = self.interactor.mapToTextMessage(data)
+                    self.messages[index] = textMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    print("Sent")
+                case .failure(_):
+                    print("Failed")
+                }
+                self.repliedMessage = nil
+                self.replyPreviewView = nil
+            }
+        }
+    }
+    
+    private func replyToMessage(_ messageIndexPath: IndexPath) {
+        let message = messages[messageIndexPath.section]
+        showReplyPreview(for: message)
+    }
+    
+    private func editMessage(_ messageIndexPath: IndexPath) {
+        let message = messages[messageIndexPath.section]
+        if let message = message as? GroupTextMessage {
+            messageInputBar.inputTextView.text = message.text
+            messageInputBar.inputTextView.becomeFirstResponder()
+            editingMessageID = message.messageId
+            editingMessage = message.text
+        }
+    }
+    
+    private func deleteMessage(_ messageIndexPath: IndexPath, mode: DeleteMode) {
+        let deletedMessage = messages[messageIndexPath.section]
+        self.messages.remove(at: messageIndexPath.section)
+        self.messagesCollectionView.performBatchUpdates({
+            self.messagesCollectionView.deleteSections(IndexSet(integer: messageIndexPath.section))
+        }, completion: nil)
+        
+        if let cell = self.messagesCollectionView.cellForItem(at: IndexPath(item: 0, section: messageIndexPath.section)) {
+            UIView.animate(withDuration: 0.25) {
+                cell.alpha = 0
+                cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            }
+        }
+        self.interactor.deleteMessage(Int64(deletedMessage.messageId) ?? 0, mode) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: { $0.messageId == deletedMessage.messageId }) else { return }
+                switch result {
+                case .success(let data):
+                    print("Deleted")
+                case .failure(_):
+                    self.messagesCollectionView.insertSections([self.messages.count - 1])
+                    self.messagesCollectionView.reloadData()
+                }
+            }
+        }
+    }
+    
+    private func showReplyPreview(for message: MessageType) {
+        replyPreviewView?.removeFromSuperview()
+        
+        let preview = ReplyPreviewView(message: message)
+        preview.onClose = { [weak self] in
+            self?.removeReplyPreview()
+        }
+        
+        messageInputBar.topStackView.addArrangedSubview(preview)
+        messageInputBar.topStackView.layoutIfNeeded()
+        
+        messageInputBar.topStackView.becomeFirstResponder()
+        
+        replyPreviewView = preview
+        repliedMessage = message
+    }
+    
+    private func removeReplyPreview() {
+        replyPreviewView?.removeFromSuperview()
+        messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        messageInputBar.setNeedsLayout()
+        replyPreviewView = nil
     }
     
     @objc private func handleTitleTap() {
@@ -440,6 +590,7 @@ extension GroupChatViewController: MessagesDataSource {
         if case .text = message.kind {
             let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            cell.cellDelegate = self
             return cell
         }
         return UICollectionViewCell()
@@ -547,48 +698,62 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
 }
 
 extension GroupChatViewController: MessageCellDelegate {
+}
+
+extension GroupChatViewController: MessageEditMenuDelegate {
+    func didTapCopy(for message: IndexPath) {
+        let message = messages[message.section]
+        if let message = message as? GroupTextMessage {
+            UIPasteboard.general.string = message.text
+        }
+    }
     
+    func didTapReply(for message: IndexPath) {
+        replyToMessage(message)
+    }
+    
+    func didTapEdit(for message: IndexPath) {
+        editMessage(message)
+    }
+    
+    func didTapDelete(for message: IndexPath, mode: DeleteMode) {
+        deleteMessage(message, mode: mode)
+    }
 }
 
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        sendTextMessage(inputBar, text)
+        if editingMessageID != nil {
+            sendEditRequest(inputBar, text)
+        } else if repliedMessage != nil {
+            
+        } else {
+            sendTextMessage(inputBar, text)
+        }
     }
 }
 
 class ReactionTextMessageCell: TextMessageCell {
     
-    let reactionView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .red
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.layer.cornerRadius = 4
-        return view
-    }()
-
+    weak var cellDelegate: MessageEditMenuDelegate?
+        
     override func setupSubviews() {
         super.setupSubviews()
-
-        messageContainerView.addSubview(reactionView)
-
-        NSLayoutConstraint.activate([
-            reactionView.widthAnchor.constraint(equalToConstant: 20),
-            reactionView.heightAnchor.constraint(equalToConstant: 20),
-            reactionView.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor, constant: -4),
-            reactionView.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -4)
-        ])
+    }
+    
+    private func addLongPressMenu() {
+        let interaction = UIContextMenuInteraction(delegate: self)
+        messageContainerView.addInteraction(interaction)
+        messageContainerView.isUserInteractionEnabled = true
     }
     
     override func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
-        
-        if let message = message as? GroupTextMessage {
-            if let reactions = message.reactions {
-                reactionView.isHidden = false
-            } else {
-                reactionView.isHidden = true
-            }
-        }
+        addLongPressMenu()
+    }
+    
+    override var canBecomeFirstResponder: Bool {
+        return true
     }
 }
 
@@ -597,10 +762,47 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)
         if let message = message as? GroupTextMessage {
-            if let reactions = message.reactions {
+            if message.reactions != nil {
                 size.height += 20
             }
         }
         return size
+    }
+}
+
+extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        
+        guard let collectionView = self.superview as? UICollectionView,
+              let indexPath = collectionView.indexPath(for: self) else {
+            return nil
+        }
+        
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
+                self.cellDelegate?.didTapCopy(for: indexPath)
+            }
+            
+            let reply = UIAction(title: "Reply to", image: UIImage(systemName: "pencil.and.scribble")) { _ in
+                self.cellDelegate?.didTapReply(for: indexPath)
+            }
+            
+            let edit = UIAction(title: "Edit", image: UIImage(systemName: "rectangle.and.pencil.and.ellipsis")) { _ in
+                self.cellDelegate?.didTapEdit(for: indexPath)
+            }
+            
+            let deleteForMe = UIAction(title: "Удалить для меня", image: UIImage(systemName: "person")) { _ in
+                self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForSender)
+            }
+
+            let deleteForEveryone = UIAction(title: "Удалить для всех", image: UIImage(systemName: "person.3.fill")) { _ in
+                self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForAll)
+            }
+
+            let deleteMenu = UIMenu(title: "Удалить", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
+            
+            return UIMenu(title: "", children: [copy, reply, edit, deleteMenu])
+        }
     }
 }

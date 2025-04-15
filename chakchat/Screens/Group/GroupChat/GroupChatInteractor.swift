@@ -73,26 +73,24 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
-    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void) {
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
             switch result {
             case .success(let data):
-                completion(true)
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
-                print(failure)
+                completion(.failure(failure))
             }
         }
     }
     
-    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void) {
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         worker.editTextMessage(chatData.chatID, updateID, text) { result in
             switch result {
             case .success(let data):
-                completion(true)
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
-                print(failure)
+                completion(.failure(failure))
             }
         }
     }
@@ -190,6 +188,19 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         return mappedTextUpdate
     }
     
+    func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited {
+        var mappedTextEditedUpdate = GroupTextMessageEdited()
+        if case .editedContent(let ec) = update.content {
+            mappedTextEditedUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+            mappedTextEditedUpdate.messageId = String(update.updateID)
+            mappedTextEditedUpdate.sentDate = update.createdAt
+            mappedTextEditedUpdate.kind = .custom(Kind.GroupTextMessageEditedKind)
+            mappedTextEditedUpdate.newText = ec.newText
+            mappedTextEditedUpdate.oldTextUpdateID = ec.messageID
+        }
+        return mappedTextEditedUpdate
+    }
+    
     private func mapToMessageType(_ updates: [UpdateData]) -> [MessageType] {
         var mappedUpdates: [MessageType] = []
         for update in updates {
@@ -198,16 +209,8 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 let mappedTextUpdate = mapToTextMessage(update)
                 mappedUpdates.append(mappedTextUpdate)
             case .textEdited:
-                var mappedTextEditedUpdate: GroupTextMessageEdited!
-                if case .editedContent(let ec) = update.content {
-                    mappedTextEditedUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
-                    mappedTextEditedUpdate.messageId = String(update.updateID)
-                    mappedTextEditedUpdate.sentDate = update.createdAt
-                    mappedTextEditedUpdate.kind = .custom(Kind.GroupTextMessageEditedKind)
-                    mappedTextEditedUpdate.newText = ec.newText
-                    mappedTextEditedUpdate.oldTextUpdateID = ec.messageID
-                }
-                mappedUpdates.append(mappedTextEditedUpdate)
+                let mappedEditedTextUpdate = mapToEditedMessage(update)
+                mappedUpdates.append(mappedEditedTextUpdate)
             case .file:
                 var mappedFileUpdate: GroupFileMessage!
                 if case .fileContent(let fc) = update.content {

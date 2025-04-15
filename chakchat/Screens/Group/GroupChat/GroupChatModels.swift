@@ -59,6 +59,15 @@ struct GroupTextMessageEdited: MessageType {
     
     var newText: String
     var oldTextUpdateID: Int64
+    
+    init() {
+        sender = GroupSender(senderId: "", displayName: "")
+        messageId = ""
+        sentDate = Date()
+        kind = .text("")
+        newText = ""
+        oldTextUpdateID = 0
+    }
 }
 
 struct GroupFileMessage: MessageType {
@@ -102,4 +111,6 @@ struct GroupOutgoingMessage: MessageType {
     var messageId: String
     var sentDate: Date
     var kind: MessageKind
+    
+    var replyTo: MessageType?
 }
