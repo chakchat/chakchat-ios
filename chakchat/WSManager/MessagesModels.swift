@@ -103,7 +103,7 @@ struct ChatCreatedData: Codable {
     
     enum CodingKeys: String, CodingKey {
         case senderID = "sender_id"
-        case chat
+        case chat = "chat"
     }
 }
 
@@ -116,10 +116,10 @@ struct ChatData: Codable {
     
     enum CodingKeys: String, CodingKey {
         case chatID = "chat_id"
-        case type
-        case members
+        case type = "type"
+        case members = "members"
         case createdAt = "created_at"
-        case info
+        case info = "info"
     }
 }
 
@@ -141,7 +141,7 @@ struct ChatExpirationSetData: Codable {
     enum CodingKeys: String, CodingKey {
         case senderID = "sender_id"
         case chatID = "chat_id"
-        case expiration
+        case expiration = "expiration"
     }
 }
 
@@ -155,8 +155,8 @@ struct UpdateGroupInfoData: Codable {
     enum CodingKeys: String, CodingKey {
         case senderID = "sender_id"
         case chatID = "chat_id"
-        case name
-        case description
+        case name = "name"
+        case description = "description"
         case groupPhoto = "group_photo"
     }
 }
@@ -169,7 +169,7 @@ struct UpdateGroupMembersData: Codable {
     enum CodingKeys: String, CodingKey {
         case senderID = "sender_id"
         case chatID = "chat_id"
-        case members
+        case members = "members"
     }
 }
 
@@ -189,10 +189,10 @@ struct TextContent: Codable {
     let reactions: [UpdateData]?
     
     enum CodingKeys: String, CodingKey {
-        case text
-        case edited
+        case text = "text"
+        case edited = "edited"
         case replyTo = "reply_to"
-        case reactions
+        case reactions = "reactions"
     }
 }
 
@@ -203,6 +203,7 @@ struct FileContent: Codable {
     let fileSize: Int64
     let fileURL: URL
     let createdAt: Date
+    let reactions: [UpdateData]?
 }
 
 struct ReactionContent: Codable {

@@ -16,7 +16,8 @@ final class ChatWorker: ChatWorkerLogic {
     private let coreDataManager: CoreDataManagerProtocol
     private let personalChatService: PersonalChatServiceProtocol
     private let secretPersonalChatService: SecretPersonalChatServiceProtocol
-    private let updateService: PersonalUpdateServiceProtocol
+    private let updateService: UpdateServiceProtocol
+    private let personalUpdateService: PersonalUpdateServiceProtocol
     
     // MARK: - Initialization
     init(
@@ -25,7 +26,8 @@ final class ChatWorker: ChatWorkerLogic {
         coreDataManager: CoreDataManagerProtocol,
         personalChatService: PersonalChatServiceProtocol,
         secretPersonalChatService: SecretPersonalChatServiceProtocol,
-        updateService: PersonalUpdateServiceProtocol
+        updateService: UpdateServiceProtocol,
+        personalUpdateService: PersonalUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
         self.userDefaultsManager = userDefaultsManager
@@ -33,6 +35,7 @@ final class ChatWorker: ChatWorkerLogic {
         self.personalChatService = personalChatService
         self.secretPersonalChatService = secretPersonalChatService
         self.updateService = updateService
+        self.personalUpdateService = personalUpdateService
     }
     
     func loadFirstMessages(_ chatID: UUID, _ from: Int64, _ to: Int64, completion: @escaping (Result<[UpdateData], any Error>) -> Void) {
@@ -70,7 +73,7 @@ final class ChatWorker: ChatWorkerLogic {
     func sendTextMessage(_ chatID: UUID, _ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.UpdateModels.SendMessageRequest(text: message, replyTo: replyTo)
-        updateService.sendTextMessage(request, chatID, accessToken) { result in
+        personalUpdateService.sendTextMessage(request, chatID, accessToken) { result in
             switch result {
             case .success(let response):
                 let data = response.data
@@ -84,7 +87,7 @@ final class ChatWorker: ChatWorkerLogic {
     
     func deleteMessage(_ chatID: UUID, _ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        updateService.deleteMessage(chatID, updateID, deleteMode, accessToken) { result in
+        personalUpdateService.deleteMessage(chatID, updateID, deleteMode, accessToken) { result in
             switch result {
             case .success(let response):
                 let data = response.data
@@ -99,7 +102,7 @@ final class ChatWorker: ChatWorkerLogic {
     func editTextMessage(_ chatID: UUID, _ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.UpdateModels.EditMessageRequest(text: text)
-        updateService.editTextMessage(chatID, updateID, request, accessToken) { result in
+        personalUpdateService.editTextMessage(chatID, updateID, request, accessToken) { result in
             switch result {
             case .success(let response):
                 let data = response.data
@@ -114,7 +117,7 @@ final class ChatWorker: ChatWorkerLogic {
     func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.UpdateModels.FileMessageRequest(fileID: fileID, replyTo: replyTo)
-        updateService.sendFileMessage(chatID, request, accessToken) { result in
+        personalUpdateService.sendFileMessage(chatID, request, accessToken) { result in
             switch result {
             case .success(let response):
                 let data = response.data
@@ -129,7 +132,7 @@ final class ChatWorker: ChatWorkerLogic {
     func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.UpdateModels.ReactionRequest(reaction: reaction, messageID: messageID)
-        updateService.sendReaction(chatID, request, accessToken) { result in
+        personalUpdateService.sendReaction(chatID, request, accessToken) { result in
             switch result {
             case .success(let response):
                 let data = response.data
@@ -143,7 +146,7 @@ final class ChatWorker: ChatWorkerLogic {
     
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        updateService.deleteReaction(chatID, updateID, accessToken) { result in
+        personalUpdateService.deleteReaction(chatID, updateID, accessToken) { result in
             switch result {
             case .success(let response):
                 let data = response.data

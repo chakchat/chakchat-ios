@@ -11,37 +11,6 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
     
     private let baseAPI: String = "/api/messaging/v1.0/chat/group/"
     
-    func getUpdatesInRange(
-        _ chatID: UUID,
-        _ from: Int64,
-        _ to: Int64,
-        _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
-    ) {
-        let endpoint = "\(baseAPI)\(chatID)/update"
-        
-        var components = URLComponents(string: endpoint)
-        var queryItems: [URLQueryItem] = []
-        queryItems.append(URLQueryItem(name: "from", value: String(from)))
-        queryItems.append(URLQueryItem(name: "to", value: String(to)))
-        
-        components?.queryItems = queryItems
-        
-        guard let url = components?.url else {
-            completion(.failure(APIError.invalidURL))
-            return
-        }
-        
-        let endpointWithQuery = url.absoluteString
-        
-        let headers = [
-            "Authorization": "Bearer \(accessToken)",
-            "Content-Type": "application/json"
-        ]
-        
-        Sender.send(endpoint: endpointWithQuery, method: .get, headers: headers, completion: completion)
-    }
-    
     func searchForMessages(
         _ chatID: UUID,
         _ offset: Int64,
@@ -86,9 +55,9 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ request: ChatsModels.UpdateModels.SendMessageRequest,
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendTextMessage)"
+        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendTextMessage.rawValue)"
         
         let idempotencyKey = UUID().uuidString
         
@@ -108,9 +77,9 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ updateID: Int64,
         _ deleteMode: DeleteMode,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode)"
+        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.updateMessage.rawValue)/\(updateID)/\(deleteMode.rawValue)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
@@ -125,7 +94,7 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ updateID: Int64,
         _ request: ChatsModels.UpdateModels.EditMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendTextMessage.rawValue)/\(updateID)"
         
@@ -143,7 +112,7 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.FileMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendFile.rawValue)"
         
@@ -164,7 +133,7 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ReactionRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Reaction>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendReaction.rawValue)"
         
@@ -185,7 +154,7 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ chatID: UUID,
         _ updateID: Int64,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint =  "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendReaction.rawValue)/\(updateID)"
         

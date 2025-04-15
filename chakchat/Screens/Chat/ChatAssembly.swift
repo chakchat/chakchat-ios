@@ -20,7 +20,8 @@ enum ChatAssembly {
         let presenter = ChatPresenter()
         let personalChatService = PersonalChatService()
         let secretPersonalChatService = SecretPersonalChatService()
-        let updateService = PersonalUpdateService()
+        let updateService = UpdateService()
+        let personalUpdateService = PersonalUpdateService()
         
         let worker = ChatWorker(
             keychainManager: context.keychainManager,
@@ -28,7 +29,8 @@ enum ChatAssembly {
             coreDataManager: context.coreDataManager,
             personalChatService: personalChatService,
             secretPersonalChatService: secretPersonalChatService,
-            updateService: updateService
+            updateService: updateService,
+            personalUpdateService: personalUpdateService
         )
         
         let interactor = ChatInteractor(

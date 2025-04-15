@@ -81,7 +81,7 @@ enum MessageContentType: String {
     case deleted = "deleted"
     case textEdited = "textEdited"
 }
-extension MessageKind: @retroactive Equatable {
+extension MessageKind: Equatable {
     public static func == (lhs: MessageKind, rhs: MessageKind) -> Bool {
         switch (lhs, rhs) {
         case (.text(let lhsText), .text(let rhsText)):
@@ -150,11 +150,11 @@ struct DeleteKind {
     let deleteMode: DeleteMode
 }
 
-enum MessageStatus {
-    case sending
-    case sent
-    case read
-    case error
+enum MessageStatus: String {
+    case sending = "↻"
+    case sent = "✓"
+    case read = "✓✓"
+    case error = "!"
     case edited
 }
 

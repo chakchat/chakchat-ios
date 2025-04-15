@@ -72,6 +72,14 @@ final class ChatViewController: MessagesViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadFirstMessages()
+        configureUI()
+        let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        newChatAlert.addGestureRecognizer(tap2)
+        interactor.passUserData()
+    }
+    
+    private func loadFirstMessages() {
         interactor.loadFirstMessages { [weak self] result in
             guard let self = self else { return }
             DispatchQueue.main.async {
@@ -83,12 +91,6 @@ final class ChatViewController: MessagesViewController {
                 }
             }
         }
-        configureUI()
-        
-        let tap2 = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        newChatAlert.addGestureRecognizer(tap2)
-        
-        interactor.passUserData()
     }
     
     private func handleMessages(_ updates: [MessageForKit]) {
@@ -567,13 +569,14 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
-        return .black
+        isFromCurrentSender(message: message) ? .white : .darkText
     }
+    
     
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
         return isFromCurrentSender(message: message)
-        ? Colors.messageColor
-        : Colors.messageColor
+        ? UIColor(red: 0.25, green: 0.44, blue: 0.89, alpha: 1.0)
+        : UIColor.systemGray5
     }
     
     func messageStyle(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> MessageStyle {
@@ -591,12 +594,12 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         }
         return 0
     }
-
+    
     func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-      0
+        0
     }
-
-        
+    
+    
     func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         if shouldShowDateLabel(for: message, at: indexPath) {
             return NSAttributedString(
@@ -618,16 +621,16 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         return nil
     }
     
+    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
+        nil
+    }
+    
     func shouldShowDateLabel(for message: MessageType, at indexPath: IndexPath) -> Bool {
         guard indexPath.section > 0 else { return true }
         
         let previousMessage = messages[indexPath.section - 1]
         
         return !Calendar.current.isDate(message.sentDate, inSameDayAs: previousMessage.sentDate)
-    }
-
-    func cellBottomLabelAttributedText(for _: MessageType, at _: IndexPath) -> NSAttributedString? {
-        nil
     }
     
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
@@ -649,7 +652,6 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         return 0
     }
     
-
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
         return 18
     }
@@ -693,12 +695,12 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func messageBottomLabelAlignment(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> LabelAlignment? {
-            if isFromCurrentSender(message: message) {
-                return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 2, left: 0, bottom: 0, right: 16))
-            } else {
-                return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 2, left: 16, bottom: 0, right: 0))
-            }
+        if isFromCurrentSender(message: message) {
+            return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 2, left: 0, bottom: 0, right: 16))
+        } else {
+            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 2, left: 16, bottom: 0, right: 0))
         }
+    }
 }
 
 extension ChatViewController: MessageCellDelegate {
@@ -805,7 +807,7 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                     guard let self = self else { return }
                     let editedMessage = self.messages[self.messages.count - 1]
                     guard var editedMessage = editedMessage as? ReplyMessage else { return }
-                    editedMessage.status = isReply ? .sent : .error
+                    //editedMessage.status = isReply ? .sent : .error
                     self.messagesCollectionView.reloadSections([self.messages.count - 1])
                     self.replyPreviewView = nil
                     self.repliedMessage = nil
@@ -874,9 +876,9 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                 guard let self = self else { return }
                 if let index = self.messages.firstIndex(where: { $0.messageId == outgoingMessage.messageId }) {
                     if var message = self.messages[index] as? OutgoingMessage {
-                        message.status = isSent ? .sent : .error
-                        self.messages[index] = message
-                        self.messagesCollectionView.reloadSections([index])
+//                        message.status = isSent ? .sent : .error
+//                        self.messages[index] = message
+//                        self.messagesCollectionView.reloadSections([index])
                     }
                 }
             }
