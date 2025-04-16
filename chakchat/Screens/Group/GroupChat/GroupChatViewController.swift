@@ -797,9 +797,10 @@ class ReactionTextMessageCell: TextMessageCell {
         replyMessage.font = UIFont.systemFont(ofSize: 10)
         replyMessage.textAlignment = .left
         replyMessage.numberOfLines = 1
-        replyMessage.lineBreakMode = .byClipping
+        replyMessage.lineBreakMode = .byTruncatingTail
         replyMessage.pinCenterY(replyView)
         replyMessage.pinLeft(replyView.leadingAnchor, 3)
+        replyMessage.setWidth(280) // ширина по которой текст будет обрезаться
     }
     
     private func addLongPressMenu() {
@@ -842,6 +843,18 @@ class ReactionTextMessageCell: TextMessageCell {
         cell.messageStatus.layer.add(rotation, forKey: "rotationAnimation")
     }
     
+    private func getEmoji(for word: String) -> String {
+        let emojis = ["❤️", "👍", "⚡️", "😭", "👎"]
+        switch word.lowercased() {
+        case "like": return emojis[0]
+        case "thumbsup": return emojis[1]
+        case "thunder" : return emojis[2]
+        case "cry": return emojis[3]
+        case "thumbbad": return emojis[4]
+        default: return word
+        }
+    }
+    
     override var canBecomeFirstResponder: Bool {
         return true
     }
@@ -851,13 +864,14 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)
+        let maxWidth = messageContainerMaxWidth(for: message, at: indexPath)
         if let message = message as? GroupTextMessage,
            let replyTo = message.replyTo {
             size.height += 40
             let replyToSize = replyTo.width(withConstrainedHeight: 16, font: .systemFont(ofSize: 16))
             
             if replyToSize > size.width {
-                size.width = replyToSize
+                size.width = replyToSize > maxWidth ? maxWidth : replyToSize
             }
         }
         return size
