@@ -96,7 +96,14 @@ final class GroupChatViewController: MessagesViewController {
     
     private func handleMessages(_ updates: [MessageType]) {
         for update in updates {
-            if let update = update as? GroupTextMessage {
+            if var update = update as? GroupTextMessage {
+                if let replyToID = update.replyToID {
+                    guard let index = messages.firstIndex(where: {$0.messageId == String(replyToID)}) else { return }
+                    if let repliedMessage = messages[index] as? GroupTextMessage {
+                        update.replyTo = repliedMessage.text
+                        print(repliedMessage.text)
+                    }
+                }
                 messages.append(update)
             }
             if let update = update as? GroupTextMessageEdited {
@@ -408,6 +415,7 @@ final class GroupChatViewController: MessagesViewController {
                     textMessage.status = .sent
                     self.messages[index] = textMessage
                     self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
                     print(data)
                 case .failure(let failure):
                     print(failure)
@@ -427,9 +435,7 @@ final class GroupChatViewController: MessagesViewController {
                 message.text = text
                 message.status = .sending
                 messages[index] = message
-                self.messagesCollectionView.performBatchUpdates({
-                    messagesCollectionView.reloadSections(IndexSet(integer: index))
-                }, completion: nil)
+                self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                 inputBar.inputTextView.text = ""
                 
                 interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
@@ -441,11 +447,12 @@ final class GroupChatViewController: MessagesViewController {
                             if let index = self.messages.firstIndex(where: {$0.messageId == editingMessageID}) {
                                 guard var message = self.messages[index] as? GroupTextMessage else { return }
                                 message.isEdited = true
-                                message.editedMessage = editedText.editedMessage
-                                message.text = editedText.editedMessage ?? editedText.text
+                                message.editedMessage = text
+                                message.text = text
                                 message.status = .sent
                                 self.messages[index] = message
-                                self.messagesCollectionView.reloadSections([index])
+                                self.messagesCollectionView.reloadData()
+                                self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                             }
                             print(data)
                         case .failure(let failure):
@@ -473,7 +480,6 @@ final class GroupChatViewController: MessagesViewController {
         )
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
-        self.replyPreviewView = nil
         messagesCollectionView.insertSections([messages.count - 1])
         messagesCollectionView.reloadData()
         interactor.sendTextMessage(text, Int64(repliedMessage.messageId) ?? 0) { [weak self] result in
@@ -484,12 +490,20 @@ final class GroupChatViewController: MessagesViewController {
                 case .success(let data):
                     var textMessage = self.interactor.mapToTextMessage(data)
                     textMessage.status = .sent
+                    if case .text(let text) = repliedMessage.kind {
+                        textMessage.replyTo = text
+                    }
                     self.messages[index] = textMessage
+                    self.messagesCollectionView.reloadData()
                     self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
                     print(data)
                 case .failure(let failure):
                     print(failure)
                 }
+                self.messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+                self.messageInputBar.setNeedsLayout()
+                self.replyPreviewView = nil
                 self.repliedMessage = nil
             }
         }
@@ -497,7 +511,7 @@ final class GroupChatViewController: MessagesViewController {
     
     private func replyToMessage(_ messageIndexPath: IndexPath) {
         let message = messages[messageIndexPath.section]
-        showReplyPreview(for: message)
+        showReplyPreview(for: message, type: .reply)
     }
     
     private func editMessage(_ messageIndexPath: IndexPath) {
@@ -507,6 +521,8 @@ final class GroupChatViewController: MessagesViewController {
             messageInputBar.inputTextView.becomeFirstResponder()
             editingMessageID = message.messageId
             editingMessage = message.text
+            showReplyPreview(for: message, type: .edit)
+            messagesCollectionView.scrollToLastItem(animated: true)
         }
     }
     
@@ -540,12 +556,12 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
-    private func showReplyPreview(for message: MessageType) {
+    private func showReplyPreview(for message: MessageType, type: ReplyType) {
         replyPreviewView?.removeFromSuperview()
         
-        let preview = ReplyPreviewView(message: message)
+        let preview = ReplyPreviewView(message: message, type: type)
         preview.onClose = { [weak self] in
-            self?.removeReplyPreview()
+            self?.removeReplyPreview(type)
         }
         
         messageInputBar.topStackView.addArrangedSubview(preview)
@@ -557,11 +573,14 @@ final class GroupChatViewController: MessagesViewController {
         repliedMessage = message
     }
     
-    private func removeReplyPreview() {
+    private func removeReplyPreview(_ type: ReplyType) {
         replyPreviewView?.removeFromSuperview()
         messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         messageInputBar.setNeedsLayout()
         replyPreviewView = nil
+        if type == .edit {
+            messageInputBar.inputTextView.text = ""
+        }
     }
     
     @objc private func handleTitleTap() {
@@ -737,6 +756,16 @@ extension GroupChatViewController: MessageEditMenuDelegate {
     func didSelectReaction(_ emoji: String, for indexPath: IndexPath) {
         print("Reaction")
     }
+    
+    func didTapReply(_ indexPath: IndexPath) {
+        if let message = messages[indexPath.section] as? GroupTextMessage,
+           let replyToID = message.replyToID {
+            if let targetIndex = messages.firstIndex(where: {$0.messageId == String(replyToID)}) {
+                let targetIndexPath = IndexPath(item: 0, section: targetIndex)
+                messagesCollectionView.scrollToItem(at: targetIndexPath, at: .centeredVertically, animated: true)
+            }
+        }
+    }
 }
 
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
@@ -754,32 +783,101 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
 class ReactionTextMessageCell: TextMessageCell {
     
     weak var cellDelegate: MessageEditMenuDelegate?
+    var indexPath: IndexPath?
+
     private var messageStatus: UILabel = UILabel()
-        
+    private var replyView: UIView = UIView()
+    private var replyMessage: UILabel = UILabel()
+
+    private var messageTopConstraint: NSLayoutConstraint?
+
     override func setupSubviews() {
         super.setupSubviews()
         configureCell()
     }
-    
+
     private func configureCell() {
+        configureMessageStatus()
+        configureReplyView()
+        configureReplyMessage()
+        setupConstraints()
+    }
+
+    private func configureMessageStatus() {
+        messageStatus.translatesAutoresizingMaskIntoConstraints = false
         messageContainerView.addSubview(messageStatus)
-        messageStatus.setWidth(10)
-        messageStatus.setHeight(10)
-        messageStatus.pinBottom(messageContainerView.bottomAnchor, 1)
-        messageStatus.pinRight(messageContainerView.trailingAnchor, 5)
         messageStatus.font = UIFont.systemFont(ofSize: 10)
         messageStatus.textColor = .white
     }
-    
-    private func addLongPressMenu() {
-        let interaction = UIContextMenuInteraction(delegate: self)
-        messageContainerView.addInteraction(interaction)
-        messageContainerView.isUserInteractionEnabled = true
+
+    private func configureReplyView() {
+        replyView.translatesAutoresizingMaskIntoConstraints = false
+        replyView.backgroundColor = .lightGray
+        replyView.layer.cornerRadius = 10
+        replyView.isHidden = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapReplyView))
+        replyView.addGestureRecognizer(tap)
+        replyView.isUserInteractionEnabled = true
+        messageContainerView.addSubview(replyView)
     }
-    
+
+    private func configureReplyMessage() {
+        replyMessage.translatesAutoresizingMaskIntoConstraints = false
+        replyMessage.numberOfLines = 1
+        replyMessage.textColor = .white
+        replyMessage.font = UIFont.systemFont(ofSize: 10)
+        replyMessage.textAlignment = .left
+        replyMessage.lineBreakMode = .byTruncatingTail
+        replyView.addSubview(replyMessage)
+    }
+
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            messageStatus.widthAnchor.constraint(equalToConstant: 10),
+            messageStatus.heightAnchor.constraint(equalToConstant: 10),
+            messageStatus.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -5),
+            messageStatus.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor, constant: -1)
+        ])
+
+        NSLayoutConstraint.activate([
+            replyView.topAnchor.constraint(equalTo: messageContainerView.topAnchor, constant: 4),
+            replyView.leadingAnchor.constraint(equalTo: messageContainerView.leadingAnchor, constant: 8),
+            replyView.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -8),
+            replyView.heightAnchor.constraint(equalToConstant: 30)
+        ])
+
+        NSLayoutConstraint.activate([
+            replyMessage.centerYAnchor.constraint(equalTo: replyView.centerYAnchor),
+            replyMessage.leadingAnchor.constraint(equalTo: replyView.leadingAnchor, constant: 3),
+            replyMessage.widthAnchor.constraint(equalToConstant: 280)
+        ])
+
+        // Message Label constraints (topAnchor will change dynamically)
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+        messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: messageContainerView.topAnchor)
+        
+        NSLayoutConstraint.activate([
+            messageTopConstraint!,
+            messageLabel.leadingAnchor.constraint(equalTo: messageContainerView.leadingAnchor),
+            messageLabel.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor),
+            messageLabel.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor)
+        ])
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        replyView.isHidden = true
+        replyMessage.text = nil
+        messageStatus.layer.removeAllAnimations()
+        messageTopConstraint?.constant = 0
+    }
+
     override func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
         addLongPressMenu()
+        
+        self.indexPath = indexPath
+
         if let message = message as? GroupMessageStatusProtocol {
             messageStatus.text = message.status.rawValue
             if message.status == .sending {
@@ -791,9 +889,31 @@ class ReactionTextMessageCell: TextMessageCell {
                 messageStatus.layer.removeAllAnimations()
             }
         }
+
+        replyView.isHidden = true
+        replyMessage.text = nil
+        messageTopConstraint?.isActive = false
+        messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: messageContainerView.topAnchor)
+        messageTopConstraint?.isActive = true
+
+        if let message = message as? GroupTextMessage,
+           let replyTo = message.replyTo {
+            replyView.isHidden = false
+            replyMessage.text = replyTo
+
+            messageTopConstraint?.isActive = false
+            messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: replyView.bottomAnchor, constant: 5)
+            messageTopConstraint?.isActive = true
+        }
     }
-    
-    func startSendingAnimation(in cell: ReactionTextMessageCell) {
+
+    private func addLongPressMenu() {
+        let interaction = UIContextMenuInteraction(delegate: self)
+        messageContainerView.addInteraction(interaction)
+        messageContainerView.isUserInteractionEnabled = true
+    }
+
+    private func startSendingAnimation(in cell: ReactionTextMessageCell) {
         let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotation.toValue = NSNumber(value: Double.pi * 2)
         rotation.duration = 1
@@ -802,6 +922,11 @@ class ReactionTextMessageCell: TextMessageCell {
         cell.messageStatus.layer.add(rotation, forKey: "rotationAnimation")
     }
     
+    @objc private func didTapReplyView() {
+        guard let indexPath = indexPath else { return }
+        cellDelegate?.didTapReply(indexPath)
+    }
+
     override var canBecomeFirstResponder: Bool {
         return true
     }
@@ -811,9 +936,14 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)
-        if let message = message as? GroupTextMessage {
-            if message.reactions != nil {
-                size.height += 20
+        let maxWidth = messageContainerMaxWidth(for: message, at: indexPath)
+        if let message = message as? GroupTextMessage,
+           let replyTo = message.replyTo {
+            size.height += 40
+            let replyToSize = replyTo.width(withConstrainedHeight: 16, font: .systemFont(ofSize: 16))
+            
+            if replyToSize > size.width {
+                size.width = replyToSize > maxWidth ? maxWidth : replyToSize
             }
         }
         return size
@@ -862,21 +992,21 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
     }
     
     private func showReactionsMenu(for indexPath: IndexPath) {
-            let reactionsVC = ReactionsPreviewViewController()
-            reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
-            reactionsVC.modalPresentationStyle = .popover
-            reactionsVC.reactionSelected = { [weak self] emoji in
-                self?.cellDelegate?.didSelectReaction(emoji, for: indexPath)
-            }
-            if let popover = reactionsVC.popoverPresentationController {
-                popover.sourceView = self
-                popover.sourceRect = self.bounds
-                popover.permittedArrowDirections = []
-                popover.delegate = self
-            }
-            self.window?.rootViewController?.present(reactionsVC, animated: true)
+        let reactionsVC = ReactionsPreviewViewController()
+        reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
+        reactionsVC.modalPresentationStyle = .popover
+        reactionsVC.reactionSelected = { [weak self] emoji in
+            self?.cellDelegate?.didSelectReaction(emoji, for: indexPath)
         }
-  
+        if let popover = reactionsVC.popoverPresentationController {
+            popover.sourceView = self
+            popover.sourceRect = self.bounds
+            popover.permittedArrowDirections = []
+            popover.delegate = self
+        }
+        self.window?.rootViewController?.present(reactionsVC, animated: true)
+    }
+    
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, previewForHighlightingMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
         let params = UIPreviewParameters()
         params.backgroundColor = .clear
@@ -955,5 +1085,21 @@ class ReactionsPreviewViewController: UIViewController {
 extension ReactionTextMessageCell: UIPopoverPresentationControllerDelegate {
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         return .none
+    }
+}
+
+extension String {
+    func height(withConstrainedWidth width: CGFloat, font: UIFont) -> CGFloat {
+        let constraintRect = CGSize(width: width, height: .greatestFiniteMagnitude)
+        let boundingBox = self.boundingRect(with: constraintRect, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
+    
+        return ceil(boundingBox.height)
+    }
+
+    func width(withConstrainedHeight height: CGFloat, font: UIFont) -> CGFloat {
+        let constraintRect = CGSize(width: .greatestFiniteMagnitude, height: height)
+        let boundingBox = self.boundingRect(with: constraintRect, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
+
+        return ceil(boundingBox.width)
     }
 }

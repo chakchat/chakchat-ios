@@ -174,7 +174,7 @@ struct UpdateGroupMembersData: Codable {
 }
 
 
-indirect enum UpdateContent: Codable {
+enum UpdateContent: Codable {
     case textContent(TextContent)
     case fileContent(FileContent)
     case reactionContent(ReactionContent)
@@ -185,14 +185,42 @@ indirect enum UpdateContent: Codable {
 struct TextContent: Codable {
     let replyTo: Int64?
     let text: String
-    let edited: UpdateData?
-    let reactions: [UpdateData]?
+    let edited: EditedInfo?
+    let reactions: [ReactionInfo]?
     
     enum CodingKeys: String, CodingKey {
         case text = "text"
         case edited = "edited"
         case replyTo = "reply_to"
         case reactions = "reactions"
+    }
+}
+
+struct EditedInfo: Codable {
+    let chatID: UUID
+    let updateID: Int64
+    let type: UpdateDataType
+    let senderID: UUID
+    let createdAt: Date
+    let content: EditedContent
+    
+    enum CodingKeys: String, CodingKey {
+        case chatID = "chat_id"
+        case updateID = "update_id"
+        case type = "type"
+        case senderID = "sender_id"
+        case createdAt = "created_at"
+        case content = "content"
+    }
+}
+
+struct EditedContent: Codable {
+    let newText: String
+    let messageID: Int64
+    
+    enum CodingKeys: String, CodingKey {
+        case newText = "new_text"
+        case messageID = "message_id"
     }
 }
 
@@ -203,20 +231,33 @@ struct FileContent: Codable {
     let fileSize: Int64
     let fileURL: URL
     let createdAt: Date
-    let reactions: [UpdateData]?
+    let reactions: [ReactionInfo]?
+}
+
+struct ReactionInfo: Codable {
+    let chatID: UUID
+    let updateID: Int64
+    let type: UpdateDataType
+    let senderID: UUID
+    let createdAt: Date
+    let content: ReactionContent
+    
+    enum CodingKeys: String, CodingKey {
+        case chatID = "chat_id"
+        case updateID = "update_id"
+        case type = "type"
+        case senderID = "sender_id"
+        case createdAt = "created_at"
+        case content = "content"
+    }
 }
 
 struct ReactionContent: Codable {
     let reaction: String
     let messageID: Int64
-}
-
-struct EditedContent: Codable {
-    let newText: String
-    let messageID: Int64
     
     enum CodingKeys: String, CodingKey {
-        case newText = "new_text"
+        case reaction = "reaction"
         case messageID = "message_id"
     }
 }
