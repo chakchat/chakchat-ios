@@ -20,6 +20,7 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
     private let logger: OSLog
     
     var onRouteToSettingsMenu: (() -> Void)?
+    var onRouteToRegistration: (() -> Void)?
     
     // MARK: - Initialization
     init(presenter: ProfileSettingsScreenPresentationLogic,
@@ -160,10 +161,31 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
         }
     }
     
+    func deleteAccount() {
+        worker.deleteAccount { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(_):
+                os_log("Delete account, data deleted", log: logger, type: .info)
+                backToRegistration()
+            case .failure(let failure):
+                _ = self.errorHandler.handleError(failure)
+                os_log("Failed to logout:\n", log: logger, type: .fault)
+                print(failure)
+            }
+        }
+    }
     
     // MARK: - Routing
     func backToSettingsMenu() {
         os_log("Routed to settings menu screen", log: logger, type: .default)
         onRouteToSettingsMenu?()
+    }
+    
+    func backToRegistration() {
+        os_log("Routed to registration", log: logger, type: .default)
+        DispatchQueue.main.async {
+            self.onRouteToRegistration?()
+        }
     }
 }

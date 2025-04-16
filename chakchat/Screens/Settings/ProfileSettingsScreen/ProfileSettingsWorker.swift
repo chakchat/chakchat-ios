@@ -108,4 +108,19 @@ final class ProfileSettingsWorker: ProfileSettingsScreenWorkerLogic {
         return userDefaultsManager.loadUserData()
     }
     
+    func deleteAccount(completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        userService.sendDeleteMeRequest(accessToken) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let response):
+                ImageCacheManager.shared.clearCache()
+                if keychainManager.deleteTokens() {
+                    completion(.success((response)))
+                }
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
 }
