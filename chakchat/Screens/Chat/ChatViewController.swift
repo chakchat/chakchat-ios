@@ -468,12 +468,12 @@ final class ChatViewController: MessagesViewController {
         self.present(disclaimer, animated: true)
     }
     
-    private func showReplyPreview(for message: MessageType) {
+    private func showReplyPreview(for message: MessageType, type: ReplyType) {
         replyPreviewView?.removeFromSuperview()
         
-        let preview = ReplyPreviewView(message: message)
+        let preview = ReplyPreviewView(message: message, type: type)
         preview.onClose = { [weak self] in
-            self?.removeReplyPreview()
+            self?.removeReplyPreview(type)
         }
         
         messageInputBar.topStackView.addArrangedSubview(preview)
@@ -485,11 +485,14 @@ final class ChatViewController: MessagesViewController {
         repliedMessage = message
     }
     
-    private func removeReplyPreview() {
+    private func removeReplyPreview(_ type: ReplyType) {
         replyPreviewView?.removeFromSuperview()
         messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         messageInputBar.setNeedsLayout()
         replyPreviewView = nil
+        if type == .edit {
+            messageInputBar.inputTextView.text = ""
+        }
     }
     
     @objc private func handleTitleTap() {
@@ -777,7 +780,7 @@ extension ChatViewController: MessageCellDelegate {
             UIAction(title: "Reply to") { [weak self] _ in
                 guard let indexPath = self?.messagesCollectionView.indexPath(for: cell),
                       let message = self?.messages[indexPath.section] else { return }
-                self?.showReplyPreview(for: message)
+                self?.showReplyPreview(for: message, type: .reply)
             }
         ])
         button.sendActions(for: .menuActionTriggered)

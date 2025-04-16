@@ -200,53 +200,53 @@ final class CoreDataManager: CoreDataManagerProtocol {
     
     func createUpdate(_ updateData: UpdateData) {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
-        let updateEntity: Update
-        switch updateData.content {
-        case .textContent(let textContent):
-            let textUpdate = TextMessageUpdate(context: context)
-            textUpdate.text = textContent.text
-            if let replyToID = textContent.replyTo {
-                textUpdate.replyTo = fetchUpdate(by: replyToID)
-            }
-            updateEntity = textUpdate
-        case .fileContent(let fileContent):
-            let fileUpdate = FileMessageUpdate(context: context)
-            fileUpdate.fileID = fileContent.fileID
-            fileUpdate.fileName = fileContent.fileName
-            fileUpdate.fileSize = fileContent.fileSize
-            fileUpdate.fileURL = fileContent.fileURL.absoluteString
-            fileUpdate.mimeType = fileContent.mimeType
-            fileUpdate.fileCreatedAt = updateData.createdAt
-            
-            updateEntity = fileUpdate
-            
-        case .reactionContent(let reactionContent):
-            let reactionUpdate = ReactionUpdate(context: context)
-            reactionUpdate.reaction = reactionContent.reaction
-            reactionUpdate.message = fetchUpdate(by: reactionContent.messageID)
-            
-            updateEntity = reactionUpdate
-            
-        case .editedContent(let editedContent):
-            let editUpdate = TextMessageEditedUpdate(context: context)
-            editUpdate.newText = editedContent.newText
-            editUpdate.message = fetchUpdate(by: editedContent.messageID)
-            
-            updateEntity = editUpdate
-            
-        case .deletedContent(let deletedContent):
-            let deleteUpdate = DeletedUpdate(context: context)
-            deleteUpdate.mode = deletedContent.deletedMode.rawValue
-            deleteUpdate.deletedUpdate = fetchUpdate(by: deletedContent.deletedID)
-            
-            updateEntity = deleteUpdate
-        }
-        
-        updateEntity.chatID = updateData.chatID
-        updateEntity.senderID = updateData.senderID
-        updateEntity.createdAt = updateData.createdAt
-        updateEntity.updateID = updateData.updateID
-        updateEntity.type = updateData.type.rawValue
+//        let updateEntity: Update
+//        switch updateData.content {
+//        case .textContent(let textContent):
+//            let textUpdate = TextMessageUpdate(context: context)
+//            textUpdate.text = textContent.text
+//            if let replyToID = textContent.replyTo {
+//                textUpdate.replyTo = fetchUpdate(by: replyToID)
+//            }
+//            updateEntity = textUpdate
+//        case .fileContent(let fileContent):
+//            let fileUpdate = FileMessageUpdate(context: context)
+//            fileUpdate.fileID = fileContent.fileID
+//            fileUpdate.fileName = fileContent.fileName
+//            fileUpdate.fileSize = fileContent.fileSize
+//            fileUpdate.fileURL = fileContent.fileURL.absoluteString
+//            fileUpdate.mimeType = fileContent.mimeType
+//            fileUpdate.fileCreatedAt = updateData.createdAt
+//            
+//            updateEntity = fileUpdate
+//            
+//        case .reactionContent(let reactionContent):
+//            let reactionUpdate = ReactionUpdate(context: context)
+//            reactionUpdate.reaction = reactionContent.reaction
+//            reactionUpdate.message = fetchUpdate(by: reactionContent.messageID)
+//            
+//            updateEntity = reactionUpdate
+//            
+//        case .editedContent(let editedContent):
+//            let editUpdate = TextMessageEditedUpdate(context: context)
+//            editUpdate.newText = editedContent.newText
+//            editUpdate.message = fetchUpdate(by: editedContent.messageID)
+//            
+//            updateEntity = editUpdate
+//            
+//        case .deletedContent(let deletedContent):
+//            let deleteUpdate = DeletedUpdate(context: context)
+//            deleteUpdate.mode = deletedContent.deletedMode.rawValue
+//            deleteUpdate.deletedUpdate = fetchUpdate(by: deletedContent.deletedID)
+//            
+//            updateEntity = deleteUpdate
+//        }
+//        
+//        updateEntity.chatID = updateData.chatID
+//        updateEntity.senderID = updateData.senderID
+//        updateEntity.createdAt = updateData.createdAt
+//        updateEntity.updateID = updateData.updateID
+//        updateEntity.type = updateData.type.rawValue
         
         CoreDataStack.shared.saveContext(for: Models.user.rawValue)
     }

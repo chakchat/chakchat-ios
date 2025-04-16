@@ -46,4 +46,5 @@ protocol MessageEditMenuDelegate: AnyObject {
     func didTapEdit(for message: IndexPath)
     func didTapDelete(for message: IndexPath, mode: DeleteMode)
     func didSelectReaction(_ emoji: String, for indexPath: IndexPath)
+    func didTapReply(_ indexPath: IndexPath)
 }

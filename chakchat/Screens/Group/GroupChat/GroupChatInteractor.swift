@@ -164,23 +164,16 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
             mappedTextUpdate.messageId = String(update.updateID)
             mappedTextUpdate.sentDate = update.createdAt
-            mappedTextUpdate.kind = .text(tc.text)
-            mappedTextUpdate.text = tc.text
+            mappedTextUpdate.kind = .text(tc.edited?.content.newText ?? tc.text)
+            mappedTextUpdate.text = tc.edited?.content.newText ?? tc.text
             mappedTextUpdate.replyTo = nil // на этапе ViewController'a
             mappedTextUpdate.replyToID = tc.replyTo
             mappedTextUpdate.isEdited = tc.edited != nil ? true : false
-            if let edited = tc.edited {
-                if case .editedContent(let ec) = edited.content {
-                    mappedTextUpdate.editedMessage = ec.newText
-                    mappedTextUpdate.text = ec.newText
-                }
-            }
+            mappedTextUpdate.editedMessage = tc.edited?.content.newText
             if let reactions = tc.reactions {
                 var reactionsDict: [Int64: String] = [:]
                 for reaction in reactions {
-                    if case .reactionContent(let rc) = reaction.content {
-                        reactionsDict.updateValue(rc.reaction, forKey: reaction.updateID)
-                    }
+                    reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
                 }
                 mappedTextUpdate.reactions = reactionsDict
             }
@@ -228,9 +221,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     if let reactions = fc.reactions {
                         var reactionsDict: [Int64: String] = [:]
                         for reaction in reactions {
-                            if case .reactionContent(let rc) = reaction.content {
-                                reactionsDict.updateValue(rc.reaction, forKey: reaction.updateID)
-                            }
+                            reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
                         }
                         mappedFileUpdate.reactions = reactionsDict
                     }

@@ -11,6 +11,7 @@ import MessageKit
 final class ReplyPreviewView: UIView {
     
     private let message: MessageType
+    private var replyType: ReplyType
     private let senderLabel: UILabel = UILabel()
     private let messageLabel: UILabel = UILabel()
     private let contentView: UIView = UIView()
@@ -18,8 +19,9 @@ final class ReplyPreviewView: UIView {
     
     var onClose: (() -> Void)?
     
-    init(message: MessageType) {
+    init(message: MessageType, type: ReplyType) {
         self.message = message
+        self.replyType = type
         super.init(frame: .zero)
         configureUI()
     }
@@ -59,7 +61,7 @@ final class ReplyPreviewView: UIView {
     
     private func configureSenderLabel() {
         contentView.addSubview(senderLabel)
-        senderLabel.text = "Replying to \(message.sender.displayName)"
+        senderLabel.text = replyType == .reply ? "Replying to \(message.sender.displayName)" : "Editing"
         senderLabel.font = Fonts.systemR12
         senderLabel.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
         senderLabel.pinTop(contentView.topAnchor, 0)
@@ -83,4 +85,9 @@ final class ReplyPreviewView: UIView {
     @objc private func closeTapped() {
         onClose?()
     }
+}
+
+enum ReplyType {
+    case reply
+    case edit
 }
