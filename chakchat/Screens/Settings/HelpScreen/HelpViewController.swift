@@ -30,7 +30,8 @@ final class HelpViewController: UIViewController {
     private var sections = [
         [LocalizationManager.shared.localizedString(for: "report_bug"),
          LocalizationManager.shared.localizedString(for: "send_review"),
-         "FAQ"
+         "FAQ",
+         "GitHub"
         ],
         [LocalizationManager.shared.localizedString(for: "write_email"),
          LocalizationManager.shared.localizedString(for: "write_support_chat")
@@ -129,6 +130,14 @@ final class HelpViewController: UIViewController {
         }
     }
     
+    private func github() {
+        if let url = URL(string: "https://github.com/chakchat") {
+            let safariVC = SFSafariViewController(url: url)
+            safariVC.modalPresentationStyle = .formSheet
+            present(safariVC, animated: true, completion: nil)
+        }
+    }
+    
     // MARK: - Actions
     @objc
     private func backButtonPressed() {
@@ -195,6 +204,9 @@ extension HelpViewController: UITableViewDelegate, UITableViewDataSource {
         // if pressed cell is "FAQ"
         case (0, 2):
             FAQ()
+        // if pressed cell is "GitHub"
+        case (0, 3):
+            github()
         // if pressed cell is "Write to us by email"
         case (1, 0):
             interactor.sendEmptyMail(self)
