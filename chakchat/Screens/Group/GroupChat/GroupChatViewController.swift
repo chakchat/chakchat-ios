@@ -755,6 +755,8 @@ class ReactionTextMessageCell: TextMessageCell {
     
     weak var cellDelegate: MessageEditMenuDelegate?
     private var messageStatus: UILabel = UILabel()
+    private var replyView: UIView = UIView()
+    private var replyMessage: UILabel = UILabel()
         
     override func setupSubviews() {
         super.setupSubviews()
@@ -762,6 +764,12 @@ class ReactionTextMessageCell: TextMessageCell {
     }
     
     private func configureCell() {
+        configureMessageStatus()
+        configureReplyView()
+        configureReplyMessage()
+    }
+    
+    private func configureMessageStatus() {
         messageContainerView.addSubview(messageStatus)
         messageStatus.setWidth(10)
         messageStatus.setHeight(10)
@@ -769,6 +777,29 @@ class ReactionTextMessageCell: TextMessageCell {
         messageStatus.pinRight(messageContainerView.trailingAnchor, 5)
         messageStatus.font = UIFont.systemFont(ofSize: 10)
         messageStatus.textColor = .white
+    }
+    
+    private func configureReplyView() {
+        messageContainerView.addSubview(replyView)
+        replyView.backgroundColor = .lightGray
+        replyView.layer.cornerRadius = 10
+        replyView.pinTop(messageContainerView.topAnchor, 4)
+        replyView.pinLeft(messageContainerView.leadingAnchor, 8)
+        replyView.pinRight(messageContainerView.trailingAnchor, 8)
+        replyView.setHeight(30)
+        replyView.isHidden = true
+    }
+    
+    private func configureReplyMessage() {
+        replyView.addSubview(replyMessage)
+        replyMessage.numberOfLines = 2
+        replyMessage.textColor = .white
+        replyMessage.font = UIFont.systemFont(ofSize: 10)
+        replyMessage.textAlignment = .left
+        replyMessage.numberOfLines = 1
+        replyMessage.lineBreakMode = .byClipping
+        replyMessage.pinCenterY(replyView)
+        replyMessage.pinLeft(replyView.leadingAnchor, 3)
     }
     
     private func addLongPressMenu() {
@@ -791,6 +822,15 @@ class ReactionTextMessageCell: TextMessageCell {
                 messageStatus.layer.removeAllAnimations()
             }
         }
+        if let mesasge = message as? GroupTextMessage,
+           let replyTo = mesasge.replyTo {
+            replyView.isHidden = false
+            replyMessage.text = replyTo
+            messageLabel.pinTop(replyView.bottomAnchor, 5)
+            messageLabel.pinLeft(messageContainerView.leadingAnchor, 0)
+            messageLabel.pinRight(messageContainerView.trailingAnchor, 0)
+            messageLabel.pinBottom(messageContainerView.bottomAnchor, 0)
+        }
     }
     
     func startSendingAnimation(in cell: ReactionTextMessageCell) {
@@ -811,9 +851,13 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)
-        if let message = message as? GroupTextMessage {
-            if message.reactions != nil {
-                size.height += 20
+        if let message = message as? GroupTextMessage,
+           let replyTo = message.replyTo {
+            size.height += 40
+            let replyToSize = replyTo.width(withConstrainedHeight: 16, font: .systemFont(ofSize: 16))
+            
+            if replyToSize > size.width {
+                size.width = replyToSize
             }
         }
         return size
@@ -955,5 +999,21 @@ class ReactionsPreviewViewController: UIViewController {
 extension ReactionTextMessageCell: UIPopoverPresentationControllerDelegate {
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         return .none
+    }
+}
+
+extension String {
+    func height(withConstrainedWidth width: CGFloat, font: UIFont) -> CGFloat {
+        let constraintRect = CGSize(width: width, height: .greatestFiniteMagnitude)
+        let boundingBox = self.boundingRect(with: constraintRect, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
+    
+        return ceil(boundingBox.height)
+    }
+
+    func width(withConstrainedHeight height: CGFloat, font: UIFont) -> CGFloat {
+        let constraintRect = CGSize(width: .greatestFiniteMagnitude, height: height)
+        let boundingBox = self.boundingRect(with: constraintRect, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
+
+        return ceil(boundingBox.width)
     }
 }
