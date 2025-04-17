@@ -10,7 +10,7 @@ import MessageKit
 
 class PhotoMessageCell: MediaMessageCell {
     
-    private var shimmerView: ShimmerView?
+    weak var cellDelegate: FileMessageEditMenuDelegate?
     private var messageStatus: UILabel = UILabel()
     
     override func setupConstraints() {
@@ -19,16 +19,11 @@ class PhotoMessageCell: MediaMessageCell {
     
     override func setupSubviews() {
         super.setupSubviews()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.backgroundColor = .clear
+        configureMessageStatus()
     }
     
     override func prepareForReuse() {
       super.prepareForReuse()
-        shimmerView?.removeFromSuperview()
-        shimmerView = nil
-        configureMessageStatus()
     }
     
     override func configure(
@@ -37,10 +32,8 @@ class PhotoMessageCell: MediaMessageCell {
         and messagesCollectionView: MessagesCollectionView)
     {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
-        
-        shimmerView?.removeFromSuperview()
-        shimmerView = nil
-        
+        addLongPressMenu()
+
         if let message = message as? GroupMessageStatusProtocol {
             messageStatus.text = message.status.rawValue
             if message.status == .sending {
@@ -60,12 +53,6 @@ class PhotoMessageCell: MediaMessageCell {
         if let image = photoMediaItem.image {
             imageView.image = image
         } else {
-            let shimmer = ShimmerView(frame: imageView.bounds)
-            shimmer.startAnimating()
-            shimmer.layer.cornerRadius = 0
-            imageView.addSubview(shimmer)
-            shimmerView = shimmer
-            
             if let url = photoMediaItem.url {
                 DispatchQueue.global(qos: .userInteractive).async {
                     URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
@@ -76,8 +63,6 @@ class PhotoMessageCell: MediaMessageCell {
                         ImageCacheManager.shared.saveImage(image, for: url as NSURL)
                         DispatchQueue.main.async {
                             self.imageView.image = image
-                            self.shimmerView?.removeFromSuperview()
-                            self.shimmerView = nil
                         }
                     }
                 }
@@ -95,6 +80,12 @@ class PhotoMessageCell: MediaMessageCell {
         messageStatus.pinBottom(messageContainerView.bottomAnchor, 5)
     }
     
+    private func addLongPressMenu() {
+        let interaction = UIContextMenuInteraction(delegate: self)
+        messageContainerView.addInteraction(interaction)
+        messageContainerView.isUserInteractionEnabled = true
+    }
+    
     private func startSendingAnimation(in cell: PhotoMessageCell) {
         let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotation.toValue = NSNumber(value: Double.pi * 2)
@@ -110,5 +101,77 @@ class PhotoMessageCellSizeCalculator: MediaMessageSizeCalculator {
     override func messageContainerSize(for message: any MessageType, at indexPath: IndexPath) -> CGSize {
         let size = super.messageContainerSize(for: message, at: indexPath)
         return size
+    }
+}
+
+extension PhotoMessageCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        
+        guard let collectionView = self.superview as? UICollectionView,
+              let indexPath = collectionView.indexPath(for: self) else {
+            return nil
+        }
+        
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            
+            let reactions = UIAction(title: "Add Reaction", image: UIImage(systemName: "face.smiling")) { _ in
+                self.showReactionsMenu(for: indexPath)
+            }
+            
+            let copy = UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
+                self.cellDelegate?.didTapCopy(for: indexPath)
+            }
+            
+            let reply = UIAction(title: "Reply to", image: UIImage(systemName: "pencil.and.scribble")) { _ in
+                self.cellDelegate?.didTapReply(for: indexPath)
+            }
+            
+            let load = UIAction(title: "Load", image: UIImage(systemName: "square.and.arrow.down")) { _ in
+                self.cellDelegate?.didTapLoad(for: indexPath)
+            }
+            
+            let deleteForMe = UIAction(title: "Delete for me", image: UIImage(systemName: "person")) { _ in
+                self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForSender)
+            }
+            
+            let deleteForEveryone = UIAction(title: "Delete for all", image: UIImage(systemName: "person.3.fill")) { _ in
+                self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForAll)
+            }
+            
+            let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
+            
+            return UIMenu(title: "", children: [copy, reactions, reply, load, deleteMenu])
+        }
+    }
+    
+    private func showReactionsMenu(for indexPath: IndexPath) {
+        let reactionsVC = ReactionsPreviewViewController()
+        reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
+        reactionsVC.modalPresentationStyle = .popover
+        reactionsVC.reactionSelected = { [weak self] emoji in
+            self?.cellDelegate?.didSelectReaction(emoji, for: indexPath)
+        }
+        if let popover = reactionsVC.popoverPresentationController {
+            popover.sourceView = self
+            popover.sourceRect = self.bounds
+            popover.permittedArrowDirections = []
+            popover.delegate = self
+        }
+        self.window?.rootViewController?.present(reactionsVC, animated: true)
+    }
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, previewForHighlightingMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        let params = UIPreviewParameters()
+        params.backgroundColor = .clear
+        params.shadowPath = UIBezierPath(rect: .zero)
+        params.visiblePath = UIBezierPath(rect: self.messageContainerView.bounds)
+        return UITargetedPreview(view: self.messageContainerView, parameters: params)
+    }
+}
+
+extension PhotoMessageCell: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
     }
 }

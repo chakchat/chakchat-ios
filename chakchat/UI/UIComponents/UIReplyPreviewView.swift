@@ -15,6 +15,7 @@ final class ReplyPreviewView: UIView {
     private let senderLabel: UILabel = UILabel()
     private let messageLabel: UILabel = UILabel()
     private let contentView: UIView = UIView()
+    private let previewImageView: UIImageView = UIImageView()
     private let closeButton: UIButton = UIButton(type: .system)
     
     var onClose: (() -> Void)?
@@ -36,7 +37,7 @@ final class ReplyPreviewView: UIView {
         configureContentView()
         configureCloseButton()
         configureSenderLabel()
-        configureMessageLabel()
+        configureMessageLabelOrImage()
     }
     
     private func configureContentView() {
@@ -70,16 +71,28 @@ final class ReplyPreviewView: UIView {
     }
     
     /// потом здесь надо будет обрабатывать все виды сообщений(пока только текстовое)
-    private func configureMessageLabel() {
-        contentView.addSubview(messageLabel)
+    private func configureMessageLabelOrImage() {
         if case .text(let text) = message.kind {
+            contentView.addSubview(messageLabel)
             messageLabel.text = text
+            messageLabel.font = Fonts.systemR12
+            messageLabel.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
+            messageLabel.pinTop(senderLabel.bottomAnchor, 4)
+            messageLabel.setHeight(16)
+            messageLabel.setWidth(250)
+            previewImageView.isHidden = true
         }
-        messageLabel.font = Fonts.systemR12
-        messageLabel.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
-        messageLabel.pinTop(senderLabel.bottomAnchor, 4)
-        messageLabel.setHeight(16)
-        messageLabel.setWidth(250)
+        if case .photo(let photo) = message.kind {
+            contentView.addSubview(previewImageView)
+            previewImageView.clipsToBounds = true
+            previewImageView.layer.cornerRadius = 4
+            previewImageView.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
+            previewImageView.pinTop(senderLabel.bottomAnchor, 4)
+            previewImageView.setWidth(30)
+            previewImageView.setHeight(30)
+            previewImageView.image = photo.image
+            messageLabel.isHidden = true
+        }
     }
     
     @objc private func closeTapped() {

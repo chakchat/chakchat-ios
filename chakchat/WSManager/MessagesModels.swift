@@ -225,13 +225,33 @@ struct EditedContent: Codable {
 }
 
 struct FileContent: Codable {
+    let file: FileInfo
+    let replyTo: Int64?
+    let reactions: [ReactionInfo]?
+    
+    enum CodingKeys: String, CodingKey {
+        case file = "file"
+        case replyTo = "reply_to"
+        case reactions = "reactions"
+    }
+}
+
+struct FileInfo: Codable {
     let fileID: UUID
     let fileName: String
     let mimeType: String
     let fileSize: Int64
     let fileURL: URL
     let createdAt: Date
-    let reactions: [ReactionInfo]?
+    
+    enum CodingKeys: String, CodingKey {
+        case fileID = "file_id"
+        case fileName = "file_name"
+        case mimeType = "mime_type"
+        case fileSize = "file_size"
+        case fileURL = "file_url"
+        case createdAt = "created_at"
+    }
 }
 
 struct ReactionInfo: Codable {
@@ -287,7 +307,7 @@ enum WSMessageType: String, Codable {
 enum UpdateDataType: String, Codable {
     case textMessage = "text_message"
     case textEdited = "text_message_edited"
-    case file = "file"
+    case file = "file_message"
     case reaction = "reaction"
     case delete = "update_deleted"
 }
