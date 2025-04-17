@@ -72,6 +72,10 @@ final class GroupChatViewController: MessagesViewController {
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
         }
+        if case .photo = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(PhotoMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+        }
         return super.collectionView(collectionView, cellForItemAt: indexPath)
     }
     
@@ -601,6 +605,56 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
+    private func sendPhoto(_ photo: UIImage) {
+        var photoMessage = mapPhoto(photo)
+        insertPhoto(photoMessage)
+        interactor.uploadImage(photo) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: {$0.messageId == photoMessage.messageId}) else { return }
+                switch result {
+                case .success(let fileUpdate):
+                    var fileMessage = self.interactor.mapToFileMessage(fileUpdate)
+                    fileMessage.status = .sent
+                    self.messages[index] = fileMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(fileUpdate)
+                case .failure(let failure):
+                    photoMessage.status = .error
+                    self.messages[index] = photoMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(failure)
+                }
+            }
+        }
+    }
+    
+    private func mapPhoto(_ photo: UIImage) -> OutgoingPhotoMessage {
+        return OutgoingPhotoMessage(
+            sender: curUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            media: MockMediaItem(url: nil, image: nil, placeholderImage: UIImage(), size: photo.size),
+            status: .sending
+        )
+    }
+    
+    private func insertPhoto(_ message: MessageType) {
+        messages.append(message)
+        messagesCollectionView.performBatchUpdates({
+            messagesCollectionView.insertSections([messages.count - 1])
+            if messages.count >= 2 {
+                messagesCollectionView.reloadSections([messages.count - 2])
+            }
+        }, completion: { [weak self] _ in
+            if self?.isLastSectionVisible() == true {
+                self?.messagesCollectionView.scrollToLastItem(animated: true)
+            }
+        })
+    }
+    
     @objc private func handleTitleTap() {
         interactor.routeToChatProfile()
     }
@@ -630,7 +684,6 @@ extension GroupChatViewController: MessagesDataSource {
     }
     
     func textCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
-        let message = messages[indexPath.section]
         
         if case .text = message.kind {
             let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
@@ -638,7 +691,17 @@ extension GroupChatViewController: MessagesDataSource {
             cell.cellDelegate = self
             return cell
         }
-        return UICollectionViewCell()
+        return TextMessageCell()
+    }
+    
+    func photoCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
+        
+        if case .photo = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(PhotoMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        }
+        return MediaMessageCell()
     }
     
     func configureAvatarView(_ avatarView: AvatarView, for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
@@ -772,7 +835,12 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     
     func textCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
-            return ReactionMessageSizeCalculator(layout: layout)
+            if case .text = message.kind {
+                return ReactionMessageSizeCalculator(layout: layout)
+            }
+            if case .photo = message.kind {
+                return PhotoMessageCellSizeCalculator(layout: layout)
+            }
         }
         return nil
     }
@@ -835,6 +903,14 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
             sendReplyRequest(inputBar, text)
         } else {
             sendTextMessage(inputBar, text)
+        }
+    }
+    
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith attachments: [AttachmentManager.Attachment]) {
+        for attachment in attachments {
+            if case .image(let image) = attachment {
+                sendPhoto(image)
+            }
         }
     }
 }
@@ -944,6 +1020,8 @@ class ReactionTextMessageCell: TextMessageCell {
             } else {
                 if message.status == .read {
                     messageStatus.textColor = .chakChat
+                } else if message.status == .error {
+                    messageStatus.text = MessageStatus.error.rawValue
                 }
                 messageStatus.layer.removeAllAnimations()
             }

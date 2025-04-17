@@ -96,6 +96,20 @@ struct GroupFileMessage: MessageType, GroupMessageStatusProtocol {
     
     var status: MessageStatus
     
+    init() {
+        sender = GroupSender(senderId: "", displayName: "")
+        messageId = ""
+        sentDate = Date()
+        kind = .text("")
+        fileID = UUID()
+        fileName = ""
+        mimeType = ""
+        fileSize = 0
+        fileURL = URL(filePath: "")
+        reactions = nil
+        status = .sending
+    }
+    
 }
 
 struct GroupReaction: MessageType, GroupMessageStatusProtocol {
@@ -141,4 +155,33 @@ struct GroupOutgoingMessage: MessageType, GroupMessageStatusProtocol {
     var replyTo: MessageType?
     
     var status: MessageStatus
+}
+
+struct PhotoMediaItem: MediaItem, GroupMessageStatusProtocol {
+    var url: URL?
+    var image: UIImage?
+    var placeholderImage: UIImage
+    var shimmer: UIView?
+    var size: CGSize
+    
+    var status: MessageStatus
+}
+
+struct OutgoingPhotoMessage: MessageType, GroupMessageStatusProtocol {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind {
+        return .photo(media)
+    }
+    let media: MockMediaItem
+    
+    var status: MessageStatus
+}
+
+struct MockMediaItem: MediaItem {
+    var url: URL?
+    var image: UIImage?
+    var placeholderImage: UIImage
+    var size: CGSize
 }

@@ -5,7 +5,7 @@
 //  Created by Кирилл Исаев on 09.03.2025.
 //
 
-import Foundation
+import UIKit
 import OSLog
 import Combine
 import MessageKit
@@ -112,13 +112,13 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
-    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
             switch result {
             case .success(let data):
-                completion(true)
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
+                completion(.failure(failure))
                 print(failure)
             }
         }
@@ -144,6 +144,33 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             case .failure(let failure):
                 completion(false)
                 print(failure)
+            }
+        }
+    }
+    
+    func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = image.jpegData(compressionQuality: 0.0) else {
+            return
+        }
+        let fileName = "\(UUID().uuidString).jpeg"
+        worker.uploadImage(data, fileName, "image/jpeg") { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let fileMetaData):
+                ImageCacheManager.shared.saveImage(image, for: fileMetaData.fileURL as NSURL)
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
+            case .failure(let failure):
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user image failed:\n", log: logger, type: .fault)
+                print(failure)
+                completion(.failure(failure))
             }
         }
     }
@@ -225,6 +252,41 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         return mappedTextEditedUpdate
     }
     
+    func mapToFileMessage(_ update: UpdateData) -> GroupFileMessage {
+        var mappedFileUpdate = GroupFileMessage()
+        if case .fileContent(let fc) = update.content {
+            mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
+            mappedFileUpdate.messageId = String(update.updateID)
+            mappedFileUpdate.sentDate = update.createdAt
+            mappedFileUpdate.fileID = fc.fileID
+            mappedFileUpdate.fileName = fc.fileName
+            mappedFileUpdate.mimeType = fc.mimeType
+            mappedFileUpdate.fileSize = fc.fileSize
+            mappedFileUpdate.fileURL = fc.fileURL
+            if fc.mimeType == "image/jpeg" {
+                mappedFileUpdate.kind = .photo(
+                    PhotoMediaItem(
+                        url: fc.fileURL,
+                        image: ImageCacheManager.shared.getImage(for: fc.fileURL as NSURL),
+                        placeholderImage: UIImage(systemName: "AppIcon")!,
+                        shimmer: nil,
+                        size: CGSize(width: 150, height: 150),
+                        status: .sent
+                    )
+                )
+            }
+            if let reactions = fc.reactions {
+                var reactionsDict: [Int64: String] = [:]
+                for reaction in reactions {
+                    reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
+                }
+                mappedFileUpdate.reactions = reactionsDict
+            }
+            mappedFileUpdate.status = .sent
+        }
+        return mappedFileUpdate
+    }
+    
     private func mapToMessageType(_ updates: [UpdateData]) -> [MessageType] {
         var mappedUpdates: [MessageType] = []
         for update in updates {
@@ -236,27 +298,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 let mappedEditedTextUpdate = mapToEditedMessage(update)
                 mappedUpdates.append(mappedEditedTextUpdate)
             case .file:
-                var mappedFileUpdate: GroupFileMessage!
-                if case .fileContent(let fc) = update.content {
-                    mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
-                    mappedFileUpdate.messageId = String(update.updateID)
-                    mappedFileUpdate.sentDate = update.createdAt
-                    mappedFileUpdate.kind = .custom(Kind.GroupFileMessageKind)
-                    mappedFileUpdate.fileID = fc.fileID
-                    mappedFileUpdate.fileName = fc.fileName
-                    mappedFileUpdate.mimeType = fc.mimeType
-                    mappedFileUpdate.fileSize = fc.fileSize
-                    mappedFileUpdate.fileURL = fc.fileURL
-                    if let reactions = fc.reactions {
-                        var reactionsDict: [Int64: String] = [:]
-                        for reaction in reactions {
-                            reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
-                        }
-                        mappedFileUpdate.reactions = reactionsDict
-                    }
-                    mappedFileUpdate.status = .sent
-                }
-                
+                var mappedFileUpdate = mapToFileMessage(update)
                 mappedUpdates.append(mappedFileUpdate)
             case .reaction:
                 var mappedReactionUpdate: GroupReaction!
