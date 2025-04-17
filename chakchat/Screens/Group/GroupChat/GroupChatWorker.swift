@@ -10,17 +10,20 @@ import Foundation
 final class GroupChatWorker: GroupChatWorkerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let coreDataManager: CoreDataManagerProtocol
+    private let userService: UserServiceProtocol
     private let updateService: UpdateServiceProtocol
     private let groupUpdateService: GroupUpdateServiceProtocol
     
     init(
         keychainManager: KeychainManagerBusinessLogic,
         coreDataManager: CoreDataManagerProtocol,
+        userService: UserServiceProtocol,
         updateService: UpdateServiceProtocol,
         groupUpdateService: GroupUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
         self.coreDataManager = coreDataManager
+        self.userService = userService
         self.updateService = updateService
         self.groupUpdateService = groupUpdateService
     }
@@ -34,6 +37,30 @@ final class GroupChatWorker: GroupChatWorkerLogic {
             case .failure(let failure):
                 completion(.failure(failure))
             }
+        }
+    }
+    
+    func loadUsers(_ ids: [UUID], completion: @escaping (Result<[ProfileSettingsModels.ProfileUserData], any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        var users: [ProfileSettingsModels.ProfileUserData] = []
+        let dispatchGroup = DispatchGroup()
+        
+        for user in ids {
+            dispatchGroup.enter()
+            userService.sendGetUserRequest(user, accessToken) { result in
+                DispatchQueue.global().async {
+                    defer { dispatchGroup.leave() }
+                    switch result {
+                    case .success(let response):
+                        users.append(response.data)
+                    case .failure(let failure):
+                        print("Failed to fetch \(user) info")
+                    }
+                }
+            }
+        }
+        dispatchGroup.notify(queue: .global()) {
+            completion(.success(users))
         }
     }
     

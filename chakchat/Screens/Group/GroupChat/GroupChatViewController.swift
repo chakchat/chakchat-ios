@@ -31,6 +31,9 @@ final class GroupChatViewController: MessagesViewController {
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
     
+    private var usersInfo: [ProfileSettingsModels.ProfileUserData] = []
+    private let color = UIColor.random()
+    
     private var curUser: GroupSender = GroupSender(senderId: "", displayName: "", avatar: nil)
     private var messages: [MessageType] = []
     
@@ -75,9 +78,24 @@ final class GroupChatViewController: MessagesViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         messagesCollectionView.register(ReactionTextMessageCell.self)
+        loadUsers()
         loadFirstMessages()
         configureUI()
         interactor.passChatData()
+    }
+    
+    private func loadUsers() {
+        interactor.loadUsers() { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let users):
+                    self.usersInfo = users
+                case .failure(let failure):
+                    print(failure)
+                }
+            }
+        }
     }
     
     private func loadFirstMessages() {
@@ -602,6 +620,37 @@ extension GroupChatViewController: MessagesDataSource {
             return cell
         }
         return UICollectionViewCell()
+    }
+    
+    func configureAvatarView(_ avatarView: AvatarView, for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        guard let sender = message.sender as? GroupSender else { return }
+        
+        guard let userID = usersInfo.firstIndex(where: { $0.id == UUID(uuidString: sender.senderId)}) else { return }
+        let user = usersInfo[userID]
+        if let url = user.photo {
+            if let cachedImage = ImageCacheManager.shared.getImage(for: url as NSURL) {
+                avatarView.set(avatar: Avatar(image: cachedImage))
+            }
+            DispatchQueue.global(qos: .userInteractive).async {
+                URLSession.shared.dataTask(with: url) { data, response, error in
+                    guard let data = data, error == nil, let image = UIImage(data: data) else {
+                        return
+                    }
+                    ImageCacheManager.shared.saveImage(image, for: url as NSURL)
+                    DispatchQueue.main.async {
+                        avatarView.set(avatar: Avatar(image: image))
+                    }
+                }.resume()
+            }
+        } else {
+            let image = UIImage.imageWithText(
+                text: user.name,
+                size: CGSize(width: avatarView.frame.width, height: avatarView.frame.height),
+                color: color,
+                borderWidth: Constants.borderWidth
+            )
+            avatarView.set(avatar: Avatar(image: image))
+        }
     }
 }
 

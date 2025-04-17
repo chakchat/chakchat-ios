@@ -17,6 +17,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     private let eventSubscriber: EventSubscriberProtocol
     private let errorHandler: ErrorHandlerLogic
     private var chatData: ChatsModels.GeneralChatModel.ChatData
+    private var usersInfo: [ProfileSettingsModels.ProfileUserData] = []
     private let logger: OSLog
     
     private var cancellables = Set<AnyCancellable>()
@@ -55,6 +56,20 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
                 let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
                 completion(.success(mappedSortedUpdates))
+            case .failure(let failure):
+                completion(.failure(failure))
+                print(failure)
+            }
+        }
+    }
+    
+    func loadUsers(completion: @escaping (Result<[ProfileSettingsModels.ProfileUserData], Error>) -> Void) {
+        worker.loadUsers(chatData.members) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let users):
+                self.usersInfo = users
+                completion(.success(usersInfo))
             case .failure(let failure):
                 completion(.failure(failure))
                 print(failure)
