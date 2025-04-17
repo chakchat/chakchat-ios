@@ -17,12 +17,15 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     private let eventSubscriber: EventSubscriberProtocol
     private let errorHandler: ErrorHandlerLogic
     private var chatData: ChatsModels.GeneralChatModel.ChatData
+    private var usersInfo: [ProfileSettingsModels.ProfileUserData] = []
     private let logger: OSLog
     
     private var cancellables = Set<AnyCancellable>()
     
     var onRouteBack: (() -> Void)?
     var onRouteToGroupProfile: ((ChatsModels.GeneralChatModel.ChatData) -> Void)?
+    var onRouteToUserProfile: ((ProfileSettingsModels.ProfileUserData, ChatsModels.GeneralChatModel.ChatData?, ProfileConfiguration) -> Void)?
+    var onRouteToMyProfile: (() -> Void)?
     
     init(
         presenter: GroupChatPresentationLogic,
@@ -43,7 +46,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func passChatData() {
-        presenter.passChatData(chatData)
+        presenter.passChatData(chatData, worker.getMyID())
     }
        
     
@@ -55,6 +58,20 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
                 let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
                 completion(.success(mappedSortedUpdates))
+            case .failure(let failure):
+                completion(.failure(failure))
+                print(failure)
+            }
+        }
+    }
+    
+    func loadUsers(completion: @escaping (Result<[ProfileSettingsModels.ProfileUserData], Error>) -> Void) {
+        worker.loadUsers(chatData.members) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let users):
+                self.usersInfo = users
+                completion(.success(usersInfo))
             case .failure(let failure):
                 completion(.failure(failure))
                 print(failure)
@@ -145,6 +162,18 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         onRouteBack?()
     }
     
+    func routeToUserProfile(_ userID: UUID) {
+        if userID == worker.getMyID() {
+            onRouteToMyProfile?()
+        } else {
+            let chatData = worker.fetchChat(userID)
+            guard let userID = usersInfo.firstIndex(where: {$0.id == userID}) else { return }
+            let user = usersInfo[userID]
+            let profileConfiguration = ProfileConfiguration(isSecret: false, fromGroupChat: true)
+            onRouteToUserProfile?(user, chatData, profileConfiguration)
+        }
+    }
+    
     func routeToChatProfile() {
         onRouteToGroupProfile?(chatData)
     }
@@ -161,7 +190,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage {
         var mappedTextUpdate = GroupTextMessage()
         if case .textContent(let tc) = update.content {
-            mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+            mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
             mappedTextUpdate.messageId = String(update.updateID)
             mappedTextUpdate.sentDate = update.createdAt
             mappedTextUpdate.kind = .text(tc.edited?.content.newText ?? tc.text)
@@ -185,7 +214,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited {
         var mappedTextEditedUpdate = GroupTextMessageEdited()
         if case .editedContent(let ec) = update.content {
-            mappedTextEditedUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+            mappedTextEditedUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
             mappedTextEditedUpdate.messageId = String(update.updateID)
             mappedTextEditedUpdate.sentDate = update.createdAt
             mappedTextEditedUpdate.kind = .custom(Kind.GroupTextMessageEditedKind)
@@ -209,7 +238,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             case .file:
                 var mappedFileUpdate: GroupFileMessage!
                 if case .fileContent(let fc) = update.content {
-                    mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
                     mappedFileUpdate.messageId = String(update.updateID)
                     mappedFileUpdate.sentDate = update.createdAt
                     mappedFileUpdate.kind = .custom(Kind.GroupFileMessageKind)
@@ -232,7 +261,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             case .reaction:
                 var mappedReactionUpdate: GroupReaction!
                 if case .reactionContent(let rc) = update.content {
-                    mappedReactionUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedReactionUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
                     mappedReactionUpdate.messageId = String(update.updateID)
                     mappedReactionUpdate.sentDate = update.createdAt
                     mappedReactionUpdate.kind = .custom(Kind.GroupReactionKind)
@@ -244,7 +273,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             case .delete:
                 var mappedDeleteUpdate: GroupMessageDelete = GroupMessageDelete()
                 if case .deletedContent(let dc) = update.content {
-                    mappedDeleteUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: "", avatar: nil)
+                    mappedDeleteUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
                     mappedDeleteUpdate.messageId = String(update.updateID)
                     mappedDeleteUpdate.sentDate = update.createdAt
                     mappedDeleteUpdate.kind = .custom(Kind.GroupMessageDeleteKind)
@@ -256,5 +285,13 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             }
         }
         return mappedUpdates
+    }
+    
+    private func getSenderName(_ senderID: UUID) -> String {
+        if let userID = usersInfo.firstIndex(where: {$0.id == senderID}) {
+            let user = usersInfo[userID]
+            return user.name
+        }
+        return ""
     }
 }

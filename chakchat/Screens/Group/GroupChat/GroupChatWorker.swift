@@ -10,17 +10,23 @@ import Foundation
 final class GroupChatWorker: GroupChatWorkerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let coreDataManager: CoreDataManagerProtocol
+    private let userDefaultsManager: UserDefaultsManagerProtocol
+    private let userService: UserServiceProtocol
     private let updateService: UpdateServiceProtocol
     private let groupUpdateService: GroupUpdateServiceProtocol
     
     init(
         keychainManager: KeychainManagerBusinessLogic,
         coreDataManager: CoreDataManagerProtocol,
+        userDefaultsManager: UserDefaultsManagerProtocol,
+        userService: UserServiceProtocol,
         updateService: UpdateServiceProtocol,
         groupUpdateService: GroupUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
         self.coreDataManager = coreDataManager
+        self.userDefaultsManager = userDefaultsManager
+        self.userService = userService
         self.updateService = updateService
         self.groupUpdateService = groupUpdateService
     }
@@ -34,6 +40,30 @@ final class GroupChatWorker: GroupChatWorkerLogic {
             case .failure(let failure):
                 completion(.failure(failure))
             }
+        }
+    }
+    
+    func loadUsers(_ ids: [UUID], completion: @escaping (Result<[ProfileSettingsModels.ProfileUserData], any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        var users: [ProfileSettingsModels.ProfileUserData] = []
+        let dispatchGroup = DispatchGroup()
+        
+        for user in ids {
+            dispatchGroup.enter()
+            userService.sendGetUserRequest(user, accessToken) { result in
+                DispatchQueue.global().async {
+                    defer { dispatchGroup.leave() }
+                    switch result {
+                    case .success(let response):
+                        users.append(response.data)
+                    case .failure(let failure):
+                        print("Failed to fetch \(user) info")
+                    }
+                }
+            }
+        }
+        dispatchGroup.notify(queue: .global()) {
+            completion(.success(users))
         }
     }
     
@@ -123,5 +153,40 @@ final class GroupChatWorker: GroupChatWorkerLogic {
                 completion(.failure(failure))
             }
         }
+    }
+    
+    func fetchChat(_ userID: UUID) -> ChatsModels.GeneralChatModel.ChatData? {
+        let chat = coreDataManager.fetchChatByMembers(userDefaultsManager.loadID(), userID, .personal)
+        let mappedChat = mapFromCoredata(chat)
+        return mappedChat
+    }
+    
+    func getMyID() -> UUID {
+        return userDefaultsManager.loadID()
+    }
+    
+    private func mapFromCoredata(_ chat: Chat?) -> ChatsModels.GeneralChatModel.ChatData? {
+        if let chat = chat {
+            guard let chatID = chat.chatID,
+                  let type = chat.type,
+                  let members = chat.members,
+                  let createdAt = chat.createdAt,
+                  let info = chat.info else { return nil }
+            let mappedInfo = try? JSONDecoder().decode(ChatsModels.GeneralChatModel.Info.self, from: info)
+            if let mappedInfo = mappedInfo {
+                let mappedChat = ChatsModels.GeneralChatModel.ChatData(
+                    chatID: chatID,
+                    type: ChatType(rawValue: type) ?? .personal,
+                    members: members,
+                    createdAt: createdAt,
+                    info: mappedInfo
+                )
+                return mappedChat
+            } else {
+                print("Decoding error in mapFromCoredata")
+                return nil
+            }
+        }
+        return nil
     }
 }
