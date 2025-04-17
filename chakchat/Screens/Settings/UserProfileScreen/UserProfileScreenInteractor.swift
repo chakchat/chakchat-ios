@@ -67,7 +67,9 @@ final class UserProfileScreenInteractor: UserProfileScreenBusinessLogic {
     func handlePhotoChangedEvent(_ event: UpdatePhotoEvent) {
         os_log("Handled photo changes in user profile screen", log: logger, type: .default)
         let newPhoto = event.newPhoto
-        showNewPhoto(newPhoto)
+        DispatchQueue.main.async {
+            self.showNewPhoto(newPhoto)
+        }
     }
     
     func handleUserDataChangedEvent(_ event: UpdateProfileDataEvent) {
