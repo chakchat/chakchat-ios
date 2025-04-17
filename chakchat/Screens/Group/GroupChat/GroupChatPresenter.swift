@@ -10,7 +10,7 @@ import UIKit
 final class GroupChatPresenter: GroupChatPresentationLogic {
     weak var view: GroupChatViewController?
     
-    func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
-        view?.configureWithData(chatData)
+    func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID) {
+        view?.configureWithData(chatData, myID)
     }
 }

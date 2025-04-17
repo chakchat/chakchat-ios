@@ -175,7 +175,7 @@ final class GroupChatViewController: MessagesViewController {
         messages = messages.filter { deleteMessageDict[$0.messageId] != $0.sender.senderId }
     }
     
-    func configureWithData(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
+    func configureWithData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID) {
         if case .group(let groupInfo) = chatData.info {
             let color = UIColor.random()
             let image = UIImage.imageWithText(
@@ -191,7 +191,7 @@ final class GroupChatViewController: MessagesViewController {
             }
             groupNameLabel.text = groupInfo.name
             
-            curUser = GroupSender(senderId: groupInfo.admin.uuidString, displayName: "", avatar: nil)
+            curUser = GroupSender(senderId: myID.uuidString, displayName: "", avatar: nil)
         }
     }
     
@@ -643,7 +643,6 @@ extension GroupChatViewController: MessagesDataSource {
     
     func configureAvatarView(_ avatarView: AvatarView, for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         guard let sender = message.sender as? GroupSender else { return }
-        
         guard let userID = usersInfo.firstIndex(where: { $0.id == UUID(uuidString: sender.senderId)}) else { return }
         let user = usersInfo[userID]
         if let url = user.photo {
@@ -780,6 +779,17 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
 }
 
 extension GroupChatViewController: MessageCellDelegate {
+    
+    func didTapAvatar(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              let message = messagesCollectionView.messagesDataSource?.messageForItem(at: indexPath, in: messagesCollectionView) else {
+            return
+        }
+        if let userID = UUID(uuidString: message.sender.senderId) {
+            interactor.routeToUserProfile(userID)
+        }
+    }
+    
 }
 
 extension GroupChatViewController: MessageEditMenuDelegate {
