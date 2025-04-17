@@ -11,7 +11,7 @@ import UIKit
 // MARK: - UserProfileScreenAssembly
 enum UserProfileScreenAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = UserProfileScreenPresenter()
         let worker = UserProfileScreenWorker(userDefaultsManager: context.userDefaultsManager, identityService: IdentityService(), keychainManager: context.keychainManager)
         let interactor = UserProfileScreenInteractor(preseter: presenter,
@@ -20,14 +20,14 @@ enum UserProfileScreenAssembly {
                                                      errorHandler: context.errorHandler,
                                                      logger: context.logger)
         
-        interactor.onRouteToSettingsScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToSettingsScreen = {
+            AppCoordinator.shared.popScreen()
         }
-        interactor.onRouteToProfileSettingsScreen = { [weak coordinator] in
-            coordinator?.showProfileSettingsScreen()
+        interactor.onRouteToProfileSettingsScreen = {
+            AppCoordinator.shared.showProfileSettingsScreen()
         }
-        interactor.onRouteToRegistration = { [weak coordinator] in
-            coordinator?.showSendCodeScreen()
+        interactor.onRouteToRegistration = {
+            AppCoordinator.shared.showSendCodeScreen()
         }
         let view = UserProfileScreenViewController(interactor: interactor)
         presenter.view = view

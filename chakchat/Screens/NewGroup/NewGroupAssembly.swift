@@ -10,7 +10,7 @@ import UIKit
 // MARK: - NewGroupAssembly
 enum NewGroupAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = NewGroupPresenter()
         let userService = UserService()
         let groupChatService = GroupChatService()
@@ -30,12 +30,12 @@ enum NewGroupAssembly {
             errorHandler: context.errorHandler, 
             eventPublisher: context.eventManager
         )
-        interactor.onRouteToGroupChat = { [weak coordinator] chatData in
-            coordinator?.showGroupChatScreen(chatData)
+        interactor.onRouteToGroupChat = { chatData in
+            AppCoordinator.shared.showGroupChatScreen(chatData)
         }
         
-        interactor.onRouteToNewMessageScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToNewMessageScreen = {
+            AppCoordinator.shared.popScreen()
         }
         let view = NewGroupViewController(interactor: interactor)
         presenter.view = view

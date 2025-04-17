@@ -11,7 +11,7 @@ import UIKit
 // MARK: - NotificationScreenAssembly
 enum NotificationScreenAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = NotificationScreenPresenter()
         let worker = NotificationScreenWorker(userDefaultsManager: context.userDefaultsManager)
         let userData = getNotififcationData(context.userDefaultsManager)
@@ -21,8 +21,8 @@ enum NotificationScreenAssembly {
                                                       userData: userData,
                                                       logger: context.logger
         )
-        interactor.onRouteToSettingsMenu = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToSettingsMenu = {
+            AppCoordinator.shared.popScreen()
         }
         let view = NotificationScreenViewController(interactor: interactor)
         presenter.view = view

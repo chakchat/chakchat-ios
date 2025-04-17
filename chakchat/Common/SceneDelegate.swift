@@ -27,12 +27,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = startVC
         window.makeKeyAndVisible()
         
-        appCoordinator = AppCoordinator(window: window)
-        appCoordinator?.tryRefreshAccessToken { success in
+        AppCoordinator.shared.setWindow(window)
+        AppCoordinator.shared.tryRefreshAccessToken { success in
             if success {
-                self.appCoordinator?.startChats()
+                AppCoordinator.shared.startChats()
             } else {
-                self.appCoordinator?.startRegistration()
+                AppCoordinator.shared.startRegistration()
             }
         }
         

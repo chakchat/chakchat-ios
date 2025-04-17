@@ -11,7 +11,7 @@ import UIKit
 // MARK: - BirthVisibilityScreenAssembly
 enum BirthVisibilityScreenAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = BirthVisibilityScreenPresenter()
         let userService = UserService()
         let worker = BirthVisibilityScreenWorker(userDeafultsManager: context.userDefaultsManager, userService: userService, keychainManager: context.keychainManager)
@@ -22,8 +22,8 @@ enum BirthVisibilityScreenAssembly {
                                                          logger: context.logger,
                                                          userRestrictionsSnap: context.userDefaultsManager.loadRestrictions()
         )
-        interactor.onRouteToConfidentialityScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToConfidentialityScreen = {
+            AppCoordinator.shared.popScreen()
         }
         let view = BirthVisibilityScreenViewController(interactor: interactor)
         presenter.view = view

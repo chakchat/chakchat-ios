@@ -8,7 +8,7 @@
 import UIKit
 
 enum GroupChatProfileAssembly {
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator, _ chatData: ChatsModels.GeneralChatModel.ChatData) -> UIViewController {
+    static func build(with context: MainAppContextProtocol, _ chatData: ChatsModels.GeneralChatModel.ChatData) -> UIViewController {
         let presenter = GroupChatProfilePresenter()
         let groupService = GroupChatService()
         let userService = UserService()
@@ -27,20 +27,20 @@ enum GroupChatProfileAssembly {
             eventManager: context.eventManager,
             logger: context.logger
         )
-        interactor.onRouteToEdit = { [weak coordinator] chatData in
-            coordinator?.showGroupProfileEditScreen(chatData)
+        interactor.onRouteToEdit = { chatData in
+            AppCoordinator.shared.showGroupProfileEditScreen(chatData)
         }
-        interactor.onRouteToChatMenu = { [weak coordinator] in
-            coordinator?.setChatsScreen()
+        interactor.onRouteToChatMenu = {
+            AppCoordinator.shared.setChatsScreen()
         }
-        interactor.onRouteBack = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteBack = {
+            AppCoordinator.shared.popScreen()
         }
-        interactor.onRouteToProfile = { [weak coordinator] userData, conf in
-            coordinator?.showUserProfileScreen(userData, nil, conf)
+        interactor.onRouteToProfile = { userData, conf in
+            AppCoordinator.shared.showUserProfileScreen(userData, nil, conf)
         }
-        interactor.onRouteToMyProfile = { [weak coordinator] in
-            coordinator?.showUserSettingsScreen()
+        interactor.onRouteToMyProfile = {
+            AppCoordinator.shared.showUserSettingsScreen()
         }
         let view = GroupChatProfileViewController(interactor: interactor)
         presenter.view = view

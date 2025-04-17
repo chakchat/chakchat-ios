@@ -10,11 +10,11 @@ import UIKit
 // MARK: - BlackListAssembly
 enum BlackListAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = BlackListPresenter()
         let interactor = BlackListInteractor(presenter: presenter)
-        interactor.onRouteToConfidantialityScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToConfidantialityScreen = {
+            AppCoordinator.shared.popScreen()
         }
         let view = BlackListViewController(interactor: interactor)
         presenter.view = view

@@ -50,7 +50,7 @@ final class ErrorHandler: ErrorHandlerLogic {
     func handleRefreshTokenError() {
         ImageCacheManager.shared.clearCache()
         _ = keychainManager.deleteTokens()
-        // TODO: go to sendcodeScreen
+        AppCoordinator.shared.showSendCodeScreen()
     }
     
     private func handleAccessTokenAbsence() {

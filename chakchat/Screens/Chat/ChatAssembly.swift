@@ -12,7 +12,6 @@ enum ChatAssembly {
     
     static func build(
         _ context: MainAppContextProtocol,
-        coordinator: AppCoordinator,
         userData: ProfileSettingsModels.ProfileUserData,
         chatData: ChatsModels.GeneralChatModel.ChatData?
     ) -> UIViewController {
@@ -43,11 +42,11 @@ enum ChatAssembly {
             chatData: chatData
         )
         
-        interactor.onRouteToProfile = { [weak coordinator] userData, chatData, profileConfiguration in
-            coordinator?.showUserProfileScreen(userData, chatData, profileConfiguration)
+        interactor.onRouteToProfile = { userData, chatData, profileConfiguration in
+            AppCoordinator.shared.showUserProfileScreen(userData, chatData, profileConfiguration)
         }
-        interactor.onRouteBack = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteBack = {
+            AppCoordinator.shared.popScreen()
         }
         let view = ChatViewController(interactor: interactor)
         presenter.view = view

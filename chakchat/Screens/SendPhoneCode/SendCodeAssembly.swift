@@ -11,7 +11,7 @@ import UIKit
 // MARK: - SendCodeAssembly
 enum SendCodeAssembly {
     
-    static func build(with context: SignupContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: SignupContextProtocol) -> UIViewController {
         
         let presenter = SendCodePresenter()
         
@@ -23,8 +23,8 @@ enum SendCodeAssembly {
         let view = SendCodeViewController(interactor: interactor)
         presenter.view = view
         
-        interactor.onRouteToVerifyScreen = { [weak coordinator] phone in
-            coordinator?.showVerifyScreen(phone)
+        interactor.onRouteToVerifyScreen = { phone in
+            AppCoordinator.shared.showVerifyScreen(phone)
         }
         
         return view

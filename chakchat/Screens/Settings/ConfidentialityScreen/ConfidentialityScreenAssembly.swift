@@ -11,7 +11,7 @@ import UIKit
 // MARK: - ConfidentialityScreenAssembly
 enum ConfidentialityScreenAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = ConfidentialityScreenPresenter()
         let userService = UserService()
         let worker = ConfidentialityScreenWorker(userDefaultsManager: context.userDefaultsManager, userService: userService, keychainManager: context.keychainManager)
@@ -21,24 +21,24 @@ enum ConfidentialityScreenAssembly {
                                                          eventSubscriber: context.eventManager,
                                                          logger: context.logger)
         
-        interactor.onRouteToSettingsMenu = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToSettingsMenu = {
+            AppCoordinator.shared.popScreen()
         }
         
-        interactor.onRouteToPhoneVisibilityScreen = { [weak coordinator] in
-            coordinator?.showPhoneVisibilityScreen()
+        interactor.onRouteToPhoneVisibilityScreen = {
+            AppCoordinator.shared.showPhoneVisibilityScreen()
         }
         
-        interactor.onRouteToBirthVisibilityScreen = { [weak coordinator] in
-            coordinator?.showBirthVisibilityScreen()
+        interactor.onRouteToBirthVisibilityScreen = {
+            AppCoordinator.shared.showBirthVisibilityScreen()
         }
         
-        interactor.onRouteToOnlineVisibilityScreen = { [weak coordinator] in
-            coordinator?.showOnlineVisibilityScreen()
+        interactor.onRouteToOnlineVisibilityScreen = {
+            AppCoordinator.shared.showOnlineVisibilityScreen()
         }
         
-        interactor.onRouteToBlackListScreen = { [weak coordinator] in
-            coordinator?.showBlackListScreen()
+        interactor.onRouteToBlackListScreen = {
+            AppCoordinator.shared.showBlackListScreen()
         }
         
         let view = ConfidentialityScreenViewController(interactor: interactor)

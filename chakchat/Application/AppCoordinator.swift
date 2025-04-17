@@ -13,15 +13,19 @@ import OSLog
 final class AppCoordinator {
     
     // MARK: - Properties
-    private let window: UIWindow
+    static let shared = AppCoordinator()
+    private var window: UIWindow = UIWindow()
+
     private let navigationController: UINavigationController
     private var mainChatVC: UIViewController?
     private let signupContext: SignupContextProtocol
     private let mainAppContext: MainAppContextProtocol
 
-    // MARK: - Initialization
-    init(window: UIWindow) {
+    func setWindow(_ window: UIWindow) {
         self.window = window
+    }
+    
+    private init() {
         self.navigationController = UINavigationController()
         let keychainManager = KeychainManager()
         let identityService = IdentityService()
@@ -102,17 +106,17 @@ final class AppCoordinator {
     }
     
     func showSendCodeScreen()  {
-        let sendCodeVC = SendCodeAssembly.build(with: signupContext, coordinator: self)
+        let sendCodeVC = SendCodeAssembly.build(with: signupContext)
         navigationController.pushViewController(sendCodeVC, animated: true)
     }
 
     func showVerifyScreen(_ phone: String) {
-        let verifyVC = VerifyAssembly.build(with: signupContext, coordinator: self, phone: phone)
+        let verifyVC = VerifyAssembly.build(with: signupContext, phone: phone)
         navigationController.pushViewController(verifyVC, animated: true)
     }
     
     func showSignupScreen() {
-        let signupVC = SignupAssembly.build(with: signupContext, coordinator: self)
+        let signupVC = SignupAssembly.build(with: signupContext)
         navigationController.pushViewController(signupVC, animated: true)
     }
     
@@ -127,76 +131,76 @@ final class AppCoordinator {
     }
 
     private func CreateChatsScreen() -> UIViewController {
-        return ChatsAssembly.build(with: mainAppContext, coordinator: self)
+        return ChatsAssembly.build(with: mainAppContext)
     }
     
     func showSettingsScreen() {
-        let settingsVC = SettingsScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let settingsVC = SettingsScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(settingsVC, animated: true)
     }
     
     func showUserSettingsScreen() {
-        let userSettingsVC = UserProfileScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let userSettingsVC = UserProfileScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(userSettingsVC, animated: true)
     }
     
     func showProfileSettingsScreen() {
-        let profileSettingsVC = ProfileSettingsAssembly.build(with: mainAppContext, coordinator: self)
+        let profileSettingsVC = ProfileSettingsAssembly.build(with: mainAppContext)
         navigationController.pushViewController(profileSettingsVC, animated: true)
     }
     
     func showConfidentialityScreen() {
-        let confVC = ConfidentialityScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let confVC = ConfidentialityScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(confVC, animated: true)
     }
     
     func showPhoneVisibilityScreen() {
-        let phoneVisibilityVC = PhoneVisibilityScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let phoneVisibilityVC = PhoneVisibilityScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(phoneVisibilityVC, animated: true)
     }
 
     func showBirthVisibilityScreen() {
-        let birthVisibilityVC = BirthVisibilityScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let birthVisibilityVC = BirthVisibilityScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(birthVisibilityVC, animated: true)
     }
     
     func showOnlineVisibilityScreen() {
-        let onlineVisibilityVC = OnlineVisibilityScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let onlineVisibilityVC = OnlineVisibilityScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(onlineVisibilityVC, animated: true)
     }
     
     func showNotificationScreen() {
-        let notificationVC = NotificationScreenAssembly.build(with: mainAppContext, coordinator: self)
+        let notificationVC = NotificationScreenAssembly.build(with: mainAppContext)
         navigationController.pushViewController(notificationVC, animated: true)
     }
     
     func showLanguageScreen() {
-        let languageVC = LanguageAssembly.build(with: mainAppContext, coordinator: self)
+        let languageVC = LanguageAssembly.build(with: mainAppContext)
         navigationController.pushViewController(languageVC, animated: true)
     }
 
     func showAppThemeScreen() {
-        let appThemeVC = AppThemeAssembly.build(with: mainAppContext, coordinator: self)
+        let appThemeVC = AppThemeAssembly.build(with: mainAppContext)
         navigationController.pushViewController(appThemeVC, animated: true)
     }
     
     func showCacheScreen() {
-        let cacheVC = CacheAssembly.build(with: mainAppContext, coordinator: self)
+        let cacheVC = CacheAssembly.build(with: mainAppContext)
         navigationController.pushViewController(cacheVC, animated: true)
     }
     
     func showHelpScreen() {
-        let helpVC = HelpAssembly.build(with: mainAppContext, coordinator: self)
+        let helpVC = HelpAssembly.build(with: mainAppContext)
         navigationController.pushViewController(helpVC, animated: true)
     }
     
     func showBlackListScreen() {
-        let blackListVC = BlackListAssembly.build(with: mainAppContext, coordinator: self)
+        let blackListVC = BlackListAssembly.build(with: mainAppContext)
         navigationController.pushViewController(blackListVC, animated: true)
     }
     
     func showNewMessageScreen() {
-        let newMessageVC = NewMessageAssembly.build(with: mainAppContext, coordinator: self)
+        let newMessageVC = NewMessageAssembly.build(with: mainAppContext)
         if let mainVC = mainChatVC {
             navigationController.setViewControllers([mainVC, newMessageVC], animated: true)
         } else {
@@ -209,7 +213,7 @@ final class AppCoordinator {
         _ userData: ProfileSettingsModels.ProfileUserData,
         _ chatData: ChatsModels.GeneralChatModel.ChatData?
     ) {
-        let chatVC = ChatAssembly.build(mainAppContext, coordinator: self, userData: userData, chatData: chatData)
+        let chatVC = ChatAssembly.build(mainAppContext, userData: userData, chatData: chatData)
         if let mainVC = mainChatVC {
             navigationController.setViewControllers([mainVC, chatVC], animated: true)
         } else {
@@ -223,17 +227,17 @@ final class AppCoordinator {
         _ chatData: ChatsModels.GeneralChatModel.ChatData?,
         _ profileConfiguration: ProfileConfiguration
     ) {
-        let userProfileVC = UserProfileAssembly.build(mainAppContext, coordinator: self, userData: userData,  chatData: chatData, profileConfiguration: profileConfiguration)
+        let userProfileVC = UserProfileAssembly.build(mainAppContext, userData: userData,  chatData: chatData, profileConfiguration: profileConfiguration)
         navigationController.pushViewController(userProfileVC, animated: true)
     }
 
     func showNewGroupScreen() {
-        let newGroupVC = NewGroupAssembly.build(with: mainAppContext, coordinator: self)
+        let newGroupVC = NewGroupAssembly.build(with: mainAppContext)
         navigationController.pushViewController(newGroupVC, animated: true)
     }
     
     func showGroupChatScreen(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
-        let groupChatVC = GroupChatAssembly.build(with: mainAppContext, coordinator: self, chatData)
+        let groupChatVC = GroupChatAssembly.build(with: mainAppContext, chatData)
         if let mainVC = mainChatVC {
             navigationController.setViewControllers([mainVC, groupChatVC], animated: true)
         } else {
@@ -243,17 +247,17 @@ final class AppCoordinator {
     }
     
     func showGroupChatProfile(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
-        let groupChatProfileVC = GroupChatProfileAssembly.build(with: mainAppContext, coordinator: self, chatData)
+        let groupChatProfileVC = GroupChatProfileAssembly.build(with: mainAppContext, chatData)
         navigationController.pushViewController(groupChatProfileVC, animated: true)
     }
     
     func showGroupProfileEditScreen(_ chatData: GroupProfileEditModels.ProfileData) {
-        let groupEditVC = GroupProfileEditAssembly.build(with: mainAppContext, coordinator: self, chatData)
+        let groupEditVC = GroupProfileEditAssembly.build(with: mainAppContext, chatData)
         navigationController.pushViewController(groupEditVC, animated: true)
     }
     
     func showAddUsersScreen() {
-        let addUsersVC = AddUserAssembly.build(with: mainAppContext, coordinator: self)
+        let addUsersVC = AddUserAssembly.build(with: mainAppContext)
         navigationController.pushViewController(addUsersVC, animated: true)
     }
 }

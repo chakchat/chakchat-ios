@@ -10,11 +10,11 @@ import UIKit
 // MARK: - LanguageAssembly
 enum LanguageAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = LanguagePresenter()
         let interactor = LanguageInteractor(presenter: presenter)
-        interactor.onRouteToSettingsMenu = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToSettingsMenu = {
+            AppCoordinator.shared.popScreen()
         }
         let view = LanguageViewController(interactor: interactor)
         presenter.view = view

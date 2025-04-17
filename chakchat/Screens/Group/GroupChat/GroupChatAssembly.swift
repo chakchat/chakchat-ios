@@ -8,7 +8,7 @@
 import UIKit
 
 enum GroupChatAssembly {
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator, _ chatData: ChatsModels.GeneralChatModel.ChatData) -> UIViewController {
+    static func build(with context: MainAppContextProtocol, _ chatData: ChatsModels.GeneralChatModel.ChatData) -> UIViewController {
         let presenter = GroupChatPresenter()
         let updateService = UpdateService()
         let userService = UserService()
@@ -29,17 +29,17 @@ enum GroupChatAssembly {
             chatData: chatData,
             logger: context.logger
         )
-        interactor.onRouteBack = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteBack = {
+            AppCoordinator.shared.popScreen()
         }
-        interactor.onRouteToUserProfile = { [weak coordinator] user, chatData, profileConfiguration in
-            coordinator?.showUserProfileScreen(user, chatData, profileConfiguration)
+        interactor.onRouteToUserProfile = { user, chatData, profileConfiguration in
+            AppCoordinator.shared.showUserProfileScreen(user, chatData, profileConfiguration)
         }
-        interactor.onRouteToGroupProfile = { [weak coordinator] chatData in
-            coordinator?.showGroupChatProfile(chatData)
+        interactor.onRouteToGroupProfile = { chatData in
+            AppCoordinator.shared.showGroupChatProfile(chatData)
         }
-        interactor.onRouteToMyProfile = { [weak coordinator] in
-            coordinator?.showUserSettingsScreen()
+        interactor.onRouteToMyProfile = {
+            AppCoordinator.shared.showUserSettingsScreen()
         }
         let view = GroupChatViewController(interactor: interactor)
         presenter.view = view

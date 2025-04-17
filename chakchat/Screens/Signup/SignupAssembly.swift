@@ -11,7 +11,7 @@ import UIKit
 // MARK: - SignupAssenbly
 enum SignupAssembly {
     
-    static func build(with context: SignupContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: SignupContextProtocol) -> UIViewController {
         let presenter = SignupPresenter()
         let identityService = IdentityService()
         let userService = UserService()
@@ -34,10 +34,10 @@ enum SignupAssembly {
         let view = SignupViewController(interactor: interactor)
         presenter.view = view
         
-        interactor.onRouteToChatScreen = { [weak context, weak coordinator] state in
+        interactor.onRouteToChatScreen = { [weak context] state in
             context?.state = state
             print(state)
-            coordinator?.setChatsScreen()
+            AppCoordinator.shared.setChatsScreen()
         }
         
         return view

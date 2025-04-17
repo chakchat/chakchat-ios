@@ -8,7 +8,7 @@
 import UIKit
 
 enum GroupProfileEditAssembly {
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator, _ chatData: GroupProfileEditModels.ProfileData) -> UIViewController {
+    static func build(with context: MainAppContextProtocol, _ chatData: GroupProfileEditModels.ProfileData) -> UIViewController {
         let presenter = GroupProfileEditPresenter()
         let fileStorageService = FileStorageService()
         let groupService = GroupChatService()
@@ -26,8 +26,8 @@ enum GroupProfileEditAssembly {
             chatData: chatData,
             logger: context.logger
         )
-        interactor.onRouteBack = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteBack = {
+            AppCoordinator.shared.popScreen()
         }
         let view = GroupProfileEditViewController(interactor: interactor)
         presenter.view = view

@@ -8,7 +8,7 @@
 import UIKit
 
 enum AddUserAssembly {
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = AddUserPresenter()
         let userService = UserService()
         let worker = AddUserWorker(

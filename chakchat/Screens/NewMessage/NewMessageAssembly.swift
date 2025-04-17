@@ -10,7 +10,7 @@ import UIKit
 // MARK: - NewMessageAssembly
 enum NewMessageAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = NewMessagePresenter()
         let userService = UserService()
         let worker = NewMessageWorker(
@@ -24,14 +24,14 @@ enum NewMessageAssembly {
             worker: worker,
             errorHandler: context.errorHandler
         )
-        interactor.onRouteToChatsScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToChatsScreen = {
+            AppCoordinator.shared.popScreen()
         }
-        interactor.onRouteToNewMessageScreen = { [weak coordinator] in
-            coordinator?.showNewGroupScreen()
+        interactor.onRouteToNewMessageScreen = {
+            AppCoordinator.shared.showNewGroupScreen()
         }
-        interactor.onRouteToChat = { [weak coordinator] userData, chatData in
-            coordinator?.showChatScreen(userData, chatData)
+        interactor.onRouteToChat = { userData, chatData in
+            AppCoordinator.shared.showChatScreen(userData, chatData)
         }
         let view = NewMessageViewController(interactor: interactor)
         presenter.view = view
