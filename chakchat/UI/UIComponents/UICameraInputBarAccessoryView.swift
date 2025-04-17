@@ -9,7 +9,7 @@ import InputBarAccessoryView
 import UIKit
 import PhotosUI
 import CropViewController
-
+// TODO: локализовать
 protocol CameraInputBarAccessoryViewDelegate: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith attachments: [AttachmentManager.Attachment])
 }
@@ -80,7 +80,6 @@ class CameraInputBarAccessoryView: InputBarAccessoryView, CropViewControllerDele
 }
 
 // MARK: UIImagePickerControllerDelegate, UINavigationControllerDelegate
-
 extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     @objc
     func showImagePickerControllerActionSheet() {

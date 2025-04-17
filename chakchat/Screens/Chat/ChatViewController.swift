@@ -220,7 +220,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     func showSecretKeyFail() {
-        let failAllert = UIAlertController(title: "Failed to save secret key", message: "Try to save in again in profile", preferredStyle: .alert)
+        let failAllert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "fail_to_save_secret_key"), message: LocalizationManager.shared.localizedString(for: "try_again"), preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
         failAllert.addAction(ok)
     }
@@ -462,7 +462,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     private func showEmptyDisclaimer() {
-        let disclaimer = UIAlertController(title: "You input empty key", message: "Try input key again", preferredStyle: .alert)
+        let disclaimer = UIAlertController(title: LocalizationManager.shared.localizedString(for: "you_input_empty_key"), message: LocalizationManager.shared.localizedString(for: "try_again"), preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
         disclaimer.addAction(ok)
         self.present(disclaimer, animated: true)

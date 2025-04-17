@@ -15,11 +15,11 @@ extension UIViewController {
     private static let sendEmailPrompt: String = "Try later or send us an email with the error details."
     
     // MARK: - Show Alert Method
-    func showAlert(title: String = "Error", message: String?, cancelTitle: String = "Cancel") {
-        let alert = UIAlertController(title: title, message: (message ?? "Error") + " " + UIViewController.sendEmailPrompt, preferredStyle: .alert)
+    func showAlert(title: String = LocalizationManager.shared.localizedString(for: "error"), message: String?, cancelTitle: String = LocalizationManager.shared.localizedString(for: "cancel")) {
+        let alert = UIAlertController(title: title, message: (message ?? LocalizationManager.shared.localizedString(for: "error")) + " " + UIViewController.sendEmailPrompt, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel, handler: nil)
         alert.addAction(cancelAction)
-        let sendEmailAction = UIAlertAction(title: "Send Email", style: .default) { _ in
+        let sendEmailAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "send_email"), style: .default) { _ in
             MailHelper.shared.sendAutoErrorEmail(message: message, from: self)
         }
         alert.addAction(sendEmailAction)
