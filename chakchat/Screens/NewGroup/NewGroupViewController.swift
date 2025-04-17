@@ -6,9 +6,10 @@
 //
 
 import UIKit
+import CropViewController
 
 // MARK: - NewGroupViewController
-final class NewGroupViewController: UIViewController {
+final class NewGroupViewController: UIViewController, CropViewControllerDelegate {
     
     // MARK: - Constants
     private enum Constants {
@@ -42,6 +43,7 @@ final class NewGroupViewController: UIViewController {
     private var isImageSet: Bool = false
     private let clearButton: UIButton = UIButton(type: .system)
     private var photoMenu: UIMenu = UIMenu(children: [])
+    private var isPhoto: Bool = false
     
     // MARK: - Initialization
     init(interactor: NewGroupBusinessLogic) {
@@ -257,7 +259,6 @@ final class NewGroupViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
-        imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
     }
     
@@ -362,9 +363,8 @@ extension NewGroupViewController: UITableViewDelegate, UITableViewDataSource {
 // MARK: - UIImagePickerControllerDelegate, UINavigationControllerDelegate
 extension NewGroupViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let pickedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-            addPickedImage(pickedImage)
-        }
+        guard let pickedImage = info[.originalImage] as? UIImage else { return }
+        
         let deleteAction = UIAction(
             title: LocalizationManager.shared.localizedString(for: "delete"),
             image: UIImage(systemName: "trash"),
@@ -372,6 +372,7 @@ extension NewGroupViewController : UIImagePickerControllerDelegate, UINavigation
         ) { action in
             self.sendDeleteImage()
         }
+        
         if photoMenu.children.count == 1 {
             var updatedChildren = photoMenu.children
             updatedChildren.append(deleteAction)
@@ -380,10 +381,29 @@ extension NewGroupViewController : UIImagePickerControllerDelegate, UINavigation
             clearButton.showsMenuAsPrimaryAction = true
         }
         picker.dismiss(animated: true, completion: nil)
+        
+        showCrop(pickedImage)
     }
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+    
+    private func showCrop(_ image: UIImage) {
+        let vc = CropViewController(croppingStyle: .circular, image: image)
+        vc.aspectRatioPreset = .presetSquare
+        vc.aspectRatioLockEnabled = true
+        vc.toolbarPosition = .top
+        vc.doneButtonTitle = "Continue"
+        vc.cancelButtonTitle = "Back"
+        vc.delegate = self
+        present(vc, animated: true)
+    }
+    
+    func cropViewController(_ cropViewController: CropViewController, didCropToImage image: UIImage, withRect cropRect: CGRect, angle: Int) {
+        isPhoto = true
+        addPickedImage(image)
+        cropViewController.dismiss(animated: true)
     }
 }
 

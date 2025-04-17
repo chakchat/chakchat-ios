@@ -165,12 +165,12 @@ final class ErrorHandler: ErrorHandlerLogic {
             
         case ApiErrorType.unauthorized.rawValue:
             print("Error: Unauthorized access.")
-            handleAccessTokenAbsence()
+            //handleAccessTokenAbsence()
             return ErrorId(message: serverErrorMessage, type: ErrorOutput.Alert)
             
         case ApiErrorType.accessTokenExpired.rawValue:
             print("Error: Access token expired.")
-            handleAccessTokenAbsence()
+            //handleAccessTokenAbsence()
             return ErrorId(message: serverErrorMessage, type: ErrorOutput.Alert)
             
         case ApiErrorType.notFound.rawValue:
