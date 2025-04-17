@@ -38,6 +38,8 @@ protocol UserServiceProtocol {
                                    _ accessToken: String,
                                    completion: @escaping (Result<SuccessResponse<ConfidentialitySettingsModels.ConfidentialityUserData>, Error>) -> Void)
     
+    func sendDeleteMeRequest(_ accessToken: String, completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void)
+    
     func DONTSENDIT(completion: @escaping (Result<SuccessResponse<EmptyResponse>, Error>) -> Void)
 }
 

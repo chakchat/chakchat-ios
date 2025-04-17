@@ -158,6 +158,17 @@ final class UserService: UserServiceProtocol {
         Sender.send(endpoint: endpoint, method: .delete, headers: headers, completion: completion)
     }
     
+    func sendDeleteMeRequest(_ accessToken: String, completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void) {
+        let endpoint = UserServiceEndpoints.me.rawValue
+        
+        let headers = [
+            "Authorization": "Bearer \(accessToken)",
+            "Content-Type": "application/json"
+        ]
+        
+        Sender.send(endpoint: endpoint, method: .delete, headers: headers, completion: completion)
+    }
+    
     func DONTSENDIT(completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void) {
         let endpoint = UserServiceEndpoints.teapot.rawValue
         Sender.send(endpoint: endpoint, method: .get, completion: completion)

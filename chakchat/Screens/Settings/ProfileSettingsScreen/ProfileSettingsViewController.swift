@@ -465,7 +465,7 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
         let alert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "delete_account"), message: LocalizationManager.shared.localizedString(for: "are_you_sure_delete_account"), preferredStyle: .alert)
   
         let deleteAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "delete_account"), style: .destructive) { _ in
-            // TODO: delete account
+            self.interactor.deleteAccount()
         }
         let cancelAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel, handler: nil)
         
