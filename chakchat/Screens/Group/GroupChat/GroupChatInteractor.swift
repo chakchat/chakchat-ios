@@ -258,17 +258,17 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
             mappedFileUpdate.messageId = String(update.updateID)
             mappedFileUpdate.sentDate = update.createdAt
-            mappedFileUpdate.fileID = fc.fileID
-            mappedFileUpdate.fileName = fc.fileName
-            mappedFileUpdate.mimeType = fc.mimeType
-            mappedFileUpdate.fileSize = fc.fileSize
-            mappedFileUpdate.fileURL = fc.fileURL
-            if fc.mimeType == "image/jpeg" {
+            mappedFileUpdate.fileID = fc.file.fileID
+            mappedFileUpdate.fileName = fc.file.fileName
+            mappedFileUpdate.mimeType = fc.file.mimeType
+            mappedFileUpdate.fileSize = fc.file.fileSize
+            mappedFileUpdate.fileURL = fc.file.fileURL
+            if fc.file.mimeType == "image/jpeg" {
                 mappedFileUpdate.kind = .photo(
                     PhotoMediaItem(
-                        url: fc.fileURL,
-                        image: ImageCacheManager.shared.getImage(for: fc.fileURL as NSURL),
-                        placeholderImage: UIImage(systemName: "AppIcon")!,
+                        url: fc.file.fileURL,
+                        image: ImageCacheManager.shared.getImage(for: fc.file.fileURL as NSURL),
+                        placeholderImage: UIImage(),
                         shimmer: nil,
                         size: CGSize(width: 150, height: 150),
                         status: .sent

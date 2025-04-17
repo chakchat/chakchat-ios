@@ -59,8 +59,15 @@ protocol GroupChatWorkerLogic {
 protocol MessageEditMenuDelegate: AnyObject {
     func didTapCopy(for message: IndexPath)
     func didTapReply(for message: IndexPath)
-    func didTapEdit(for message: IndexPath)
     func didTapDelete(for message: IndexPath, mode: DeleteMode)
     func didSelectReaction(_ emoji: String, for indexPath: IndexPath)
     func didTapReply(_ indexPath: IndexPath)
+}
+
+protocol TextMessageEditMenuDelegate: MessageEditMenuDelegate {
+    func didTapEdit(for message: IndexPath)
+}
+
+protocol FileMessageEditMenuDelegate: MessageEditMenuDelegate {
+    func didTapLoad(for message: IndexPath)
 }
