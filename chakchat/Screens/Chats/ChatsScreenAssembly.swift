@@ -11,7 +11,7 @@ import UIKit
 // MARK: - ChatAssembly
 enum ChatsAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = ChatsScreenPresenter()
         let userService = UserService()
         let chatsService = ChatsService()
@@ -31,17 +31,17 @@ enum ChatsAssembly {
             eventSubscriber: context.eventManager,
             keychainManager: context.keychainManager
         )
-        interactor.onRouteToChat = { [weak coordinator] userData, chatData in
-            coordinator?.showChatScreen(userData, chatData)
+        interactor.onRouteToChat = { userData, chatData in
+            AppCoordinator.shared.showChatScreen(userData, chatData)
         }
-        interactor.onRouteToGroupChat = { [weak coordinator] chatData in
-            coordinator?.showGroupChatScreen(chatData)
+        interactor.onRouteToGroupChat = { chatData in
+            AppCoordinator.shared.showGroupChatScreen(chatData)
         }
-        interactor.onRouteToSettings = { [weak coordinator] in
-            coordinator?.showSettingsScreen()
+        interactor.onRouteToSettings = {
+            AppCoordinator.shared.showSettingsScreen()
         }
-        interactor.onRouteToNewMessage = { [weak coordinator] in
-            coordinator?.showNewMessageScreen()
+        interactor.onRouteToNewMessage = {
+            AppCoordinator.shared.showNewMessageScreen()
         }
         
         let view = ChatsScreenViewController(interactor: interactor)

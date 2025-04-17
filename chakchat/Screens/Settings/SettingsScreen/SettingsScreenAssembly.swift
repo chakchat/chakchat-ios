@@ -11,7 +11,7 @@ import UIKit
 // MARK: - SettingsScreenAssembly
 enum SettingsScreenAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = SettingsScreenPresenter()
         let userService = UserService()
         let worker = SettingsScreenWorker(userDefaultsManager: context.userDefaultsManager, userService: userService, keychainManager: context.keychainManager)
@@ -22,26 +22,26 @@ enum SettingsScreenAssembly {
                                                   errorHandler: context.errorHandler,
                                                   logger: context.logger
         )
-        interactor.onRouteToUserProfileSettings = { [weak coordinator] in
-            coordinator?.showUserSettingsScreen()
+        interactor.onRouteToUserProfileSettings = {
+            AppCoordinator.shared.showUserSettingsScreen()
         }
-        interactor.onRouteToConfidentialitySettings = { [weak coordinator] in
-            coordinator?.showConfidentialityScreen()
+        interactor.onRouteToConfidentialitySettings = {
+           AppCoordinator.shared.showConfidentialityScreen()
         }
-        interactor.onRouteToNotificationsSettings = { [weak coordinator] in
-            coordinator?.showNotificationScreen()
+        interactor.onRouteToNotificationsSettings = {
+            AppCoordinator.shared.showNotificationScreen()
         }
-        interactor.onRouteToLanguageSettings = { [weak coordinator] in
-            coordinator?.showLanguageScreen()
+        interactor.onRouteToLanguageSettings = {
+            AppCoordinator.shared.showLanguageScreen()
         }
-        interactor.onRouteToAppThemeSettings = { [weak coordinator] in
-            coordinator?.showAppThemeScreen()
+        interactor.onRouteToAppThemeSettings = {
+            AppCoordinator.shared.showAppThemeScreen()
         }
-        interactor.onRouteToCacheSettings = { [weak coordinator] in
-            coordinator?.showCacheScreen()
+        interactor.onRouteToCacheSettings = {
+            AppCoordinator.shared.showCacheScreen()
         }
-        interactor.onRouteToHelpSettings = { [weak coordinator] in
-            coordinator?.showHelpScreen()
+        interactor.onRouteToHelpSettings = {
+            AppCoordinator.shared.showHelpScreen()
         }
         
         let view = SettingsScreenViewController(interactor: interactor)

@@ -11,7 +11,7 @@ import UIKit
 // MARK: - PhoneVisibilityScreenAssembly
 enum PhoneVisibilityScreenAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = PhoneVisibilityScreenPresenter()
         let userService = UserService()
         let worker = PhoneVisibilityScreenWorker(userDefaultsManager: context.userDefaultsManager, userService: userService, keychainManager: context.keychainManager)
@@ -22,11 +22,11 @@ enum PhoneVisibilityScreenAssembly {
                                                          logger: context.logger,
                                                          userRestrictionsSnap: context.userDefaultsManager.loadRestrictions()
         )
-        interactor.onRouteToConfidentialityScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToConfidentialityScreen = {
+            AppCoordinator.shared.popScreen()
         }
-        interactor.onRouteToAddUsersScreen = { [weak coordinator] in
-            coordinator?.showAddUsersScreen()
+        interactor.onRouteToAddUsersScreen = { 
+            AppCoordinator.shared.showAddUsersScreen()
         }
         let view = PhoneVisibilityScreenViewController(interactor: interactor)
         presenter.view = view

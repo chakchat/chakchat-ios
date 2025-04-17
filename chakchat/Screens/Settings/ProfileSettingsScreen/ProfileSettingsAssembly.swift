@@ -11,7 +11,7 @@ import UIKit
 // MARK: - ProfileSettingsAssembly
 enum ProfileSettingsAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = ProfileSettingsPresenter()
         let meService = UserService()
         let fileStorageService = FileStorageService()
@@ -31,11 +31,11 @@ enum ProfileSettingsAssembly {
             logger: context.logger
         )
         
-        interactor.onRouteToSettingsMenu = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToSettingsMenu = {
+            AppCoordinator.shared.popScreen()
         }
-        interactor.onRouteToRegistration = { [weak coordinator] in
-            coordinator?.showSendCodeScreen()
+        interactor.onRouteToRegistration = {
+            AppCoordinator.shared.showSendCodeScreen()
         }
         let view = ProfileSettingsViewController(interactor: interactor)
         presenter.view = view

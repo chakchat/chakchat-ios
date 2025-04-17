@@ -10,11 +10,11 @@ import UIKit
 // MARK: - CacheAssembly
 enum CacheAssembly {
     
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = CachePresenter()
         let interactor = CacheInteractor(presenter: presenter)
-        interactor.onRouteToSettingsMenu = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToSettingsMenu = {
+            AppCoordinator.shared.popScreen()
         }
         let view = CacheViewController(interactor: interactor)
         presenter.view = view

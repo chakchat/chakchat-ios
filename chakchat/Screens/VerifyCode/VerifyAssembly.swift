@@ -11,7 +11,7 @@ import UIKit
 // MARK: - VerifyAssembly
 enum VerifyAssembly {
     
-    static func build(with context: SignupContextProtocol, coordinator: AppCoordinator, phone: String) -> UIViewController {
+    static func build(with context: SignupContextProtocol, phone: String) -> UIViewController {
         
         let presenter = VerifyPresenter()
         let identityService = IdentityService()
@@ -33,22 +33,22 @@ enum VerifyAssembly {
         let view = VerifyViewController(interactor: interactor)
         presenter.view = view
         
-        interactor.onRouteToSignupScreen = { [weak context, weak coordinator] state in
+        interactor.onRouteToSignupScreen = { [weak context] state in
             context?.state = state
             print(state)
-            coordinator?.showSignupScreen()
+            AppCoordinator.shared.showSignupScreen()
         }
         
-        interactor.onRouteToChatScreen = { [weak context, weak coordinator] state in
+        interactor.onRouteToChatScreen = { [weak context] state in
             context?.state = state
             print(state)
-            coordinator?.setChatsScreen()
+            AppCoordinator.shared.setChatsScreen()
         }
         
-        interactor.onRouteToSendCodeScreen = { [weak context, weak coordinator] state in
+        interactor.onRouteToSendCodeScreen = { [weak context] state in
             context?.state = state
             print(state)
-            coordinator?.popScreen()
+            AppCoordinator.shared.popScreen()
         }
         
         return view

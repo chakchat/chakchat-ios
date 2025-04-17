@@ -11,7 +11,7 @@ import UIKit
 // MARK: - OnlineVisibilityScreenAssembly
 enum OnlineVisibilityScreenAssembly {
 
-    static func build(with context: MainAppContextProtocol, coordinator: AppCoordinator) -> UIViewController {
+    static func build(with context: MainAppContextProtocol) -> UIViewController {
         let presenter = OnlineVisibilityScreenPresenter()
         let worker = OnlineVisibilityScreenWorker(userDeafultsManager: context.userDefaultsManager)
         let interactor = OnlineVisibilityScreenInteractor(presenter: presenter, 
@@ -20,8 +20,8 @@ enum OnlineVisibilityScreenAssembly {
                                                           onlineRestrictionSnap: OnlineVisibilityStatus(status: context.userDefaultsManager.loadOnlineStatus()),
                                                           logger: context.logger
         )
-        interactor.onRouteToConfidentialityScreen = { [weak coordinator] in
-            coordinator?.popScreen()
+        interactor.onRouteToConfidentialityScreen = {
+            AppCoordinator.shared.popScreen()
         }
         let view = OnlineVisibilityScreenViewController(interactor: interactor)
         presenter.view = view
