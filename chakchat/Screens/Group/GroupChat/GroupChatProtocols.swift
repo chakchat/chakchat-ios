@@ -21,12 +21,16 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
-    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
     func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
     
+    func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage
     func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited
+    func mapToFileMessage(_ update: UpdateData) -> GroupFileMessage
 }
 
 protocol GroupChatPresentationLogic {
@@ -45,13 +49,26 @@ protocol GroupChatWorkerLogic {
     func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    
+    
+    func uploadImage(_ fileData: Data,
+                     _ fileName: String,
+                     _ mimeType: String,
+                     completion: @escaping (Result<SuccessModels.UploadResponse, Error>) -> Void)
 }
 
 protocol MessageEditMenuDelegate: AnyObject {
     func didTapCopy(for message: IndexPath)
     func didTapReply(for message: IndexPath)
-    func didTapEdit(for message: IndexPath)
     func didTapDelete(for message: IndexPath, mode: DeleteMode)
     func didSelectReaction(_ emoji: String, for indexPath: IndexPath)
     func didTapReply(_ indexPath: IndexPath)
+}
+
+protocol TextMessageEditMenuDelegate: MessageEditMenuDelegate {
+    func didTapEdit(for message: IndexPath)
+}
+
+protocol FileMessageEditMenuDelegate: MessageEditMenuDelegate {
+    func didTapLoad(for message: IndexPath)
 }

@@ -94,7 +94,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler: nil)
         
-        let alert = UIAlertController(title: "Choose image", message: nil, preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Choose visual", message: nil, preferredStyle: .actionSheet)
         alert.addAction(photoLibraryAction)
         alert.addAction(cameraAction)
         alert.addAction(cancelAction)
@@ -111,6 +111,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
         imgPicker.delegate = self
         imgPicker.sourceType = sourceType
         imgPicker.presentationController?.delegate = self
+        imgPicker.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
         inputAccessoryView?.isHidden = true
         getRootViewController()?.present(imgPicker, animated: true, completion: nil)
     }
@@ -120,8 +121,27 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
         didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any])
     {
         picker.dismiss(animated: true) {
-            guard let image = info[.originalImage] as? UIImage else { return }
-            self.showCrop(image)
+            if let image = info[.originalImage] as? UIImage {
+                self.showCrop(image)
+            }
+            if let videoURL = info[.mediaURL] as? URL {
+                let nsURL = videoURL as NSURL
+                self.inputPlugins.forEach {_ = $0.handleInput(of: nsURL)}
+                self.inputAccessoryView?.isHidden = false
+            }
+        }
+    }
+    
+    private func generateThumbnail(for videoURL: URL) -> UIImage {
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        
+        do {
+            let cgImage = try generator.copyCGImage(at: CMTime(seconds: 1, preferredTimescale: 60), actualTime: nil)
+            return UIImage(cgImage: cgImage)
+        } catch {
+            return UIImage(systemName: "play.circle.fill")!
         }
     }
     

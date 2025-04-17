@@ -18,6 +18,16 @@ enum ProfileSettingsModels {
         let photo: URL?
         let dateOfBirth: String?
         let createdAt: Date
+        
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case username = "username"
+            case phone = "phone"
+            case photo = "photo_url"
+            case dateOfBirth = "dateOfBirth"
+            case createdAt = "createdAt"
+        }
     }
     
     struct Users: Codable {

@@ -13,12 +13,14 @@ enum GroupChatAssembly {
         let updateService = UpdateService()
         let userService = UserService()
         let groupUpdateService = GroupUpdateService()
+        let fileService = FileStorageService()
         let worker = GroupChatWorker(
             keychainManager: context.keychainManager,
             coreDataManager: context.coreDataManager,
             userDefaultsManager: context.userDefaultsManager,
             userService: userService,
             updateService: updateService,
+            fileService: fileService,
             groupUpdateService: groupUpdateService
         )
         let interactor = GroupChatInteractor(

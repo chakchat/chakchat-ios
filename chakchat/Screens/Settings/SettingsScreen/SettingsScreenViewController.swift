@@ -99,13 +99,16 @@ final class SettingsScreenViewController: UIViewController {
                 iconImageView.layer.cornerRadius = 40
             } else {
                 interactor.loadPhotoByURL(imageURL) { [weak self] result in
-                    guard let self = self else { return }
-                    switch result {
-                    case .success(let image):
-                        iconImageView.image = image
-                        iconImageView.layer.cornerRadius = 40
-                    case .failure(_):
-                        print("Failed to download file")
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        switch result {
+                        case .success(let image):
+                            self.iconImageView.image = image
+                            self.iconImageView.layer.cornerRadius = 40
+                            ImageCacheManager.shared.saveImage(image, for: imageURL as NSURL)
+                        case .failure(_):
+                            print("Failed to download file")
+                        }
                     }
                 }
             }
@@ -121,9 +124,11 @@ final class SettingsScreenViewController: UIViewController {
     }
     
     func updatePhoto(_ photo: URL?) {
-        if let url = photo {
-            iconImageView.image = ImageCacheManager.shared.getImage(for: url as NSURL)
-            iconImageView.layer.cornerRadius = 40
+        DispatchQueue.main.async {
+            if let url = photo {
+                self.iconImageView.image = ImageCacheManager.shared.getImage(for: url as NSURL)
+                self.iconImageView.layer.cornerRadius = 40
+            }
         }
     }
     

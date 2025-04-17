@@ -195,6 +195,7 @@
 		AA9B628F2D3152570064CB23 /* Sender.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B628E2D3152570064CB23 /* Sender.swift */; };
 		AA9B62A12D32DFC60064CB23 /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A02D32DFC60064CB23 /* StateMachine.swift */; };
 		AA9B62A32D33D6B50064CB23 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A22D33D6B50064CB23 /* ErrorHandler.swift */; };
+		AA9C2D852DB17F8300AC8DED /* UICustomMediaMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */; };
 		AAA5F3DD2D393A9A00B9D50E /* MockSendCodeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3DC2D393A9A00B9D50E /* MockSendCodeService.swift */; };
 		AAA5F3DF2D393C0F00B9D50E /* MockSendCodePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3DE2D393C0F00B9D50E /* MockSendCodePresenter.swift */; };
 		AAA5F3E22D39561E00B9D50E /* ErrorHandlerProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3E12D39561E00B9D50E /* ErrorHandlerProtocols.swift */; };
@@ -535,6 +536,7 @@
 		AA9B628E2D3152570064CB23 /* Sender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sender.swift; sourceTree = "<group>"; };
 		AA9B62A02D32DFC60064CB23 /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
 		AA9B62A22D33D6B50064CB23 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
+		AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomMediaMessageCell.swift; sourceTree = "<group>"; };
 		AAA5F3DC2D393A9A00B9D50E /* MockSendCodeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSendCodeService.swift; sourceTree = "<group>"; };
 		AAA5F3DE2D393C0F00B9D50E /* MockSendCodePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSendCodePresenter.swift; sourceTree = "<group>"; };
 		AAA5F3E12D39561E00B9D50E /* ErrorHandlerProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandlerProtocols.swift; sourceTree = "<group>"; };
@@ -1086,6 +1088,7 @@
 		AA92EC5D2D381B4A007DEC76 /* UIComponents */ = {
 			isa = PBXGroup;
 			children = (
+				AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */,
 				E1960A7F2D7C6841008E27C0 /* UIUserProfileButton.swift */,
 				AA92EC5E2D381B5E007DEC76 /* UIChakChatStackView.swift */,
 				AA92EC622D382057007DEC76 /* UIGradientButton.swift */,
@@ -2115,6 +2118,7 @@
 				AAEF16A02DA176E60022B30F /* TextMessageUpdate+CoreDataClass.swift in Sources */,
 				AAEF16A12DA176E60022B30F /* TextMessageUpdate+CoreDataProperties.swift in Sources */,
 				AAEF16A22DA176E60022B30F /* Update+CoreDataClass.swift in Sources */,
+				AA9C2D852DB17F8300AC8DED /* UICustomMediaMessageCell.swift in Sources */,
 				AAEF16A32DA176E60022B30F /* Update+CoreDataProperties.swift in Sources */,
 				AAEF16A42DA176E60022B30F /* FileMessageUpdate+CoreDataClass.swift in Sources */,
 				AAEF16A52DA176E60022B30F /* FileMessageUpdate+CoreDataProperties.swift in Sources */,
