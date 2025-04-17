@@ -9,6 +9,7 @@ import UIKit
 import MessageKit
 import InputBarAccessoryView
 import PhotosUI
+import AVKit
 
 final class GroupChatViewController: MessagesViewController {
     
@@ -65,27 +66,28 @@ final class GroupChatViewController: MessagesViewController {
         guard let messagesDataSource = messagesCollectionView.messagesDataSource else {
             fatalError("Ouch. nil data source for messages")
         }
-        
         let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
-        if case .text = message.kind {
+
+        switch message.kind {
+        case .text:
             let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
             cell.cellDelegate = self
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
-        }
-        if case .photo = message.kind {
-            let cell = messagesCollectionView.dequeueReusableCell(PhotoMessageCell.self, for: indexPath)
+        case .photo, .video:
+            let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
             cell.cellDelegate = self
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
+        default:
+            return super.collectionView(collectionView, cellForItemAt: indexPath)
         }
-        return super.collectionView(collectionView, cellForItemAt: indexPath)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         messagesCollectionView.register(ReactionTextMessageCell.self)
-        messagesCollectionView.register(PhotoMessageCell.self)
+        messagesCollectionView.register(CustomMediaMessageCell.self)
         loadUsers()
         loadFirstMessages()
         configureUI()
@@ -612,9 +614,29 @@ final class GroupChatViewController: MessagesViewController {
     
     private func sendVideo(_ videoURL: URL) {
         let thumbnail = generateThumbnail(for: videoURL)
-        let videoMessage = mapVideo(videoURL, thumbnail.size)
+        var videoMessage = mapVideo(videoURL, thumbnail.size)
         messages.append(videoMessage)
         messagesCollectionView.reloadData()
+        interactor.uploadVideo(videoURL) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: {$0.messageId == videoMessage.messageId}) else { return }
+                switch result {
+                case .success(let fileUpdate):
+                    var fileMessage = self.interactor.mapToFileMessage(fileUpdate)
+                    fileMessage.status = .sent
+                    self.messages[index] = fileMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                case .failure(let failure):
+                    videoMessage.status = .error
+                    self.messages[index] = videoMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(failure)
+                }
+            }
+        }
     }
     
     private func generateThumbnail(for videoURL: URL) -> UIImage {
@@ -642,7 +664,7 @@ final class GroupChatViewController: MessagesViewController {
             sender: curUser,
             messageId: UUID().uuidString,
             sentDate: Date(),
-            media: MockMediaItem(url: nil, image: photo, placeholderImage: UIImage(), size: photo.size),
+            media: MockMediaItem(url: nil, image: photo, placeholderImage: UIImage(), size: CGSize(width: 200, height: 200)),
             status: .sending
         )
     }
@@ -713,7 +735,7 @@ extension GroupChatViewController: MessagesDataSource {
     func photoCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
         
         if case .photo = message.kind {
-            let cell = messagesCollectionView.dequeueReusableCell(PhotoMessageCell.self, for: indexPath)
+            let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
         }
@@ -853,6 +875,12 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
             if case .text = message.kind {
                 return ReactionMessageSizeCalculator(layout: layout)
             }
+        }
+        return nil
+    }
+    
+    func photoCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
+        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .photo = message.kind {
                 return PhotoMessageCellSizeCalculator(layout: layout)
             }
@@ -873,6 +901,18 @@ extension GroupChatViewController: MessageCellDelegate {
         }
     }
     
+    func didTapImage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              case .video(let mediaItem) = messages[indexPath.section].kind,
+              let url = mediaItem.url else { return }
+
+        let player = AVPlayer(url: url)
+        let playerVC = AVPlayerViewController()
+        playerVC.player = player
+        present(playerVC, animated: true) {
+            player.play()
+        }
+    }
 }
 
 extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditMenuDelegate {

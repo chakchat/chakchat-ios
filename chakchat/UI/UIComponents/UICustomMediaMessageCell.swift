@@ -8,7 +8,7 @@
 import UIKit
 import MessageKit
 
-class PhotoMessageCell: MediaMessageCell {
+class CustomMediaMessageCell: MediaMessageCell {
     
     weak var cellDelegate: FileMessageEditMenuDelegate?
     private var messageStatus: UILabel = UILabel()
@@ -33,7 +33,7 @@ class PhotoMessageCell: MediaMessageCell {
     {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
         addLongPressMenu()
-
+        
         if let message = message as? GroupMessageStatusProtocol {
             messageStatus.text = message.status.rawValue
             if message.status == .sending {
@@ -48,25 +48,28 @@ class PhotoMessageCell: MediaMessageCell {
             }
         }
         
-        guard case .photo(let photoMediaItem) = message.kind else { return }
-        
-        if let image = photoMediaItem.image {
-            imageView.image = image
-        } else {
-            if let url = photoMediaItem.url {
-                DispatchQueue.global(qos: .userInteractive).async {
-                    URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-                        guard let self = self else { return }
-                        guard let data = data, error == nil, let image = UIImage(data: data) else {
-                            return
-                        }
-                        ImageCacheManager.shared.saveImage(image, for: url as NSURL)
-                        DispatchQueue.main.async {
-                            self.imageView.image = image
-                        }
+        switch message.kind {
+        case .photo(let mediaItem), .video(let mediaItem):
+            if let image = mediaItem.image {
+                imageView.image = image
+            } else {
+                if let url = mediaItem.url {
+                    DispatchQueue.global(qos: .userInteractive).async {
+                        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+                            guard let self = self else { return }
+                            guard let data = data, error == nil, let image = UIImage(data: data) else {
+                                return
+                            }
+                            ImageCacheManager.shared.saveImage(image, for: url as NSURL)
+                            DispatchQueue.main.async {
+                                self.imageView.image = image
+                            }
+                        }.resume()
                     }
                 }
             }
+        default:
+            break
         }
     }
     
@@ -86,7 +89,7 @@ class PhotoMessageCell: MediaMessageCell {
         messageContainerView.isUserInteractionEnabled = true
     }
     
-    private func startSendingAnimation(in cell: PhotoMessageCell) {
+    private func startSendingAnimation(in cell: CustomMediaMessageCell) {
         let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotation.toValue = NSNumber(value: Double.pi * 2)
         rotation.duration = 1
@@ -104,7 +107,7 @@ class PhotoMessageCellSizeCalculator: MediaMessageSizeCalculator {
     }
 }
 
-extension PhotoMessageCell: UIContextMenuInteractionDelegate {
+extension CustomMediaMessageCell: UIContextMenuInteractionDelegate {
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
                                 configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         
@@ -170,7 +173,7 @@ extension PhotoMessageCell: UIContextMenuInteractionDelegate {
     }
 }
 
-extension PhotoMessageCell: UIPopoverPresentationControllerDelegate {
+extension CustomMediaMessageCell: UIPopoverPresentationControllerDelegate {
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         return .none
     }

@@ -72,7 +72,8 @@ final class ReplyPreviewView: UIView {
     
     /// потом здесь надо будет обрабатывать все виды сообщений(пока только текстовое)
     private func configureMessageLabelOrImage() {
-        if case .text(let text) = message.kind {
+        switch message.kind {
+        case .text(let text):
             contentView.addSubview(messageLabel)
             messageLabel.text = text
             messageLabel.font = Fonts.systemR12
@@ -81,8 +82,7 @@ final class ReplyPreviewView: UIView {
             messageLabel.setHeight(16)
             messageLabel.setWidth(250)
             previewImageView.isHidden = true
-        }
-        if case .photo(let photo) = message.kind {
+        case .photo(let mediaItem), .video(let mediaItem):
             contentView.addSubview(previewImageView)
             previewImageView.clipsToBounds = true
             previewImageView.layer.cornerRadius = 4
@@ -90,8 +90,9 @@ final class ReplyPreviewView: UIView {
             previewImageView.pinTop(senderLabel.bottomAnchor, 4)
             previewImageView.setWidth(30)
             previewImageView.setHeight(30)
-            previewImageView.image = photo.image
+            previewImageView.image = mediaItem.image
             messageLabel.isHidden = true
+        default: break
         }
     }
     

@@ -26,6 +26,7 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
     
     func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage
     func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited

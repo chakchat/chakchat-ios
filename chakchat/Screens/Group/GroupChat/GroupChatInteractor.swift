@@ -9,6 +9,7 @@ import UIKit
 import OSLog
 import Combine
 import MessageKit
+import PhotosUI
 
 final class GroupChatInteractor: GroupChatBusinessLogic {
     
@@ -153,11 +154,37 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             return
         }
         let fileName = "\(UUID().uuidString).jpeg"
-        worker.uploadImage(data, fileName, "image/jpeg") { [weak self] result in
+        let mimeType = "image/jpeg"
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let fileMetaData):
                 ImageCacheManager.shared.saveImage(image, for: fileMetaData.fileURL as NSURL)
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
+            case .failure(let failure):
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user image failed:\n", log: logger, type: .fault)
+                print(failure)
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = try? Data(contentsOf: videoURL) else { return }
+        let fileName = "\(UUID().uuidString).mp4"
+        let mimeType = "video/mp4"
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let fileMetaData):
                 sendFileMessage(fileMetaData.fileId, nil) { result in
                     switch result {
                     case .success(let fileUpdate):
@@ -270,10 +297,24 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         image: ImageCacheManager.shared.getImage(for: fc.file.fileURL as NSURL),
                         placeholderImage: UIImage(),
                         shimmer: nil,
-                        size: CGSize(width: 150, height: 150),
+                        size: CGSize(width: 200, height: 200),
                         status: .sent
                     )
                 )
+            }
+            if fc.file.mimeType == "video/mp4" {
+                let thumbnail = generateThumbnail(for: fc.file.fileURL)
+                mappedFileUpdate.kind =
+                    .video(
+                        PhotoMediaItem(
+                            url: fc.file.fileURL,
+                            image: thumbnail,
+                            placeholderImage: UIImage(systemName: "play.circle.fill")!,
+                            shimmer: nil,
+                            size: thumbnail.size,
+                            status: .sent
+                        )
+                    )
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]
@@ -298,7 +339,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 let mappedEditedTextUpdate = mapToEditedMessage(update)
                 mappedUpdates.append(mappedEditedTextUpdate)
             case .file:
-                var mappedFileUpdate = mapToFileMessage(update)
+                let mappedFileUpdate = mapToFileMessage(update)
                 mappedUpdates.append(mappedFileUpdate)
             case .reaction:
                 var mappedReactionUpdate: GroupReaction!
@@ -335,5 +376,25 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             return user.name
         }
         return ""
+    }
+    
+    private func generateThumbnail(for videoURL: URL) -> UIImage {
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        
+        let maxSize = CGSize(width: 200, height: 200)
+        generator.maximumSize = maxSize
+        
+        do {
+            let cgImage = try generator.copyCGImage(at: CMTime(value: 1, timescale: 60), actualTime: nil)
+            let thumbnail = UIImage(cgImage: cgImage)
+            
+            let scaledImage = thumbnail.scaledToFit(maxSize: maxSize)
+            return scaledImage
+            
+        } catch {
+            return UIImage(systemName: "play.circle.fill")!
+        }
     }
 }
