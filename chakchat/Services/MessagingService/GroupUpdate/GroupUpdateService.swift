@@ -114,7 +114,7 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
-        let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendFile.rawValue)"
+        let endpoint = "\(baseAPI)\(chatID)\(MessagingServiceEndpoints.PersonalUpdateEndpoints.sendFile.rawValue)"
         
         let idempotencyKey = UUID().uuidString
         

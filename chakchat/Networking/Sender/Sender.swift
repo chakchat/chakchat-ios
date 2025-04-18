@@ -150,19 +150,23 @@ final class Sender: SenderLogic {
         body: Data?,
         completion: @escaping (Result<SuccessResponse<T>, Error>) -> Void
     ) {
-        refreshAccessToken { result in
+        TokenManager.refreshAccessToken { result in
             switch result {
             case .success(let response):
                 let tokens = response.data
                 saveTokensToKeychain(tokens: tokens)
-                send(endpoint: endpoint,
-                     method: method,
-                     headers: headers,
-                     body: body,
-                     attempt: attempt + 1,
-                     completion: completion)
-            case .failure(let failure):
-                completion(.failure(failure))
+                
+                send(
+                    endpoint: endpoint,
+                    method: method,
+                    headers: headers,
+                    body: body,
+                    attempt: attempt + 1,
+                    completion: completion
+                )
+                
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
@@ -245,4 +249,53 @@ enum HTTPMethod: String {
     case post = "POST"
     case put = "PUT"
     case delete = "DELETE"
+}
+
+final class TokenManager {
+    private static let keychainManager: KeychainManagerBusinessLogic = KeychainManager()
+    private static let lock = NSLock()
+    private static var isRefreshing = false
+    private static var refreshCompletions: [(Result<SuccessResponse<SuccessModels.Tokens>, Error>) -> Void] = []
+    
+    static func refreshAccessToken(completion: @escaping (Result<SuccessResponse<SuccessModels.Tokens>, Error>) -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        
+        if isRefreshing {
+            refreshCompletions.append(completion)
+            return
+        }
+        
+        isRefreshing = true
+        
+        let endpoint = IdentityServiceEndpoints.refreshEndpoint.rawValue
+        let idempotencyKey = UUID().uuidString
+        
+        guard let refreshToken = keychainManager.getString(key: KeychainManager.keyForSaveRefreshToken) else {
+            completion(.failure(APIErrorResponse(errorType: ApiErrorType.refreshTokenExpired.rawValue, errorMessage: "no refresh token in keychain", errorDetails: nil)))
+            return
+        }
+        
+        let request = RefreshRequest(refreshToken: refreshToken)
+        let body = try? JSONEncoder().encode(request)
+        
+        let headers = [
+            "Idempotency-Key": idempotencyKey,
+            "Content-Type": "application/json"
+        ]
+        
+        Sender.send(endpoint: endpoint, method: .post, headers: headers, body: body) { result in
+            lock.lock()
+            defer { lock.unlock() }
+            
+            for completion in refreshCompletions {
+                completion(result)
+            }
+            
+            refreshCompletions.removeAll()
+            isRefreshing = false
+            
+            completion(result)
+        }
+    }
 }

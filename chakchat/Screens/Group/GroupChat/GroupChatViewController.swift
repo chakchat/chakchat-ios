@@ -8,6 +8,8 @@
 import UIKit
 import MessageKit
 import InputBarAccessoryView
+import PhotosUI
+import AVKit
 
 final class GroupChatViewController: MessagesViewController {
     
@@ -64,20 +66,28 @@ final class GroupChatViewController: MessagesViewController {
         guard let messagesDataSource = messagesCollectionView.messagesDataSource else {
             fatalError("Ouch. nil data source for messages")
         }
-        
         let message = messagesDataSource.messageForItem(at: indexPath, in: messagesCollectionView)
-        if case .text = message.kind {
+
+        switch message.kind {
+        case .text:
             let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
             cell.cellDelegate = self
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
+        case .photo, .video:
+            let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
+            cell.cellDelegate = self
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        default:
+            return super.collectionView(collectionView, cellForItemAt: indexPath)
         }
-        return super.collectionView(collectionView, cellForItemAt: indexPath)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         messagesCollectionView.register(ReactionTextMessageCell.self)
+        messagesCollectionView.register(CustomMediaMessageCell.self)
         loadUsers()
         loadFirstMessages()
         configureUI()
@@ -285,32 +295,7 @@ final class GroupChatViewController: MessagesViewController {
         messagesCollectionView.messageCellDelegate = self
         let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
         layout?.sectionInset = UIEdgeInsets(top: 1, left: 8, bottom: 1, right: 8)
-        layout?.setMessageOutgoingAvatarSize(.zero)
-        layout?
-            .setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(
-                textAlignment: .right,
-                textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
-        layout?
-            .setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(
-                textAlignment: .right,
-                textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)))
-        layout?
-            .setMessageIncomingMessageTopLabelAlignment(LabelAlignment(
-                textAlignment: .left,
-                textInsets: UIEdgeInsets(top: 0, left: 18, bottom: Constants.outgoingAvatarOverlap, right: 0)))
-        layout?.setMessageIncomingAvatarSize(CGSize(width: 30, height: 30))
-        layout?
-            .setMessageIncomingMessagePadding(UIEdgeInsets(
-                top: -Constants.outgoingAvatarOverlap,
-                left: -18,
-                bottom: Constants.outgoingAvatarOverlap,
-                right: 18))
-        
-        layout?.setMessageIncomingAccessoryViewSize(CGSize(width: 30, height: 30))
-        layout?.setMessageIncomingAccessoryViewPadding(HorizontalEdgeInsets(left: 8, right: 0))
-        layout?.setMessageIncomingAccessoryViewPosition(.messageBottom)
-        layout?.setMessageOutgoingAccessoryViewSize(CGSize(width: 30, height: 30))
-        layout?.setMessageOutgoingAccessoryViewPadding(HorizontalEdgeInsets(left: 0, right: 8))
+        layout?.textMessageSizeCalculator.outgoingAvatarSize = .zero
     }
     
     private func configureInputBar() {
@@ -601,6 +586,113 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
+    private func sendPhoto(_ photo: UIImage) {
+        var photoMessage = mapPhoto(photo)
+        insertPhoto(photoMessage)
+        interactor.uploadImage(photo) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: {$0.messageId == photoMessage.messageId}) else { return }
+                switch result {
+                case .success(let fileUpdate):
+                    var fileMessage = self.interactor.mapToFileMessage(fileUpdate)
+                    fileMessage.status = .sent
+                    self.messages[index] = fileMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(fileUpdate)
+                case .failure(let failure):
+                    photoMessage.status = .error
+                    self.messages[index] = photoMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(failure)
+                }
+            }
+        }
+    }
+    
+    private func sendVideo(_ videoURL: URL) {
+        let thumbnail = generateThumbnail(for: videoURL)
+        var videoMessage = mapVideo(videoURL, thumbnail.size)
+        messages.append(videoMessage)
+        messagesCollectionView.reloadData()
+        interactor.uploadVideo(videoURL) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: {$0.messageId == videoMessage.messageId}) else { return }
+                switch result {
+                case .success(let fileUpdate):
+                    var fileMessage = self.interactor.mapToFileMessage(fileUpdate)
+                    fileMessage.status = .sent
+                    self.messages[index] = fileMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                case .failure(let failure):
+                    videoMessage.status = .error
+                    self.messages[index] = videoMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(failure)
+                }
+            }
+        }
+    }
+    
+    private func generateThumbnail(for videoURL: URL) -> UIImage {
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        
+        let maxSize = CGSize(width: 200, height: 200)
+        generator.maximumSize = maxSize
+        
+        do {
+            let cgImage = try generator.copyCGImage(at: CMTime(value: 1, timescale: 60), actualTime: nil)
+            let thumbnail = UIImage(cgImage: cgImage)
+            
+            let scaledImage = thumbnail.scaledToFit(maxSize: maxSize)
+            return scaledImage
+            
+        } catch {
+            return UIImage(systemName: "play.circle.fill")!
+        }
+    }
+    
+    private func mapPhoto(_ photo: UIImage) -> OutgoingPhotoMessage {
+        return OutgoingPhotoMessage(
+            sender: curUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            media: MockMediaItem(url: nil, image: photo, placeholderImage: UIImage(), size: CGSize(width: 200, height: 200)),
+            status: .sending
+        )
+    }
+    
+    private func mapVideo(_ videoURL: URL, _ size: CGSize) -> OutgoingPhotoMessage {
+        return OutgoingPhotoMessage(
+            sender: curUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            media: MockMediaItem(url: videoURL, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: size),
+            status: .sending
+        )
+    }
+    
+    private func insertPhoto(_ message: MessageType) {
+        messages.append(message)
+        messagesCollectionView.performBatchUpdates({
+            messagesCollectionView.insertSections([messages.count - 1])
+            if messages.count >= 2 {
+                messagesCollectionView.reloadSections([messages.count - 2])
+            }
+        }, completion: { [weak self] _ in
+            if self?.isLastSectionVisible() == true {
+                self?.messagesCollectionView.scrollToLastItem(animated: true)
+            }
+        })
+    }
+    
     @objc private func handleTitleTap() {
         interactor.routeToChatProfile()
     }
@@ -630,7 +722,6 @@ extension GroupChatViewController: MessagesDataSource {
     }
     
     func textCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
-        let message = messages[indexPath.section]
         
         if case .text = message.kind {
             let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
@@ -638,7 +729,17 @@ extension GroupChatViewController: MessagesDataSource {
             cell.cellDelegate = self
             return cell
         }
-        return UICollectionViewCell()
+        return TextMessageCell()
+    }
+    
+    func photoCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
+        
+        if case .photo = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
+        }
+        return MediaMessageCell()
     }
     
     func configureAvatarView(_ avatarView: AvatarView, for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
@@ -702,7 +803,6 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     func cellBottomLabelHeight(for _: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> CGFloat {
         0
     }
-    
     
     func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         if shouldShowDateLabel(for: message, at: indexPath) {
@@ -772,7 +872,18 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     
     func textCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
-            return ReactionMessageSizeCalculator(layout: layout)
+            if case .text = message.kind {
+                return ReactionMessageSizeCalculator(layout: layout)
+            }
+        }
+        return nil
+    }
+    
+    func photoCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
+        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
+            if case .photo = message.kind {
+                return PhotoMessageCellSizeCalculator(layout: layout)
+            }
         }
         return nil
     }
@@ -790,13 +901,31 @@ extension GroupChatViewController: MessageCellDelegate {
         }
     }
     
+    func didTapImage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              case .video(let mediaItem) = messages[indexPath.section].kind,
+              let url = mediaItem.url else { return }
+
+        let player = AVPlayer(url: url)
+        let playerVC = AVPlayerViewController()
+        playerVC.player = player
+        present(playerVC, animated: true) {
+            player.play()
+        }
+    }
 }
 
-extension GroupChatViewController: MessageEditMenuDelegate {
+extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditMenuDelegate {
+    
     func didTapCopy(for message: IndexPath) {
         let message = messages[message.section]
         if let message = message as? GroupTextMessage {
             UIPasteboard.general.string = message.text
+        }
+        if let message = message as? GroupFileMessage {
+            if let image = ImageCacheManager.shared.getImage(for: message.fileURL as NSURL) {
+                UIPasteboard.general.image = image
+            }
         }
     }
     
@@ -825,6 +954,10 @@ extension GroupChatViewController: MessageEditMenuDelegate {
             }
         }
     }
+    
+    func didTapLoad(for message: IndexPath) {
+        print("Load file")
+    }
 }
 
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
@@ -837,11 +970,23 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
             sendTextMessage(inputBar, text)
         }
     }
+    
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith attachments: [AttachmentManager.Attachment]) {
+        for attachment in attachments {
+            if case .image(let image) = attachment {
+                sendPhoto(image)
+            }
+            if case .url(let url) = attachment {
+                sendVideo(url)
+            }
+        }
+        inputBar.invalidatePlugins()
+    }
 }
 
 class ReactionTextMessageCell: TextMessageCell {
     
-    weak var cellDelegate: MessageEditMenuDelegate?
+    weak var cellDelegate: TextMessageEditMenuDelegate?
     var indexPath: IndexPath?
 
     private var messageStatus: UILabel = UILabel()
@@ -944,6 +1089,8 @@ class ReactionTextMessageCell: TextMessageCell {
             } else {
                 if message.status == .read {
                     messageStatus.textColor = .chakChat
+                } else if message.status == .error {
+                    messageStatus.text = MessageStatus.error.rawValue
                 }
                 messageStatus.layer.removeAllAnimations()
             }
@@ -1160,5 +1307,24 @@ extension String {
         let boundingBox = self.boundingRect(with: constraintRect, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
 
         return ceil(boundingBox.width)
+    }
+}
+
+extension UIImage {
+    func scaledToFit(maxSize: CGSize) -> UIImage {
+        let aspectRatio = min(
+            maxSize.width / size.width,
+            maxSize.height / size.height
+        )
+        
+        let newSize = CGSize(
+            width: size.width * aspectRatio,
+            height: size.height * aspectRatio
+        )
+        
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
     }
 }

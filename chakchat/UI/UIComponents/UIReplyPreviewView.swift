@@ -15,6 +15,7 @@ final class ReplyPreviewView: UIView {
     private let senderLabel: UILabel = UILabel()
     private let messageLabel: UILabel = UILabel()
     private let contentView: UIView = UIView()
+    private let previewImageView: UIImageView = UIImageView()
     private let closeButton: UIButton = UIButton(type: .system)
     
     var onClose: (() -> Void)?
@@ -36,7 +37,7 @@ final class ReplyPreviewView: UIView {
         configureContentView()
         configureCloseButton()
         configureSenderLabel()
-        configureMessageLabel()
+        configureMessageLabelOrImage()
     }
     
     private func configureContentView() {
@@ -70,16 +71,29 @@ final class ReplyPreviewView: UIView {
     }
     
     /// потом здесь надо будет обрабатывать все виды сообщений(пока только текстовое)
-    private func configureMessageLabel() {
-        contentView.addSubview(messageLabel)
-        if case .text(let text) = message.kind {
+    private func configureMessageLabelOrImage() {
+        switch message.kind {
+        case .text(let text):
+            contentView.addSubview(messageLabel)
             messageLabel.text = text
+            messageLabel.font = Fonts.systemR12
+            messageLabel.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
+            messageLabel.pinTop(senderLabel.bottomAnchor, 4)
+            messageLabel.setHeight(16)
+            messageLabel.setWidth(250)
+            previewImageView.isHidden = true
+        case .photo(let mediaItem), .video(let mediaItem):
+            contentView.addSubview(previewImageView)
+            previewImageView.clipsToBounds = true
+            previewImageView.layer.cornerRadius = 4
+            previewImageView.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
+            previewImageView.pinTop(senderLabel.bottomAnchor, 4)
+            previewImageView.setWidth(30)
+            previewImageView.setHeight(30)
+            previewImageView.image = mediaItem.image
+            messageLabel.isHidden = true
+        default: break
         }
-        messageLabel.font = Fonts.systemR12
-        messageLabel.pinLeft(contentView.safeAreaLayoutGuide.leadingAnchor, 0)
-        messageLabel.pinTop(senderLabel.bottomAnchor, 4)
-        messageLabel.setHeight(16)
-        messageLabel.setWidth(250)
     }
     
     @objc private func closeTapped() {

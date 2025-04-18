@@ -7,12 +7,13 @@
 
 import Foundation
 
-final class GroupChatWorker: GroupChatWorkerLogic {
+final class GroupChatWorker: GroupChatWorkerLogic {    
     private let keychainManager: KeychainManagerBusinessLogic
     private let coreDataManager: CoreDataManagerProtocol
     private let userDefaultsManager: UserDefaultsManagerProtocol
     private let userService: UserServiceProtocol
     private let updateService: UpdateServiceProtocol
+    private let fileService: FileStorageServiceProtocol
     private let groupUpdateService: GroupUpdateServiceProtocol
     
     init(
@@ -21,6 +22,7 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         userDefaultsManager: UserDefaultsManagerProtocol,
         userService: UserServiceProtocol,
         updateService: UpdateServiceProtocol,
+        fileService: FileStorageServiceProtocol,
         groupUpdateService: GroupUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
@@ -28,6 +30,7 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         self.userDefaultsManager = userDefaultsManager
         self.userService = userService
         self.updateService = updateService
+        self.fileService = fileService
         self.groupUpdateService = groupUpdateService
     }
     
@@ -149,6 +152,18 @@ final class GroupChatWorker: GroupChatWorkerLogic {
                 let data = response.data
                 completion(.success(data))
                 // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func uploadImage(_ fileData: Data, _ fileName: String, _ mimeType: String, completion: @escaping (Result<SuccessModels.UploadResponse, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        fileService.sendFileUploadRequest(fileData, fileName, mimeType, accessToken) { result in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
             }
