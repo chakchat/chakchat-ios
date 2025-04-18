@@ -20,7 +20,7 @@ extension CameraInputBarAccessoryViewDelegate {
 
 // MARK: - CameraInputBarAccessoryView
 
-class CameraInputBarAccessoryView: InputBarAccessoryView, CropViewControllerDelegate {
+class CameraInputBarAccessoryView: InputBarAccessoryView, CropViewControllerDelegate, UIDocumentPickerDelegate {
     // MARK: Lifecycle
     
     override init(frame: CGRect) {
@@ -84,6 +84,10 @@ class CameraInputBarAccessoryView: InputBarAccessoryView, CropViewControllerDele
 extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     @objc
     func showImagePickerControllerActionSheet() {
+        let file = UIAlertAction(title: "Choose from files", style: .default) { [weak self] _ in
+            self?.showDocumentsPicker()
+        }
+        
         let photoLibraryAction = UIAlertAction(title: "Choose From Library", style: .default) { [weak self] _ in
             self?.showImagePickerController(sourceType: .photoLibrary)
         }
@@ -95,6 +99,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
         let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler: nil)
         
         let alert = UIAlertController(title: "Choose visual", message: nil, preferredStyle: .actionSheet)
+        alert.addAction(file)
         alert.addAction(photoLibraryAction)
         alert.addAction(cameraAction)
         alert.addAction(cancelAction)
@@ -116,6 +121,15 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
         getRootViewController()?.present(imgPicker, animated: true, completion: nil)
     }
     
+    func showDocumentsPicker() {
+        let documentPicker = UIDocumentPickerViewController(
+            forOpeningContentTypes: [.item], asCopy: true
+        )
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        getRootViewController()?.present(documentPicker, animated: true)
+    }
+    
     func imagePickerController(
         _ picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any])
@@ -129,6 +143,29 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
                 self.inputPlugins.forEach {_ = $0.handleInput(of: nsURL)}
                 self.inputAccessoryView?.isHidden = false
             }
+        }
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let selectedFileURL = urls.first else { return }
+        handleSelectedFile(selectedFileURL)
+    }
+    
+    private func handleSelectedFile(_ url: URL) {
+        let fileManager = FileManager.default
+        let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let destinationURL = documentsDirectory.appendingPathComponent(url.lastPathComponent)
+        do {
+            if fileManager.fileExists(atPath: destinationURL.path) {
+                try fileManager.removeItem(at: destinationURL)
+            }
+            try fileManager.copyItem(at: url, to: destinationURL)
+            print("File saved: \(destinationURL)")
+            
+            let fileData = try Data(contentsOf: destinationURL)
+            self.inputPlugins.forEach { _ = $0.handleInput(of: fileData as NSData)}
+        } catch {
+            debugPrint("failed to get file data in camera input bar accessory view")
         }
     }
     
