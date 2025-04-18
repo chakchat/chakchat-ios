@@ -162,8 +162,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
             try fileManager.copyItem(at: url, to: destinationURL)
             print("File saved: \(destinationURL)")
             
-            let fileData = try Data(contentsOf: destinationURL)
-            self.inputPlugins.forEach { _ = $0.handleInput(of: fileData as NSData)}
+            self.inputPlugins.forEach { _ = $0.handleInput(of: url as NSURL)}
         } catch {
             debugPrint("failed to get file data in camera input bar accessory view")
         }

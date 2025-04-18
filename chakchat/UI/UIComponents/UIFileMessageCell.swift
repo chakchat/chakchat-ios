@@ -25,30 +25,33 @@ class FileMessageCell: TextMessageCell {
         super.prepareForReuse()
     }
     
+    override func layoutMessageContainerView(with attributes: MessagesCollectionViewLayoutAttributes) {
+        super.layoutMessageContainerView(with: attributes)
+    }
+    
     override func configure(with message: any MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
         
         addGesture()
         
-        if case .custom(let data) = message.kind {
-            guard let data = data as? FileItem else { return }
-            self.fileURL = data.url
-            messageLabel.text = fileURL?.lastPathComponent
-            
-            let fileExtension = fileURL?.pathExtension.lowercased()
-            switch fileExtension {
-            case "pdf":
-                fileImageView.image = UIImage(systemName: "doc.richtext.fill")
-            case "jpg", "jpeg", "png", "gif":
-                fileImageView.image = UIImage(systemName: "photo.fill")
-            case "txt", "rtf":
-                fileImageView.image = UIImage(systemName: "doc.text.fill")
-            default:
-                fileImageView.image = UIImage(systemName: "document.circle.fill")
-            }
-            
-            messageLabel.pinLeft(fileImageView.trailingAnchor, 5)
+        guard case .text(let stringUrl) = message.kind else { return }
+        
+        self.fileURL = URL(string: stringUrl)
+        messageLabel.text = fileURL?.lastPathComponent
+        
+        let fileExtension = fileURL?.pathExtension.lowercased()
+        switch fileExtension {
+        case "pdf":
+            fileImageView.image = UIImage(systemName: "doc.richtext.fill")
+        case "jpg", "jpeg", "png", "gif":
+            fileImageView.image = UIImage(systemName: "photo.fill")
+        case "txt", "rtf":
+            fileImageView.image = UIImage(systemName: "doc.text.fill")
+        default:
+            fileImageView.image = UIImage(systemName: "document.circle.fill")
         }
+        
+        messageLabel.pinLeft(fileImageView.trailingAnchor, 5)
     }
     
     private func configureCell() {
@@ -84,6 +87,15 @@ class FileMessageCell: TextMessageCell {
     }
 }
 
+class FileMessageCellSizeCalculator: TextMessageSizeCalculator {
+    
+    override func messageContainerSize(for message: any MessageType, at indexPath: IndexPath) -> CGSize {
+        let size = super.messageContainerSize(for: message, at: indexPath)
+        return size
+    }
+    
+}
+
 extension FileMessageCell: UIDocumentInteractionControllerDelegate {
     
     func documentInteractionControllerViewControllerForPreview(_ controller: UIDocumentInteractionController) -> UIViewController {
@@ -102,14 +114,4 @@ extension FileMessageCell: UIDocumentInteractionControllerDelegate {
         }
         return rootViewController
     }
-}
-
-class FileMessageCellSizeCalculator: TextMessageSizeCalculator {
-    
-    override func messageContainerSize(for message: any MessageType, at indexPath: IndexPath) -> CGSize {
-        var size = super.messageContainerSize(for: message, at: indexPath)
-        size.height += 20
-        return size
-    }
-    
 }

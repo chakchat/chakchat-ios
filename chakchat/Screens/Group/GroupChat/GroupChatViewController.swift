@@ -10,6 +10,7 @@ import MessageKit
 import InputBarAccessoryView
 import PhotosUI
 import AVKit
+import UniformTypeIdentifiers
 
 final class GroupChatViewController: MessagesViewController {
     
@@ -70,17 +71,21 @@ final class GroupChatViewController: MessagesViewController {
 
         switch message.kind {
         case .text:
-            let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
-            cell.cellDelegate = self
-            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
-            return cell
+            if message is GroupFileMessage || message is OutgoingFileMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(FileMessageCell.self, for: indexPath)
+                cell.cellDelegate = self
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
+            if message is GroupTextMessage || message is GroupOutgoingMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
+                cell.cellDelegate = self
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
+            return super.collectionView(collectionView, cellForItemAt: indexPath)
         case .photo, .video:
             let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
-            cell.cellDelegate = self
-            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
-            return cell
-        case .custom:
-            let cell = messagesCollectionView.dequeueReusableCell(FileMessageCell.self, for: indexPath)
             cell.cellDelegate = self
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
@@ -149,8 +154,8 @@ final class GroupChatViewController: MessagesViewController {
                     messages[index] = message
                 }
             }
-            if update is GroupFileMessage {
-                // пока что пусто
+            if let update = update as? GroupFileMessage {
+                messages.append(update)
             }
             if let update = update as? GroupReaction {
                 if let index = messages.firstIndex(where: { $0.messageId == String(update.onMessageID)}) {
@@ -617,7 +622,7 @@ final class GroupChatViewController: MessagesViewController {
             }
         }
     }
-    
+    //MARK: - File sendings
     private func sendVideo(_ videoURL: URL) {
         let thumbnail = generateThumbnail(for: videoURL)
         var videoMessage = mapVideo(videoURL, thumbnail.size)
@@ -645,8 +650,30 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
-    func sendFile() {
-        
+    func sendFile(_ url: URL, _ mimeType: String?) {
+        var fileMessage = mapFile(url)
+        messages.append(fileMessage)
+        messagesCollectionView.reloadData()
+        interactor.uploadFile(url, mimeType) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: {$0.messageId == fileMessage.messageId}) else { return }
+                switch result {
+                case .success(let fileUpdate):
+                    var uploadedFileMessage = self.interactor.mapToFileMessage(fileUpdate)
+                    uploadedFileMessage.status = .sent
+                    self.messages[index] = uploadedFileMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                case .failure(let failure):
+                    fileMessage.status = .error
+                    self.messages[index] = fileMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(failure)
+                }
+            }
+        }
     }
     
     private func generateThumbnail(for videoURL: URL) -> UIImage {
@@ -685,6 +712,16 @@ final class GroupChatViewController: MessagesViewController {
             messageId: UUID().uuidString,
             sentDate: Date(),
             media: MockMediaItem(url: videoURL, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: size),
+            status: .sending
+        )
+    }
+    
+    private func mapFile(_ fileURL: URL) -> OutgoingFileMessage {
+        return OutgoingFileMessage(
+            sender: curUser,
+            messageId: UUID().uuidString,
+            sentDate: Date(),
+            kind: .text(fileURL.absoluteString),
             status: .sending
         )
     }
@@ -747,9 +784,20 @@ extension GroupChatViewController: MessagesDataSource {
         if case .photo = message.kind {
             let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            cell.cellDelegate = self
             return cell
         }
         return MediaMessageCell()
+    }
+    
+    func customCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell {
+        if case .custom = message.kind {
+            let cell = messagesCollectionView.dequeueReusableCell(FileMessageCell.self, for: indexPath)
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            cell.cellDelegate = self
+            return cell
+        }
+        return UICollectionViewCell()
     }
     
     func configureAvatarView(_ avatarView: AvatarView, for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
@@ -879,11 +927,16 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
             return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
         }
     }
-    
+    //MARK: - Size calculators
     func textCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .text = message.kind {
-                return ReactionMessageSizeCalculator(layout: layout)
+                if message is GroupOutgoingMessage || message is GroupTextMessage {
+                    return ReactionMessageSizeCalculator(layout: layout)
+                }
+                if message is OutgoingFileMessage || message is GroupFileMessage {
+                    return FileMessageCellSizeCalculator(layout: layout)
+                }
             }
         }
         return nil
@@ -896,15 +949,6 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
             }
         }
         return nil
-    }
-    
-    func customCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
-        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
-            if case .custom = message.kind {
-                return FileMessageCellSizeCalculator(layout: layout)
-            }
-        }
-        return CellSizeCalculator()
     }
 }
 
@@ -978,7 +1022,7 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
         print("Load file")
     }
 }
-
+// MARK: - InputBar delegate
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         if editingMessageID != nil {
@@ -996,16 +1040,28 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
                 sendPhoto(image)
             }
             if case .url(let url) = attachment {
-                sendVideo(url)
-            }
-            if case .data(let data) = attachment {
-                <#body#>
+                if let mimeType = mimeTypeForURL(url) {
+                    if !mimeType.contains("video") {
+                        sendFile(url, mimeTypeForURL(url))
+                    } else {
+                        sendVideo(url)
+                    }
+                }
             }
         }
         inputBar.invalidatePlugins()
     }
+    
+    private func mimeTypeForURL(_ url: URL) -> String? {
+        let fileExtension = url.pathExtension.lowercased()
+        if #available(iOS 14.0, *) {
+            return UTType(filenameExtension: fileExtension)?.preferredMIMEType
+        } else {
+            return nil
+        }
+    }
 }
-
+//MARK: CustomTextMessageCell
 class ReactionTextMessageCell: TextMessageCell {
     
     weak var cellDelegate: TextMessageEditMenuDelegate?
