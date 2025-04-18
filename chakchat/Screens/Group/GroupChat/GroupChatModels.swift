@@ -175,6 +175,11 @@ struct VideoMediaItem: MediaItem, GroupMessageStatusProtocol {
     var status: MessageStatus
 }
 
+struct FileItem: GroupMessageStatusProtocol {
+    var url: URL
+    var status: MessageStatus
+}
+
 struct OutgoingPhotoMessage: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String

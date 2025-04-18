@@ -302,7 +302,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     )
                 )
             }
-            if fc.file.mimeType == "video/mp4" {
+            else if fc.file.mimeType == "video/mp4" {
                 let thumbnail = generateThumbnail(for: fc.file.fileURL)
                 mappedFileUpdate.kind =
                     .video(
@@ -312,6 +312,14 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                             placeholderImage: UIImage(systemName: "play.circle.fill")!,
                             shimmer: nil,
                             size: thumbnail.size,
+                            status: .sent
+                        )
+                    )
+            } else {
+                mappedFileUpdate.kind =
+                    .custom(
+                        FileItem(
+                            url: fc.file.fileURL,
                             status: .sent
                         )
                     )

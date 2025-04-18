@@ -79,6 +79,11 @@ final class GroupChatViewController: MessagesViewController {
             cell.cellDelegate = self
             cell.configure(with: message, at: indexPath, and: messagesCollectionView)
             return cell
+        case .custom:
+            let cell = messagesCollectionView.dequeueReusableCell(FileMessageCell.self, for: indexPath)
+            cell.cellDelegate = self
+            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+            return cell
         default:
             return super.collectionView(collectionView, cellForItemAt: indexPath)
         }
@@ -88,6 +93,7 @@ final class GroupChatViewController: MessagesViewController {
         super.viewDidLoad()
         messagesCollectionView.register(ReactionTextMessageCell.self)
         messagesCollectionView.register(CustomMediaMessageCell.self)
+        messagesCollectionView.register(FileMessageCell.self)
         loadUsers()
         loadFirstMessages()
         configureUI()
@@ -639,6 +645,10 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
+    func sendFile() {
+        
+    }
+    
     private func generateThumbnail(for videoURL: URL) -> UIImage {
         let asset = AVAsset(url: videoURL)
         let generator = AVAssetImageGenerator(asset: asset)
@@ -887,6 +897,15 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
         }
         return nil
     }
+    
+    func customCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
+        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
+            if case .custom = message.kind {
+                return FileMessageCellSizeCalculator(layout: layout)
+            }
+        }
+        return CellSizeCalculator()
+    }
 }
 
 extension GroupChatViewController: MessageCellDelegate {
@@ -978,6 +997,9 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
             }
             if case .url(let url) = attachment {
                 sendVideo(url)
+            }
+            if case .data(let data) = attachment {
+                <#body#>
             }
         }
         inputBar.invalidatePlugins()
