@@ -977,7 +977,7 @@ extension GroupChatViewController: MessageCellDelegate {
         }
     }
 }
-
+//MARK: EditMenuDelegate
 extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditMenuDelegate {
     
     func didTapCopy(for message: IndexPath) {
@@ -1004,8 +1004,12 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
         deleteMessage(message, mode: mode)
     }
     
-    func didSelectReaction(_ emoji: String, for indexPath: IndexPath) {
-        print("Reaction")
+    func didSelectReaction(_ emoji: String, _ picked: Bool, for indexPath: IndexPath) {
+        if picked {
+            // добавляем
+        } else {
+            // убираем
+        }
     }
     
     func didTapReply(_ indexPath: IndexPath) {
@@ -1061,6 +1065,7 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
         }
     }
 }
+
 //MARK: CustomTextMessageCell
 class ReactionTextMessageCell: TextMessageCell {
     
@@ -1070,18 +1075,24 @@ class ReactionTextMessageCell: TextMessageCell {
     private var messageStatus: UILabel = UILabel()
     private var replyView: UIView = UIView()
     private var replyMessage: UILabel = UILabel()
+    private var reactionsView: UIView = UIView()
+    private var reactionsStack: UIStackView = UIStackView()
+    
+    private var pickedReaction: String? // реакция которую мог поставить пользователь на сообщение
 
     private var messageTopConstraint: NSLayoutConstraint?
+    private var messageBottomConstraint: NSLayoutConstraint?
 
     override func setupSubviews() {
         super.setupSubviews()
         configureCell()
     }
-
+    
     private func configureCell() {
         configureMessageStatus()
         configureReplyView()
         configureReplyMessage()
+        configureReactionsView()
         setupConstraints()
     }
 
@@ -1112,6 +1123,18 @@ class ReactionTextMessageCell: TextMessageCell {
         replyMessage.lineBreakMode = .byTruncatingTail
         replyView.addSubview(replyMessage)
     }
+    
+    private func configureReactionsView() {
+        reactionsView.translatesAutoresizingMaskIntoConstraints = false
+        messageContainerView.addSubview(reactionsView)
+        
+        reactionsStack.axis = .horizontal
+        reactionsStack.distribution = .fill
+        reactionsStack.alignment = .center
+        reactionsStack.spacing = 8
+        reactionsStack.translatesAutoresizingMaskIntoConstraints = false
+        reactionsView.addSubview(reactionsStack)
+    }
 
     private func setupConstraints() {
         NSLayoutConstraint.activate([
@@ -1123,9 +1146,9 @@ class ReactionTextMessageCell: TextMessageCell {
 
         NSLayoutConstraint.activate([
             replyView.topAnchor.constraint(equalTo: messageContainerView.topAnchor, constant: 4),
-            replyView.leadingAnchor.constraint(equalTo: messageContainerView.leadingAnchor, constant: 8),
-            replyView.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -8),
-            replyView.heightAnchor.constraint(equalToConstant: 30)
+            replyView.leadingAnchor.constraint(equalTo: messageContainerView.leadingAnchor, constant: 16),
+            replyView.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -16),
+            replyView.heightAnchor.constraint(equalToConstant: 40)
         ])
 
         NSLayoutConstraint.activate([
@@ -1133,16 +1156,31 @@ class ReactionTextMessageCell: TextMessageCell {
             replyMessage.leadingAnchor.constraint(equalTo: replyView.leadingAnchor, constant: 3),
             replyMessage.widthAnchor.constraint(equalToConstant: 280)
         ])
+        
+        NSLayoutConstraint.activate([
+            reactionsView.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 4),
+            reactionsView.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor, constant: -4),
+            reactionsView.leadingAnchor.constraint(equalTo: messageContainerView.leadingAnchor, constant: 8),
+            reactionsView.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor, constant: -8),
+            reactionsView.heightAnchor.constraint(equalToConstant: 40)
+        ])
+        
+        NSLayoutConstraint.activate([
+            reactionsStack.topAnchor.constraint(equalTo: reactionsView.topAnchor, constant: 4),
+            reactionsStack.bottomAnchor.constraint(equalTo: reactionsView.bottomAnchor, constant: -4),
+            reactionsStack.leadingAnchor.constraint(equalTo: reactionsView.leadingAnchor, constant: 8),
+        ])
 
-        // Message Label constraints (topAnchor will change dynamically)
+        // Message Label constraints
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: messageContainerView.topAnchor)
+        messageBottomConstraint = messageLabel.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor)
         
         NSLayoutConstraint.activate([
             messageTopConstraint!,
+            messageBottomConstraint!,
             messageLabel.leadingAnchor.constraint(equalTo: messageContainerView.leadingAnchor),
             messageLabel.trailingAnchor.constraint(equalTo: messageContainerView.trailingAnchor),
-            messageLabel.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor)
         ])
     }
 
@@ -1150,13 +1188,17 @@ class ReactionTextMessageCell: TextMessageCell {
         super.prepareForReuse()
         replyView.isHidden = true
         replyMessage.text = nil
+        reactionsView.isHidden = true
         messageStatus.layer.removeAllAnimations()
         messageTopConstraint?.constant = 0
+        messageBottomConstraint?.constant = 0
     }
 
     override func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
         addLongPressMenu()
+        
+        reactionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         self.indexPath = indexPath
 
@@ -1178,16 +1220,54 @@ class ReactionTextMessageCell: TextMessageCell {
         replyMessage.text = nil
         messageTopConstraint?.isActive = false
         messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: messageContainerView.topAnchor)
+        
+        reactionsView.isHidden = true
+        messageBottomConstraint?.isActive = false
+        messageBottomConstraint = messageLabel.bottomAnchor.constraint(equalTo: messageContainerView.bottomAnchor)
+        
         messageTopConstraint?.isActive = true
+        messageBottomConstraint?.isActive = true
 
-        if let message = message as? GroupTextMessage,
-           let replyTo = message.replyTo {
-            replyView.isHidden = false
-            replyMessage.text = replyTo
+        if let message = message as? GroupTextMessage {
+            if let replyTo = message.replyTo {
+                replyView.isHidden = false
+                replyMessage.text = replyTo
 
-            messageTopConstraint?.isActive = false
-            messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: replyView.bottomAnchor, constant: 5)
-            messageTopConstraint?.isActive = true
+                messageTopConstraint?.isActive = false
+                messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: replyView.bottomAnchor, constant: 5)
+                messageTopConstraint?.isActive = true
+            }
+            if let pickedReaction = message.curUserPickedReaction {
+                self.pickedReaction = pickedReaction
+            }
+            if let reactions = message.reactions {
+                reactionsView.isHidden = false
+
+                messageBottomConstraint?.isActive = false
+                messageBottomConstraint = messageLabel.bottomAnchor.constraint(equalTo: reactionsView.topAnchor, constant: 0)
+                messageBottomConstraint?.isActive = true
+                
+                let reactionCount = reactions.reduce(into: [String: Int]()) { result, reaction in
+                    result[reaction.value, default: 0] += 1
+                }
+                
+                for (reaction, count) in reactionCount {
+                    let isPicked = reaction == pickedReaction
+                    
+                    let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", count: count, isPicked: isPicked)
+                    
+                    reactionView.onReactionChanged = { [weak self] reaction, picked in
+                        self?.cellDelegate?.didSelectReaction(reaction, picked, for: indexPath)
+                    }
+                    
+                    reactionView.onRemove = { [weak self, weak reactionView] in
+                        guard let reactionView = reactionView else { return }
+                        self?.reactionsStack.removeArrangedSubview(reactionView)
+                        reactionView.removeFromSuperview()
+                    }
+                    reactionsStack.addArrangedSubview(reactionView)
+                }
+            }
         }
     }
 
@@ -1196,7 +1276,19 @@ class ReactionTextMessageCell: TextMessageCell {
         messageContainerView.addInteraction(interaction)
         messageContainerView.isUserInteractionEnabled = true
     }
-
+    
+    private func getEmoji(_ emoji: String) -> String? {
+        switch emoji {
+        case "heart": return "❤️"
+        case "like": return "👍"
+        case "thunder": return "⚡️"
+        case "cry": return "😭"
+        case "dislike": return "👎"
+        case "bzZZ": return "🐝"
+        default: return nil
+        }
+    }
+    
     private func startSendingAnimation(in cell: ReactionTextMessageCell) {
         let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotation.toValue = NSNumber(value: Double.pi * 2)
@@ -1218,16 +1310,34 @@ class ReactionTextMessageCell: TextMessageCell {
 
 class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
+    private let emojiWidth = 40
+    private let spacing = 8
+    
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)
         let maxWidth = messageContainerMaxWidth(for: message, at: indexPath)
-        if let message = message as? GroupTextMessage,
-           let replyTo = message.replyTo {
-            size.height += 40
-            let replyToSize = replyTo.width(withConstrainedHeight: 16, font: .systemFont(ofSize: 16))
-            
-            if replyToSize > size.width {
-                size.width = replyToSize > maxWidth ? maxWidth : replyToSize
+        if let message = message as? GroupTextMessage {
+            if let replyTo = message.replyTo {
+                size.height += 40
+                let replyToSize = replyTo.width(withConstrainedHeight: 16, font: .systemFont(ofSize: 16))
+                if replyToSize > size.width {
+                    size.width = replyToSize > maxWidth ? maxWidth : replyToSize
+                }
+            }
+            if let reactions = message.reactions {
+                var set = Set<String>()
+                reactions.forEach { reaction in
+                    set.insert(reaction.value)
+                }
+                var reactionViewWidth = spacing * 2
+                size.height += 50
+                set.forEach { reaction in
+                    reactionViewWidth += emojiWidth
+                    reactionViewWidth += spacing
+                }
+                if size.width < CGFloat(reactionViewWidth) {
+                    size.width = CGFloat(reactionViewWidth)
+                }
             }
         }
         return size
@@ -1277,10 +1387,10 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
     
     private func showReactionsMenu(for indexPath: IndexPath) {
         let reactionsVC = ReactionsPreviewViewController()
-        reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
+        reactionsVC.preferredContentSize = CGSize(width: 280, height: 50)
         reactionsVC.modalPresentationStyle = .popover
         reactionsVC.reactionSelected = { [weak self] emoji in
-            self?.cellDelegate?.didSelectReaction(emoji, for: indexPath)
+            self?.cellDelegate?.didSelectReaction(emoji, true, for: indexPath) // всегда верно потому что через то меню мы можешь только поставить реакцию, но не удалить ее
         }
         if let popover = reactionsVC.popoverPresentationController {
             popover.sourceView = self
@@ -1301,7 +1411,7 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
 }
 
 class ReactionsPreviewViewController: UIViewController {
-    private let emojis = ["❤️", "👍", "⚡️", "😭", "👎"]
+    private let emojis = ["❤️", "👍", "⚡️", "😭", "👎", "🐝"]
     private var stackView: UIStackView!
     var reactionSelected: ((String) -> Void)?
     
@@ -1326,12 +1436,11 @@ class ReactionsPreviewViewController: UIViewController {
         
         blurView.contentView.addSubview(stackView)
         
-        // Constraints
         blurView.translatesAutoresizingMaskIntoConstraints = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            blurView.widthAnchor.constraint(equalToConstant: 240),
+            blurView.widthAnchor.constraint(equalToConstant: 280),
             blurView.heightAnchor.constraint(equalToConstant: 50),
             blurView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             blurView.centerYAnchor.constraint(equalTo: view.centerYAnchor),

@@ -62,7 +62,9 @@ final class ChatWorker: ChatWorkerLogic {
             guard let self = self else { return }
             switch result {
             case .success(let response):
-                self.coreDataManager.createChat(response.data)
+                DispatchQueue.main.async {
+                    self.coreDataManager.createChat(response.data)
+                }
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))

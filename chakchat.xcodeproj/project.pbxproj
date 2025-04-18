@@ -196,6 +196,7 @@
 		AA9B62A12D32DFC60064CB23 /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A02D32DFC60064CB23 /* StateMachine.swift */; };
 		AA9B62A32D33D6B50064CB23 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A22D33D6B50064CB23 /* ErrorHandler.swift */; };
 		AA9C2D852DB17F8300AC8DED /* UICustomMediaMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */; };
+		AA9C2D892DB2D1C600AC8DED /* UIReactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */; };
 		AA9C2D872DB2382A00AC8DED /* UIFileMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D862DB2382A00AC8DED /* UIFileMessageCell.swift */; };
 		AAA5F3DD2D393A9A00B9D50E /* MockSendCodeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3DC2D393A9A00B9D50E /* MockSendCodeService.swift */; };
 		AAA5F3DF2D393C0F00B9D50E /* MockSendCodePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3DE2D393C0F00B9D50E /* MockSendCodePresenter.swift */; };
@@ -538,6 +539,7 @@
 		AA9B62A02D32DFC60064CB23 /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
 		AA9B62A22D33D6B50064CB23 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
 		AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomMediaMessageCell.swift; sourceTree = "<group>"; };
+		AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIReactionView.swift; sourceTree = "<group>"; };
 		AA9C2D862DB2382A00AC8DED /* UIFileMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIFileMessageCell.swift; sourceTree = "<group>"; };
 		AAA5F3DC2D393A9A00B9D50E /* MockSendCodeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSendCodeService.swift; sourceTree = "<group>"; };
 		AAA5F3DE2D393C0F00B9D50E /* MockSendCodePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSendCodePresenter.swift; sourceTree = "<group>"; };
@@ -1090,6 +1092,7 @@
 		AA92EC5D2D381B4A007DEC76 /* UIComponents */ = {
 			isa = PBXGroup;
 			children = (
+				AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */,
 				AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */,
 				E1960A7F2D7C6841008E27C0 /* UIUserProfileButton.swift */,
 				AA92EC5E2D381B5E007DEC76 /* UIChakChatStackView.swift */,
@@ -2011,6 +2014,7 @@
 				9B1EC08D2D3A834600E01E00 /* ErrorId.swift in Sources */,
 				AA92EC662D392CEB007DEC76 /* MockSendCodeWorker.swift in Sources */,
 				E1960A6F2D6E0286008E27C0 /* UINewGroupTitleLabel.swift in Sources */,
+				AA9C2D892DB2D1C600AC8DED /* UIReactionView.swift in Sources */,
 				AA87FC752D5503B400E8D066 /* UserProfileScreenViewController.swift in Sources */,
 				AA27815E2D7DA14B0049ACAF /* GroupChatAssembly.swift in Sources */,
 				AA9B62832D302F150064CB23 /* AppCoordinator.swift in Sources */,

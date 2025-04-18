@@ -64,13 +64,15 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
     func loadChats(completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatsData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         chatsService.sendGetChatsRequest(accessToken) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let response):
-                coreDataManager.createChats(response.data)
-                completion(.success(response.data))
-            case .failure(let failure):
-                completion(.failure(failure))
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    self.coreDataManager.createChats(response.data)
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
             }
         }
     }
@@ -78,13 +80,15 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
     func fetchUsers(_ name: String?, _ username: String?, _ page: Int, _ limit: Int, completion: @escaping (Result<ProfileSettingsModels.Users, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         userService.sendGetUsersRequest(name, username, page, limit, accessToken) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let response):
-                coreDataManager.createUsers(response.data)
-                completion(.success(response.data))
-            case .failure(let failure):
-                completion(.failure(failure))
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    self.coreDataManager.createUsers(response.data)
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
             }
         }
     }
@@ -112,11 +116,15 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
     }
     
     func refreshChats(_ chats: ChatsModels.GeneralChatModel.ChatsData) {
-        coreDataManager.refreshChats(chats)
+        DispatchQueue.main.async {
+            self.coreDataManager.refreshChats(chats)
+        }
     }
     
     func deleteDBchats() {
-        coreDataManager.deleteAllChats()
+        DispatchQueue.main.async {
+            self.coreDataManager.deleteAllChats()
+        }
     }
     
     func getMyID() -> UUID {

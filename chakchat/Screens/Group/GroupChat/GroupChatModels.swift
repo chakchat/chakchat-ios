@@ -40,6 +40,7 @@ struct GroupTextMessage: MessageType, GroupMessageStatusProtocol {
     var editedMessage: String?
     
     var reactions: [Int64: String]?
+    var curUserPickedReaction: String?
     
     var status: MessageStatus
     
