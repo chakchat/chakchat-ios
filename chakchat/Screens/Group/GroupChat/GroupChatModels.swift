@@ -176,6 +176,16 @@ struct VideoMediaItem: MediaItem, GroupMessageStatusProtocol {
     var status: MessageStatus
 }
 
+struct FileItem: GroupMessageStatusProtocol {
+    var url: URL
+    var status: MessageStatus
+}
+
+struct FileObject {
+    var url: URL
+    var data: Data
+}
+
 struct OutgoingPhotoMessage: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
@@ -184,6 +194,14 @@ struct OutgoingPhotoMessage: MessageType, GroupMessageStatusProtocol {
         return .photo(media)
     }
     let media: MockMediaItem
+    var status: MessageStatus
+}
+
+struct OutgoingFileMessage: MessageType, GroupMessageStatusProtocol {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind
     var status: MessageStatus
 }
 

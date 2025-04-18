@@ -50,7 +50,6 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         presenter.passChatData(chatData, worker.getMyID())
     }
        
-    
     func loadFirstMessages(completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
         worker.loadFirstMessages(chatData.chatID, 1, 200) { [weak self] result in
             guard let self = self else { return }
@@ -195,7 +194,32 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 }
             case .failure(let failure):
                 _ = errorHandler.handleError(failure)
-                os_log("Uploading user image failed:\n", log: logger, type: .fault)
+                os_log("Uploading user video failed:\n", log: logger, type: .fault)
+                print(failure)
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = try? Data(contentsOf: fileURL),
+              let mimeType = mimeType else { return }
+        let fileName = "\(UUID().uuidString).mp4"
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let fileMetaData):
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
+            case .failure(let failure):
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user file failed:\n", log: logger, type: .fault)
                 print(failure)
                 completion(.failure(failure))
             }
@@ -311,7 +335,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     )
                 )
             }
-            if fc.file.mimeType == "video/mp4" {
+            else if fc.file.mimeType == "video/mp4" {
                 let thumbnail = generateThumbnail(for: fc.file.fileURL)
                 mappedFileUpdate.kind =
                     .video(
@@ -324,6 +348,8 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                             status: .sent
                         )
                     )
+            } else {
+                mappedFileUpdate.kind = .text(fc.file.fileURL.absoluteString)
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]
