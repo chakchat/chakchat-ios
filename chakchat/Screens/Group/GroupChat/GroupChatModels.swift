@@ -20,13 +20,17 @@ protocol GroupMessageStatusProtocol {
     var status: MessageStatus { get set }
 }
 
+protocol GroupMessageForwardedStatus {
+    var isForwarded: Bool { get set }
+}
+
 struct GroupSender: SenderType {
     var senderId: String
     var displayName: String
     var avatar: UIImage?
 }
 
-struct GroupTextMessage: MessageType, GroupMessageStatusProtocol {
+struct GroupTextMessage: MessageType, GroupMessageStatusProtocol, GroupMessageForwardedStatus {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -43,6 +47,7 @@ struct GroupTextMessage: MessageType, GroupMessageStatusProtocol {
     var curUserPickedReaction: String?
     
     var status: MessageStatus
+    var isForwarded: Bool
     
     init() {
         sender = GroupSender(senderId: "", displayName: "")
@@ -56,6 +61,7 @@ struct GroupTextMessage: MessageType, GroupMessageStatusProtocol {
         editedMessage = nil
         reactions = nil
         status = .sending
+        isForwarded = false
     }
 }
 
@@ -81,7 +87,7 @@ struct GroupTextMessageEdited: MessageType, GroupMessageStatusProtocol {
     }
 }
 
-struct GroupFileMessage: MessageType, GroupMessageStatusProtocol {
+struct GroupFileMessage: MessageType, GroupMessageStatusProtocol, GroupMessageForwardedStatus {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -96,6 +102,7 @@ struct GroupFileMessage: MessageType, GroupMessageStatusProtocol {
     var reactions: [Int64: String]?
     
     var status: MessageStatus
+    var isForwarded: Bool
     
     init() {
         sender = GroupSender(senderId: "", displayName: "")
@@ -109,6 +116,7 @@ struct GroupFileMessage: MessageType, GroupMessageStatusProtocol {
         fileURL = URL(filePath: "")
         reactions = nil
         status = .sending
+        isForwarded = false
     }
     
 }
@@ -210,4 +218,9 @@ struct MockMediaItem: MediaItem {
     var image: UIImage?
     var placeholderImage: UIImage
     var size: CGSize
+}
+
+enum ForwardType {
+    case text
+    case file
 }

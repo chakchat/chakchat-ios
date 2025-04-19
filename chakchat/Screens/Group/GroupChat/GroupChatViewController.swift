@@ -887,7 +887,7 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     }
     
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        0
+        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 0
     }
     
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
@@ -896,11 +896,16 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     }
     
     func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-        if !isPreviousMessageSameSender(at: indexPath) {
-            let name = message.sender.displayName
-            return NSAttributedString(
-                string: name,
-                attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1)])
+        if let message = message as? GroupMessageForwardedStatus {
+            if message.isForwarded == true {
+                return NSAttributedString(
+                    string: "Forwarded",
+                    attributes: [
+                        NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10),
+                        NSAttributedString.Key.foregroundColor: UIColor.darkGray,
+                    ]
+                )
+            }
         }
         return nil
     }
@@ -924,7 +929,7 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
         if isFromCurrentSender(message: message) {
             return LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 30))
         } else {
-            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0))
+            return LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 0))
         }
     }
     //MARK: - Size calculators
@@ -1009,6 +1014,18 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
             // добавляем
         } else {
             // убираем
+        }
+    }
+    
+    func didTapForwardText(for message: IndexPath) {
+        if let message = messages[message.section] as? GroupTextMessage {
+            interactor.forwardMessage(Int64(message.messageId) ?? 0, .text)
+        }
+    }
+    
+    func didTapForwardFile(for message: IndexPath) {
+        if let message = messages[message.section] as? GroupFileMessage {
+            interactor.forwardMessage(Int64(message.messageId) ?? 0, .file)
         }
     }
     
@@ -1371,6 +1388,10 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
                 self.cellDelegate?.didTapEdit(for: indexPath)
             }
             
+            let forward = UIAction(title: "Forward", image: UIImage(systemName: "arrow.up.message")) { _ in
+                self.cellDelegate?.didTapForwardText(for: indexPath)
+            }
+            
             let deleteForMe = UIAction(title: "Delete for me", image: UIImage(systemName: "person")) { _ in
                 self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForSender)
             }
@@ -1381,7 +1402,7 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
 
             let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
             
-            return UIMenu(title: "", children: [copy, reactions, reply, edit, deleteMenu])
+            return UIMenu(title: "", children: [copy, reactions, reply, edit, forward, deleteMenu])
         }
     }
     

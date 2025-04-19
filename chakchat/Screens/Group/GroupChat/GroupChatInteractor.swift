@@ -12,7 +12,7 @@ import MessageKit
 import PhotosUI
 
 final class GroupChatInteractor: GroupChatBusinessLogic {
-    
+        
     private let presenter: GroupChatPresentationLogic
     private let worker: GroupChatWorkerLogic
     private let eventSubscriber: EventSubscriberProtocol
@@ -27,6 +27,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     var onRouteToGroupProfile: ((ChatsModels.GeneralChatModel.ChatData) -> Void)?
     var onRouteToUserProfile: ((ProfileSettingsModels.ProfileUserData, ChatsModels.GeneralChatModel.ChatData?, ProfileConfiguration) -> Void)?
     var onRouteToMyProfile: (() -> Void)?
+    var onPresentForwardVC: ((UUID, Int64, ForwardType, ChatType) -> Void)?
     
     init(
         presenter: GroupChatPresentationLogic,
@@ -127,7 +128,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void) {
         worker.sendReaction(chatData.chatID, reaction, messageID) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
@@ -139,12 +140,21 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void) {
         worker.deleteReaction(chatData.chatID, updateID) { result in
             switch result {
-            case .success(let data):
+            case .success(_):
                 completion(true)
             case .failure(let failure):
                 completion(false)
                 print(failure)
             }
+        }
+    }
+    
+    func forwardMessage(_ message: Int64, _ forwardType: ForwardType) {
+        if forwardType == .text {
+            onPresentForwardVC?(chatData.chatID, message, .text, .group)
+        }
+        if forwardType == .file {
+            onPresentForwardVC?(chatData.chatID, message, .file, .group)
         }
     }
     
@@ -284,15 +294,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 }
                 mappedTextUpdate.reactions = reactionsDict
             }
-            var reactionsDict: [Int64: String] = [:]
-            reactionsDict.updateValue("heart", forKey: 100)
-            reactionsDict.updateValue("like", forKey: 101)
-            reactionsDict.updateValue("thunder", forKey: 102)
-            reactionsDict.updateValue("cry", forKey: 103)
-            reactionsDict.updateValue("dislike", forKey: 104)
-            reactionsDict.updateValue("bzZZ", forKey: 105)
-            mappedTextUpdate.reactions = reactionsDict
-            mappedTextUpdate.curUserPickedReaction = "heart" // на этапе ViewController'a
+            mappedTextUpdate.curUserPickedReaction = nil // на этапе ViewController'a
             mappedTextUpdate.status = .sent
         }
         return mappedTextUpdate

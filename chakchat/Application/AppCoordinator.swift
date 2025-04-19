@@ -260,4 +260,20 @@ final class AppCoordinator {
         let addUsersVC = AddUserAssembly.build(with: mainAppContext)
         navigationController.pushViewController(addUsersVC, animated: true)
     }
+    
+    func showForwardScreen(
+        _ chatFromID: UUID,
+        _ messageID: Int64,
+        _ forwardType: ForwardType,
+        _ chatType: ChatType
+    ) {
+        let forwardVC = ForwardMessageAssembly.build(
+            with: mainAppContext,
+            chatFromID,
+            messageID,
+            forwardType,
+            chatType
+        )
+        navigationController.present(forwardVC, animated: true)
+    }
 }

@@ -207,7 +207,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ForwardMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.forwardMessage.rawValue)"
         
@@ -228,7 +228,7 @@ final class PersonalUpdateService: PersonalUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ForwardMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, any Error>) -> Void
     ) {
         let endpoint = "\(baseAPI)\(chatID)/\(MessagingServiceEndpoints.PersonalUpdateEndpoints.forwardFile.rawValue)"
         

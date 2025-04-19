@@ -43,6 +43,9 @@ enum GroupChatAssembly {
         interactor.onRouteToMyProfile = {
             AppCoordinator.shared.showUserSettingsScreen()
         }
+        interactor.onPresentForwardVC = { chatID, messageID, forwardType, chatType in
+            AppCoordinator.shared.showForwardScreen(chatID, messageID, forwardType, chatType)
+        }
         let view = GroupChatViewController(interactor: interactor)
         presenter.view = view
         return view
