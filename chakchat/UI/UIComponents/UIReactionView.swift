@@ -13,7 +13,7 @@ class ReactionView: UIView {
     private let reaction: String
     private var reactions: [Int64]
 
-    var onReactionChanged: ((Int64, String, Bool) -> Void)?
+    var onReactionChanged: ((Int64?, String) -> Void)?
     var onRemove: (() -> Void)?
 
     init(reaction: String, reactions: [Int64], count: Int = 1, isPicked: Bool = false) {
@@ -71,8 +71,12 @@ class ReactionView: UIView {
         isPicked.toggle()
         count += isPicked ? 1 : -1
         updateLabel()
-        if let last = reactions.last {
-            onReactionChanged?(last, reaction, isPicked)
+        if isPicked {
+            onReactionChanged?(nil, reaction)
+        } else {
+            if let last = reactions.last {
+                onReactionChanged?(last, reaction)
+            }
         }
         
         if count <= 0 {

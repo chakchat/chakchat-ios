@@ -24,13 +24,18 @@ protocol GroupMessageForwardedStatus {
     var isForwarded: Bool { get set }
 }
 
+protocol GroupMessageWithReactions {
+    var reactions: [Int64: String]? { get set }
+    var curUserPickedReaction: [String]? { get set }
+}
+
 struct GroupSender: SenderType {
     var senderId: String
     var displayName: String
     var avatar: UIImage?
 }
 
-struct GroupTextMessage: MessageType, GroupMessageStatusProtocol, GroupMessageForwardedStatus {
+struct GroupTextMessage: MessageType, GroupMessageStatusProtocol, GroupMessageForwardedStatus, GroupMessageWithReactions {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -44,7 +49,7 @@ struct GroupTextMessage: MessageType, GroupMessageStatusProtocol, GroupMessageFo
     var editedMessage: String?
     
     var reactions: [Int64: String]?
-    var curUserPickedReaction: String?
+    var curUserPickedReaction: [String]?
     
     var status: MessageStatus
     var isForwarded: Bool
@@ -87,7 +92,7 @@ struct GroupTextMessageEdited: MessageType, GroupMessageStatusProtocol {
     }
 }
 
-struct GroupFileMessage: MessageType, GroupMessageStatusProtocol, GroupMessageForwardedStatus {
+struct GroupFileMessage: MessageType, GroupMessageStatusProtocol, GroupMessageForwardedStatus, GroupMessageWithReactions {
     var sender: SenderType
     var messageId: String
     var sentDate: Date
@@ -100,6 +105,7 @@ struct GroupFileMessage: MessageType, GroupMessageStatusProtocol, GroupMessageFo
     var fileURL: URL
     
     var reactions: [Int64: String]?
+    var curUserPickedReaction: [String]?
     
     var status: MessageStatus
     var isForwarded: Bool

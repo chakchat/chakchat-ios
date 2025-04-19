@@ -185,6 +185,7 @@ enum UpdateContent: Codable {
 struct TextContent: Codable {
     let replyTo: Int64?
     let text: String
+    let forwarded: Bool?
     let edited: EditedInfo?
     let reactions: [ReactionInfo]?
     
@@ -193,6 +194,7 @@ struct TextContent: Codable {
         case edited = "edited"
         case replyTo = "reply_to"
         case reactions = "reactions"
+        case forwarded = "forwarded"
     }
 }
 
@@ -227,12 +229,14 @@ struct EditedContent: Codable {
 struct FileContent: Codable {
     let file: FileInfo
     let replyTo: Int64?
+    let forwarded: Bool?
     let reactions: [ReactionInfo]?
     
     enum CodingKeys: String, CodingKey {
         case file = "file"
         case replyTo = "reply_to"
         case reactions = "reactions"
+        case forwarded = "forwarded"
     }
 }
 

@@ -157,7 +157,7 @@ extension CustomMediaMessageCell: UIContextMenuInteractionDelegate {
         reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
         reactionsVC.modalPresentationStyle = .popover
         reactionsVC.reactionSelected = { [weak self] emoji in
-            self?.cellDelegate?.didSelectReaction(emoji, true, for: indexPath)
+            self?.cellDelegate?.didSelectReaction(nil, emoji, for: indexPath) // мы только добавляем реакцию, значит у нее пока нет updateID(nil)
         }
         if let popover = reactionsVC.popoverPresentationController {
             popover.sourceView = self

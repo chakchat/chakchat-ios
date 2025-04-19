@@ -22,8 +22,8 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
-    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
-    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
     
     func forwardMessage(_ message: Int64, _ forwardType: ForwardType)
     
@@ -64,7 +64,7 @@ protocol MessageEditMenuDelegate: AnyObject {
     func didTapCopy(for message: IndexPath)
     func didTapReply(for message: IndexPath)
     func didTapDelete(for message: IndexPath, mode: DeleteMode)
-    func didSelectReaction(_ emojiID: Int64, _ emoji: String, _ picked: Bool, for indexPath: IndexPath)
+    func didSelectReaction(_ emojiID: Int64?, _ emoji: String, for indexPath: IndexPath)
     func didTapReply(_ indexPath: IndexPath)
 }
 
