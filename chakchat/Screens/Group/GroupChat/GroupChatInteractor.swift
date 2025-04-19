@@ -294,15 +294,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 }
                 mappedTextUpdate.reactions = reactionsDict
             }
-            var reactionsDict: [Int64: String] = [:]
-            reactionsDict.updateValue("heart", forKey: 100)
-            reactionsDict.updateValue("like", forKey: 101)
-            reactionsDict.updateValue("thunder", forKey: 102)
-            reactionsDict.updateValue("cry", forKey: 103)
-            reactionsDict.updateValue("dislike", forKey: 104)
-            reactionsDict.updateValue("bzZZ", forKey: 105)
-            mappedTextUpdate.reactions = reactionsDict
-            mappedTextUpdate.curUserPickedReaction = "heart" // на этапе ViewController'a
+            mappedTextUpdate.curUserPickedReaction = nil // на этапе ViewController'a
             mappedTextUpdate.status = .sent
         }
         return mappedTextUpdate
