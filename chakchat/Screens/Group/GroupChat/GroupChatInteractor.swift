@@ -125,26 +125,24 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
-    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void) {
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
         worker.sendReaction(chatData.chatID, reaction, messageID) { result in
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let data):
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
-                print(failure)
+                completion(.failure(failure))
             }
         }
     }
     
-    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void) {
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         worker.deleteReaction(chatData.chatID, updateID) { result in
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let data):
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
-                print(failure)
+                completion(.failure(failure))
             }
         }
     }
@@ -286,6 +284,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedTextUpdate.replyTo = nil // на этапе ViewController'a
             mappedTextUpdate.replyToID = tc.replyTo
             mappedTextUpdate.isEdited = tc.edited != nil ? true : false
+            mappedTextUpdate.isForwarded = tc.forwarded ?? false
             mappedTextUpdate.editedMessage = tc.edited?.content.newText
             if let reactions = tc.reactions {
                 var reactionsDict: [Int64: String] = [:]
@@ -325,6 +324,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedFileUpdate.mimeType = fc.file.mimeType
             mappedFileUpdate.fileSize = fc.file.fileSize
             mappedFileUpdate.fileURL = fc.file.fileURL
+            mappedFileUpdate.isForwarded = fc.forwarded ?? false
             if fc.file.mimeType == "image/jpeg" {
                 mappedFileUpdate.kind = .photo(
                     PhotoMediaItem(

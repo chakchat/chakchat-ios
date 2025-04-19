@@ -403,6 +403,7 @@ final class GroupChatViewController: MessagesViewController {
         return messages[indexPath.section].sender.senderId == messages[indexPath.section + 1].sender.senderId
     }
     
+    //MARK: Sending updates
     private func sendTextMessage(_ inputBar: InputBarAccessoryView, _ text: String) {
         let outgoingMessage = GroupOutgoingMessage(
             sender: curUser,
@@ -570,6 +571,69 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
+    func sendReaction(_ emoji: String, _ onMessage: Int64) {
+        if let messageIndex = messages.firstIndex(where: {$0.messageId == String(onMessage)}) {
+            guard var message = messages[messageIndex] as? GroupMessageWithReactions else { return }
+            let newKey = (message.reactions?.keys.max() ?? 0) + 1 // чтобы ключ гарантированно был новый
+            message.reactions?.updateValue(emoji, forKey: newKey)
+            message.curUserPickedReaction?.append(emoji)
+            if let message = message as? GroupTextMessage {
+                messages[messageIndex] = message
+                self.messagesCollectionView.performBatchUpdates({
+                    self.messagesCollectionView.deleteSections(IndexSet(integer: messageIndex))
+                }, completion: nil)
+            }
+            if let message = message as? GroupFileMessage {
+                messages[messageIndex] = message
+                self.messagesCollectionView.performBatchUpdates({
+                    self.messagesCollectionView.deleteSections(IndexSet(integer: messageIndex))
+                }, completion: nil)
+            }
+            
+            interactor.sendReaction(emoji, onMessage) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(_): break
+                    case .failure(let failure):
+                        print(failure)
+                    }
+                }
+            }
+        }
+    }
+    
+    func deleteReaction(_ reactionID: Int64) {
+        messages.forEach { message in
+            if var newMessage = message as? GroupMessageWithReactions {
+                newMessage.reactions?.removeValue(forKey: reactionID)
+                if let index = messages.firstIndex(where: {$0.messageId == message.messageId}) {
+                    if let m = newMessage as? GroupTextMessage {
+                        messages[index] = m
+                        self.messagesCollectionView.performBatchUpdates({
+                            self.messagesCollectionView.deleteSections(IndexSet(integer: index))
+                        }, completion: nil)
+                    }
+                    if let m = newMessage as? GroupFileMessage {
+                        messages[index] = m
+                        self.messagesCollectionView.performBatchUpdates({
+                            self.messagesCollectionView.deleteSections(IndexSet(integer: index))
+                        }, completion: nil)
+                    }
+                    
+                    interactor.deleteReaction(reactionID) { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success(_): break
+                            case .failure(let failure):
+                                print(failure)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private func showReplyPreview(for message: MessageType, type: ReplyType) {
         replyPreviewView?.removeFromSuperview()
         
@@ -596,7 +660,7 @@ final class GroupChatViewController: MessagesViewController {
             messageInputBar.inputTextView.text = ""
         }
     }
-    
+    //MARK: - File sendings
     private func sendPhoto(_ photo: UIImage) {
         var photoMessage = mapPhoto(photo)
         insertPhoto(photoMessage)
@@ -622,7 +686,7 @@ final class GroupChatViewController: MessagesViewController {
             }
         }
     }
-    //MARK: - File sendings
+    
     private func sendVideo(_ videoURL: URL) {
         let thumbnail = generateThumbnail(for: videoURL)
         var videoMessage = mapVideo(videoURL, thumbnail.size)
@@ -1009,11 +1073,12 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
         deleteMessage(message, mode: mode)
     }
     
-    func didSelectReaction(_ emoji: String, _ picked: Bool, for indexPath: IndexPath) {
-        if picked {
-            // добавляем
+    func didSelectReaction(_ emojiID: Int64?, _ emoji: String, for indexPath: IndexPath) {
+        if let emojiID = emojiID {
+            deleteReaction(emojiID)
         } else {
-            // убираем
+            let message = messages[indexPath.section]
+            sendReaction(emoji, Int64(message.messageId) ?? 0)
         }
     }
     
@@ -1095,7 +1160,7 @@ class ReactionTextMessageCell: TextMessageCell {
     private var reactionsView: UIView = UIView()
     private var reactionsStack: UIStackView = UIStackView()
     
-    private var pickedReaction: String? // реакция которую мог поставить пользователь на сообщение
+    private var pickedReaction: [String]? // реакция которую мог поставить пользователь на сообщение
 
     private var messageTopConstraint: NSLayoutConstraint?
     private var messageBottomConstraint: NSLayoutConstraint?
@@ -1269,12 +1334,17 @@ class ReactionTextMessageCell: TextMessageCell {
                 }
                 
                 for (reaction, count) in reactionCount {
-                    let isPicked = reaction == pickedReaction
+                    let isPicked = pickedReaction?.contains(where: {$0 == reaction })
                     
-                    let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", count: count, isPicked: isPicked)
+                    let keys = reactions
+                        .filter { $0.value == reaction }
+                        .map {$0.key }
+                    let sortedKeys = keys.sorted()
                     
-                    reactionView.onReactionChanged = { [weak self] reaction, picked in
-                        self?.cellDelegate?.didSelectReaction(reaction, picked, for: indexPath)
+                    let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", reactions: sortedKeys, count: count, isPicked: isPicked ?? false)
+                    
+                    reactionView.onReactionChanged = { [weak self] id, emojj in
+                        self?.cellDelegate?.didSelectReaction(id, emojj, for: indexPath)
                     }
                     
                     reactionView.onRemove = { [weak self, weak reactionView] in
@@ -1411,7 +1481,7 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
         reactionsVC.preferredContentSize = CGSize(width: 280, height: 50)
         reactionsVC.modalPresentationStyle = .popover
         reactionsVC.reactionSelected = { [weak self] emoji in
-            self?.cellDelegate?.didSelectReaction(emoji, true, for: indexPath) // всегда верно потому что через то меню мы можешь только поставить реакцию, но не удалить ее
+            self?.cellDelegate?.didSelectReaction(nil, emoji, for: indexPath) // nil потому что мы добавляем реакцию значит у нее пока нет updateID
         }
         if let popover = reactionsVC.popoverPresentationController {
             popover.sourceView = self
