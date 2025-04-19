@@ -21,6 +21,7 @@ enum ChatAssembly {
         let secretPersonalChatService = SecretPersonalChatService()
         let updateService = UpdateService()
         let personalUpdateService = PersonalUpdateService()
+        let fileService = FileStorageService()
         
         let worker = ChatWorker(
             keychainManager: context.keychainManager,
@@ -29,6 +30,7 @@ enum ChatAssembly {
             personalChatService: personalChatService,
             secretPersonalChatService: secretPersonalChatService,
             updateService: updateService,
+            fileService: fileService,
             personalUpdateService: personalUpdateService
         )
         
@@ -47,6 +49,9 @@ enum ChatAssembly {
         }
         interactor.onRouteBack = {
             AppCoordinator.shared.popScreen()
+        }
+        interactor.onPresentForwardVC = { chatID, messageID, forwardType, chatType in
+            AppCoordinator.shared.showForwardScreen(chatID, messageID, forwardType, chatType)
         }
         let view = ChatViewController(interactor: interactor)
         presenter.view = view

@@ -17,6 +17,7 @@ final class ChatWorker: ChatWorkerLogic {
     private let personalChatService: PersonalChatServiceProtocol
     private let secretPersonalChatService: SecretPersonalChatServiceProtocol
     private let updateService: UpdateServiceProtocol
+    private let fileService: FileStorageServiceProtocol
     private let personalUpdateService: PersonalUpdateServiceProtocol
     
     // MARK: - Initialization
@@ -27,6 +28,7 @@ final class ChatWorker: ChatWorkerLogic {
         personalChatService: PersonalChatServiceProtocol,
         secretPersonalChatService: SecretPersonalChatServiceProtocol,
         updateService: UpdateServiceProtocol,
+        fileService: FileStorageServiceProtocol,
         personalUpdateService: PersonalUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
@@ -35,6 +37,7 @@ final class ChatWorker: ChatWorkerLogic {
         self.personalChatService = personalChatService
         self.secretPersonalChatService = secretPersonalChatService
         self.updateService = updateService
+        self.fileService = fileService
         self.personalUpdateService = personalUpdateService
     }
     
@@ -154,6 +157,18 @@ final class ChatWorker: ChatWorkerLogic {
                 let data = response.data
                 completion(.success(data))
                 // сохраняем в coredata
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func uploadImage(_ fileData: Data, _ fileName: String, _ mimeType: String, completion: @escaping (Result<SuccessModels.UploadResponse, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        fileService.sendFileUploadRequest(fileData, fileName, mimeType, accessToken) { result in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
             }

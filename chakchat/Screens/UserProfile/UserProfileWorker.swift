@@ -59,7 +59,9 @@ final class UserProfileWorker: UserProfileWorkerLogic {
             guard let self = self else { return }
             switch result {
             case .success(let response):
-                self.coreDataManager.updateChat(response.data)
+                DispatchQueue.main.async {
+                    self.coreDataManager.updateChat(response.data)
+                }
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
@@ -73,7 +75,9 @@ final class UserProfileWorker: UserProfileWorkerLogic {
             guard let self = self else { return }
             switch result {
             case .success(let response):
-                self.coreDataManager.updateChat(response.data)
+                DispatchQueue.main.async {
+                    self.coreDataManager.updateChat(response.data)
+                }
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))

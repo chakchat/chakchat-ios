@@ -8,14 +8,13 @@
 import Foundation
 import OSLog
 import Combine
+import UIKit
+import MessageKit
+import PhotosUI
 
 // MARK: - ChatInteractor
 final class ChatInteractor: ChatBusinessLogic {
-    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        print("Hello world")
-    }
-    
-    
+
     // MARK: - Properties
     private let presenter: ChatPresentationLogic
     private let worker: ChatWorkerLogic
@@ -24,9 +23,12 @@ final class ChatInteractor: ChatBusinessLogic {
     private let errorHandler: ErrorHandlerLogic
     private let logger: OSLog
     
+    private var usersInfo: [ProfileSettingsModels.ProfileUserData] = []
+    
     private var chatData: ChatsModels.GeneralChatModel.ChatData?
     var onRouteBack: (() -> Void)?
     var onRouteToProfile: ((ProfileSettingsModels.ProfileUserData, ChatsModels.GeneralChatModel.ChatData?, ProfileConfiguration) -> Void)?
+    var onPresentForwardVC: ((UUID, Int64, ForwardType, ChatType) -> Void)?
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -60,14 +62,14 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    func loadFirstMessages(completion: @escaping (Result<[MessageForKit], Error>) -> Void) {
+    func loadFirstMessages(completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
         if let cd = chatData {
             worker.loadFirstMessages(cd.chatID, 1, 200) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let data):
                     let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
-                    let mappedSortedUpdates = self.mapToKit(sortedUpdates)
+                    let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
                     completion(.success(mappedSortedUpdates))
                 case .failure(let failure):
                     completion(.failure(failure))
@@ -80,7 +82,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func loadMoreMessages() {
         worker.loadMoreMessages()
     }
-        
+    
     // MARK: - Public Methods
     func createChat(_ memberID: UUID, completion: @escaping () -> Void) {
         worker.createChat(memberID) { [weak self] result in
@@ -112,7 +114,7 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)  {
+    func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void)  {
         if chatData == nil {
             createChat(userData.id) { [weak self] in
                 self?.send(message, replyTo) { isSent in
@@ -126,67 +128,151 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void) {
-        guard let cd = chatData else { return }
-        worker.deleteMessage(cd.chatID, updateID, deleteMode) { result in
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let chatData = chatData else { return }
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let data):
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let chatData = chatData else { return }
+        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+            switch result {
+            case .success(let data):
+                completion(.success(data))
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
+        guard let chatData = chatData else { return }
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+            switch result {
+            case .success(let data):
+                completion(.success(data))
+            case .failure(let failure):
+                completion(.failure(failure))
                 print(failure)
             }
         }
     }
     
-    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void) {
-        guard let cd = chatData else { return }
-        worker.editTextMessage(cd.chatID, updateID, text) { result in
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
+        guard let chatData = chatData else { return }
+        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let data):
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
-                print(failure)
+                completion(.failure(failure))
             }
         }
     }
     
-    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
-        guard let cd = chatData else { return }
-        worker.sendFileMessage(cd.chatID, fileID, replyTo) { result in
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
+        guard let chatData = chatData else { return }
+        worker.deleteReaction(chatData.chatID, updateID) { result in
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let data):
+                completion(.success(data))
             case .failure(let failure):
-                completion(false)
-                print(failure)
+                completion(.failure(failure))
             }
         }
     }
     
-    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void) {
-        guard let cd = chatData else { return }
-        worker.sendReaction(cd.chatID, reaction, messageID) { result in
+    func forwardMessage(_ message: Int64, _ forwardType: ForwardType) {
+        guard let chatData = chatData else { return }
+        if forwardType == .text {
+            onPresentForwardVC?(chatData.chatID, message, .text, .personal)
+        }
+        if forwardType == .file {
+            onPresentForwardVC?(chatData.chatID, message, .file, .personal)
+        }
+    }
+    
+    func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = image.jpegData(compressionQuality: 0.0) else {
+            return
+        }
+        let fileName = "\(UUID().uuidString).jpeg"
+        let mimeType = "image/jpeg"
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
+            guard let self = self else { return }
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let fileMetaData):
+                ImageCacheManager.shared.saveImage(image, for: fileMetaData.fileURL as NSURL)
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
             case .failure(let failure):
-                completion(false)
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user image failed:\n", log: logger, type: .fault)
                 print(failure)
+                completion(.failure(failure))
             }
         }
     }
     
-    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void) {
-        guard let cd = chatData else { return }
-        worker.deleteReaction(cd.chatID, updateID) { result in
+    func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = try? Data(contentsOf: videoURL) else { return }
+        let fileName = "\(UUID().uuidString).mp4"
+        let mimeType = "video/mp4"
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
+            guard let self = self else { return }
             switch result {
-            case .success(_):
-                completion(true)
+            case .success(let fileMetaData):
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
             case .failure(let failure):
-                completion(false)
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user video failed:\n", log: logger, type: .fault)
                 print(failure)
+                completion(.failure(failure))
+            }
+        }
+    }
+    
+    func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = try? Data(contentsOf: fileURL),
+              let mimeType = mimeType else { return }
+        let fileName = "\(UUID().uuidString).mp4"
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let fileMetaData):
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
+            case .failure(let failure):
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user file failed:\n", log: logger, type: .fault)
+                print(failure)
+                completion(.failure(failure))
             }
         }
     }
@@ -215,19 +301,19 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    private func send(_ message: String, _ replyTo: Int64?, completion: @escaping (Bool) -> Void) {
+    private func send(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let cd = chatData else { return }
         worker.sendTextMessage(cd.chatID, message, replyTo) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
-                case .success(_):
+                case .success(let data):
                     os_log("Sent message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
-                    completion(true)
+                    completion(.success(data))
                 case .failure(let failure):
                     os_log("Failed to send message in chat(%@)", log: self.logger, type: .default, cd.chatID as CVarArg)
                     _ = self.errorHandler.handleError(failure)
-                    completion(false)
+                    completion(.failure(failure))
                 }
             }
         }
@@ -258,143 +344,166 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
-    private func mapToKit(_ updates: [UpdateData]) -> [MessageForKit] {
-        var mappedUpdates: [MessageForKit] = []
-//        for update in updates {
-//            switch update.type {
-//            case .textMessage:
-//                if case .textContent(let textContent) = update.content {
-//                    var edited: ChatTextEditedContent?
-//                    var reactions: [ChatReactionContent]?
-//                    if let editedC = textContent.edited {
-//                        if case .editedContent(let editedContent) = editedC.content {
-//                            let mappedEditedContent = ChatTextEditedContent(
-//                                newText: editedContent.newText,
-//                                messageID: editedContent.messageID
-//                            )
-//                            edited = mappedEditedContent
-//                        }
-//                    }
-//                    if let reactionsC = textContent.reactions {
-//                        var mappedReactions: [ChatReactionContent] = []
-//                        for reaction in reactionsC {
-//                            if case .reactionContent(let reactionContent) = reaction.content {
-//                                let mappedReaction = ChatReactionContent(
-//                                    reaction: reactionContent.reaction,
-//                                    messageID: reactionContent.messageID
-//                                )
-//                                mappedReactions.append(mappedReaction)
-//                            }
-//                        }
-//                        reactions = mappedReactions
-//                    }
-//                    
-//                    let mappedTextContent = ChatTextContent(
-//                        text: textContent.text,
-//                        edited: edited,
-//                        replyTo: textContent.replyTo,
-//                        reactions: reactions
-//                    )
-//                    let mappedTextUpdate = MessageForKit(
-//                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-//                        messageId: String(update.updateID),
-//                        sentDate: update.createdAt,
-//                        kind: .text(edited?.newText ?? textContent.text),
-//                        status: .sent,
-//                        isEdited: false,
-//                        chatID: update.chatID,
-//                        updateID: update.updateID,
-//                        contentType: .text,
-//                        content: .text(mappedTextContent)
-//                    )
-//                    mappedUpdates.append(mappedTextUpdate)
-//                }
-//            case .textEdited:
-//                if case .editedContent(let editedContent) = update.content {
-//                    let mappedTextEditContent = ChatTextEditedContent(
-//                        newText: editedContent.newText,
-//                        messageID: editedContent.messageID
-//                    )
-//                    let mappedTextEditUpdate = MessageForKit(
-//                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-//                        messageId: String(update.updateID),
-//                        sentDate: update.createdAt,
-//                        kind: .text(editedContent.newText),
-//                        status: .edited,
-//                        isEdited: true,
-//                        chatID: update.chatID,
-//                        updateID: update.updateID,
-//                        contentType: .textEdited,
-//                        content: .textEdited(mappedTextEditContent)
-//                    )
-//                    mappedUpdates.append(mappedTextEditUpdate)
-//                }
-//            case .file: // пока что не поддерживается
-//                if case .fileContent(let fileContent) = update.content {
-//                    let mappedFileContent = ChatFileContent(
-//                        fileID: fileContent.fileID,
-//                        fileName: fileContent.fileName,
-//                        mimeType: fileContent.mimeType,
-//                        fileSize: fileContent.fileSize,
-//                        fileURL: fileContent.fileURL,
-//                        createdAt: fileContent.createdAt
-//                    )
-//                    let mappedFileUpdate = MessageForKit(
-//                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-//                        messageId: String(update.updateID),
-//                        sentDate: update.createdAt,
-//                        kind: .text(""),
-//                        status: .sent,
-//                        isEdited: false,
-//                        chatID: update.chatID,
-//                        updateID: update.updateID,
-//                        contentType: .file,
-//                        content: .file(mappedFileContent)
-//                    )
-//                    mappedUpdates.append(mappedFileUpdate)
-//                }
-//            case .reaction:
-//                if case .reactionContent(let reactionContent) = update.content  {
-//                    let mappedReactionContent = ChatReactionContent(
-//                        reaction: reactionContent.reaction,
-//                        messageID: reactionContent.messageID
-//                    )
-//                    let mappedReactionUpdate = MessageForKit(
-//                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-//                        messageId: String(update.updateID),
-//                        sentDate: update.createdAt,
-//                        kind: .emoji(mappedReactionContent.reaction),
-//                        status: .sent,
-//                        isEdited: false,
-//                        chatID: update.chatID,
-//                        updateID: update.updateID,
-//                        contentType: .reaction,
-//                        content: .reaction(mappedReactionContent)
-//                    )
-//                    mappedUpdates.append(mappedReactionUpdate)
-//                }
-//            case .delete:
-//                if case .deletedContent(let deletedContent) = update.content {
-//                    let mappedDeletedContent = ChatDeletedUpdateContent(
-//                        deletedID: deletedContent.deletedID,
-//                        deleteMode: deletedContent.deletedMode
-//                    )
-//                    let mappedDeletedUpdate = MessageForKit(
-//                        sender: SenderPerson(senderId: update.senderID.uuidString, displayName: ""),
-//                        messageId: String(update.updateID),
-//                        sentDate: update.createdAt,
-//                        kind: .custom(DeleteKind(deleteMessageID: deletedContent.deletedID, deleteMode: deletedContent.deletedMode)),
-//                        status: .sent,
-//                        isEdited: false,
-//                        chatID: update.chatID,
-//                        updateID: update.updateID,
-//                        contentType: .deleted,
-//                        content: .deleted(mappedDeletedContent)
-//                    )
-//                    mappedUpdates.append(mappedDeletedUpdate)
-//                }
-//            }
-//        }
+    func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage {
+        var mappedTextUpdate = GroupTextMessage()
+        if case .textContent(let tc) = update.content {
+            mappedTextUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
+            mappedTextUpdate.messageId = String(update.updateID)
+            mappedTextUpdate.sentDate = update.createdAt
+            mappedTextUpdate.kind = .text(tc.edited?.content.newText ?? tc.text)
+            mappedTextUpdate.text = tc.edited?.content.newText ?? tc.text
+            mappedTextUpdate.replyTo = nil // на этапе ViewController'a
+            mappedTextUpdate.replyToID = tc.replyTo
+            mappedTextUpdate.isEdited = tc.edited != nil ? true : false
+            mappedTextUpdate.isForwarded = tc.forwarded ?? false
+            mappedTextUpdate.editedMessage = tc.edited?.content.newText
+            if let reactions = tc.reactions {
+                var reactionsDict: [Int64: String] = [:]
+                for reaction in reactions {
+                    reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
+                }
+                mappedTextUpdate.reactions = reactionsDict
+            }
+            mappedTextUpdate.curUserPickedReaction = nil // на этапе ViewController'a
+            mappedTextUpdate.status = .sent
+        }
+        return mappedTextUpdate
+    }
+    
+    func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited {
+        var mappedTextEditedUpdate = GroupTextMessageEdited()
+        if case .editedContent(let ec) = update.content {
+            mappedTextEditedUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
+            mappedTextEditedUpdate.messageId = String(update.updateID)
+            mappedTextEditedUpdate.sentDate = update.createdAt
+            mappedTextEditedUpdate.kind = .custom(Kind.GroupTextMessageEditedKind)
+            mappedTextEditedUpdate.newText = ec.newText
+            mappedTextEditedUpdate.oldTextUpdateID = ec.messageID
+            mappedTextEditedUpdate.status = .sent
+        }
+        return mappedTextEditedUpdate
+    }
+    
+    func mapToFileMessage(_ update: UpdateData) -> GroupFileMessage {
+        var mappedFileUpdate = GroupFileMessage()
+        if case .fileContent(let fc) = update.content {
+            mappedFileUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
+            mappedFileUpdate.messageId = String(update.updateID)
+            mappedFileUpdate.sentDate = update.createdAt
+            mappedFileUpdate.fileID = fc.file.fileID
+            mappedFileUpdate.fileName = fc.file.fileName
+            mappedFileUpdate.mimeType = fc.file.mimeType
+            mappedFileUpdate.fileSize = fc.file.fileSize
+            mappedFileUpdate.fileURL = fc.file.fileURL
+            mappedFileUpdate.isForwarded = fc.forwarded ?? false
+            if fc.file.mimeType == "image/jpeg" {
+                mappedFileUpdate.kind = .photo(
+                    PhotoMediaItem(
+                        url: fc.file.fileURL,
+                        image: ImageCacheManager.shared.getImage(for: fc.file.fileURL as NSURL),
+                        placeholderImage: UIImage(),
+                        shimmer: nil,
+                        size: CGSize(width: 200, height: 200),
+                        status: .sent
+                    )
+                )
+            }
+            else if fc.file.mimeType == "video/mp4" {
+                let thumbnail = generateThumbnail(for: fc.file.fileURL)
+                mappedFileUpdate.kind =
+                    .video(
+                        PhotoMediaItem(
+                            url: fc.file.fileURL,
+                            image: thumbnail,
+                            placeholderImage: UIImage(systemName: "play.circle.fill")!,
+                            shimmer: nil,
+                            size: thumbnail.size,
+                            status: .sent
+                        )
+                    )
+            } else {
+                mappedFileUpdate.kind = .text(fc.file.fileURL.absoluteString)
+            }
+            if let reactions = fc.reactions {
+                var reactionsDict: [Int64: String] = [:]
+                for reaction in reactions {
+                    reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
+                }
+                mappedFileUpdate.reactions = reactionsDict
+            }
+            mappedFileUpdate.status = .sent
+        }
+        return mappedFileUpdate
+    }
+    
+    private func mapToMessageType(_ updates: [UpdateData]) -> [MessageType] {
+        var mappedUpdates: [MessageType] = []
+        for update in updates {
+            switch update.type {
+            case .textMessage:
+                let mappedTextUpdate = mapToTextMessage(update)
+                mappedUpdates.append(mappedTextUpdate)
+            case .textEdited:
+                let mappedEditedTextUpdate = mapToEditedMessage(update)
+                mappedUpdates.append(mappedEditedTextUpdate)
+            case .file:
+                let mappedFileUpdate = mapToFileMessage(update)
+                mappedUpdates.append(mappedFileUpdate)
+            case .reaction:
+                var mappedReactionUpdate: GroupReaction!
+                if case .reactionContent(let rc) = update.content {
+                    mappedReactionUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
+                    mappedReactionUpdate.messageId = String(update.updateID)
+                    mappedReactionUpdate.sentDate = update.createdAt
+                    mappedReactionUpdate.kind = .custom(Kind.GroupReactionKind)
+                    mappedReactionUpdate.onMessageID = rc.messageID
+                    mappedReactionUpdate.reaction = rc.reaction
+                    mappedReactionUpdate.status = .sent
+                }
+                mappedUpdates.append(mappedReactionUpdate)
+            case .delete:
+                var mappedDeleteUpdate: GroupMessageDelete = GroupMessageDelete()
+                if case .deletedContent(let dc) = update.content {
+                    mappedDeleteUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
+                    mappedDeleteUpdate.messageId = String(update.updateID)
+                    mappedDeleteUpdate.sentDate = update.createdAt
+                    mappedDeleteUpdate.kind = .custom(Kind.GroupMessageDeleteKind)
+                    mappedDeleteUpdate.deletedMessageID = dc.deletedID
+                    mappedDeleteUpdate.deleteMode = dc.deletedMode
+                    mappedDeleteUpdate.status = .sent
+                }
+                mappedUpdates.append(mappedDeleteUpdate)
+            }
+        }
         return mappedUpdates
+    }
+    
+    private func getSenderName(_ senderID: UUID) -> String {
+        if let userID = usersInfo.firstIndex(where: {$0.id == senderID}) {
+            let user = usersInfo[userID]
+            return user.name
+        }
+        return ""
+    }
+    
+    private func generateThumbnail(for videoURL: URL) -> UIImage {
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        
+        let maxSize = CGSize(width: 200, height: 200)
+        generator.maximumSize = maxSize
+        
+        do {
+            let cgImage = try generator.copyCGImage(at: CMTime(value: 1, timescale: 60), actualTime: nil)
+            let thumbnail = UIImage(cgImage: cgImage)
+            
+            let scaledImage = thumbnail.scaledToFit(maxSize: maxSize)
+            return scaledImage
+            
+        } catch {
+            return UIImage(systemName: "play.circle.fill")!
+            
+        }
     }
 }
