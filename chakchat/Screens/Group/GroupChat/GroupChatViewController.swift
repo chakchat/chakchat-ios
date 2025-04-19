@@ -1004,7 +1004,7 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
         deleteMessage(message, mode: mode)
     }
     
-    func didSelectReaction(_ emoji: String, _ picked: Bool, for indexPath: IndexPath) {
+    func didSelectReaction(_ emojiID: Int64, _ emoji: String, _ picked: Bool, for indexPath: IndexPath) {
         if picked {
             // добавляем
         } else {
@@ -1254,10 +1254,15 @@ class ReactionTextMessageCell: TextMessageCell {
                 for (reaction, count) in reactionCount {
                     let isPicked = reaction == pickedReaction
                     
-                    let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", count: count, isPicked: isPicked)
+                    let keys = reactions
+                        .filter { $0.value == reaction }
+                        .map {$0.key }
+                    let sortedKeys = keys.sorted()
                     
-                    reactionView.onReactionChanged = { [weak self] reaction, picked in
-                        self?.cellDelegate?.didSelectReaction(reaction, picked, for: indexPath)
+                    let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", reactions: sortedKeys, count: count, isPicked: isPicked)
+                    
+                    reactionView.onReactionChanged = { [weak self] reaction, emojiString, picked in
+                        self?.cellDelegate?.didSelectReaction(reaction, emojiString, picked, for: indexPath)
                     }
                     
                     reactionView.onRemove = { [weak self, weak reactionView] in
@@ -1390,7 +1395,7 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
         reactionsVC.preferredContentSize = CGSize(width: 280, height: 50)
         reactionsVC.modalPresentationStyle = .popover
         reactionsVC.reactionSelected = { [weak self] emoji in
-            self?.cellDelegate?.didSelectReaction(emoji, true, for: indexPath) // всегда верно потому что через то меню мы можешь только поставить реакцию, но не удалить ее
+            self?.cellDelegate?.didSelectReaction(2, "", true, for: indexPath) // всегда верно потому что через то меню мы можешь только поставить реакцию, но не удалить ее
         }
         if let popover = reactionsVC.popoverPresentationController {
             popover.sourceView = self
