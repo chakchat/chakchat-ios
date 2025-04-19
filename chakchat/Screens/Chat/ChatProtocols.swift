@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import UIKit
+import MessageKit
 
 // MARK: - ChatBusinessLogic
 protocol ChatBusinessLogic: SendingMessagesProtocol {
@@ -18,16 +20,23 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func saveSecretKey(_ key: String)
     /// update methods
     /// using completions to incicate, what kind of response server sent(true=200, false = else)
-    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Bool) -> Void)
-    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Bool) -> Void)
-    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Bool) -> Void)
-    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
-    func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
-    ///  chatID временно для лонг пуллинга
-    func loadFirstMessages(completion: @escaping (Result<[MessageForKit], Error>) -> Void)
-    func loadMoreMessages()
-
-    //func startPolling(completion: @escaping ([MessageForKit]) -> Void)
+    func loadFirstMessages(completion: @escaping (Result<[MessageType], Error>) -> Void)
+    
+    func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    
+    func forwardMessage(_ message: Int64, _ forwardType: ForwardType)
+    
+    func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    
+    func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage
+    func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited
+    func mapToFileMessage(_ update: UpdateData) -> GroupFileMessage
 }
 
 protocol ChatPresentationLogic {
@@ -52,6 +61,11 @@ protocol ChatWorkerLogic {
     func sendFileMessage(_ chatID: UUID, _ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    
+    func uploadImage(_ fileData: Data,
+                     _ fileName: String,
+                     _ mimeType: String,
+                     completion: @escaping (Result<SuccessModels.UploadResponse, Error>) -> Void)
     
     func loadFirstMessages(_ chatID: UUID, _ from: Int64, _ to: Int64, completion: @escaping (Result<[UpdateData], Error>) -> Void)
     func loadMoreMessages()

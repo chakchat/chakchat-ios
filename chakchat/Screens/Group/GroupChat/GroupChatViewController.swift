@@ -575,21 +575,29 @@ final class GroupChatViewController: MessagesViewController {
         if let messageIndex = messages.firstIndex(where: {$0.messageId == String(onMessage)}) {
             guard var message = messages[messageIndex] as? GroupMessageWithReactions else { return }
             let newKey = (message.reactions?.keys.max() ?? 0) + 1 // чтобы ключ гарантированно был новый
-            message.reactions?.updateValue(emoji, forKey: newKey)
-            message.curUserPickedReaction?.append(emoji)
+            if message.reactions == nil {
+                var reactions: [Int64:String] = [:]
+                reactions.updateValue(emoji, forKey: newKey)
+                message.reactions = reactions
+            } else {
+                message.reactions?.updateValue(emoji, forKey: newKey)
+            }
+            if message.curUserPickedReaction == nil {
+                var curUserPickedReaction: [String] = []
+                curUserPickedReaction.append(emoji)
+                message.curUserPickedReaction = curUserPickedReaction
+            } else {
+                message.curUserPickedReaction?.append(emoji)
+            }
             if let message = message as? GroupTextMessage {
                 messages[messageIndex] = message
-                self.messagesCollectionView.performBatchUpdates({
-                    self.messagesCollectionView.deleteSections(IndexSet(integer: messageIndex))
-                }, completion: nil)
+                messagesCollectionView.reloadData()
             }
             if let message = message as? GroupFileMessage {
                 messages[messageIndex] = message
-                self.messagesCollectionView.performBatchUpdates({
-                    self.messagesCollectionView.deleteSections(IndexSet(integer: messageIndex))
-                }, completion: nil)
+                messagesCollectionView.reloadData()
             }
-            
+            let emoji = mapEmoji(emoji)
             interactor.sendReaction(emoji, onMessage) { result in
                 DispatchQueue.main.async {
                     switch result {
@@ -609,15 +617,11 @@ final class GroupChatViewController: MessagesViewController {
                 if let index = messages.firstIndex(where: {$0.messageId == message.messageId}) {
                     if let m = newMessage as? GroupTextMessage {
                         messages[index] = m
-                        self.messagesCollectionView.performBatchUpdates({
-                            self.messagesCollectionView.deleteSections(IndexSet(integer: index))
-                        }, completion: nil)
+                        messagesCollectionView.reloadData()
                     }
                     if let m = newMessage as? GroupFileMessage {
                         messages[index] = m
-                        self.messagesCollectionView.performBatchUpdates({
-                            self.messagesCollectionView.deleteSections(IndexSet(integer: index))
-                        }, completion: nil)
+                        messagesCollectionView.reloadData()
                     }
                     
                     interactor.deleteReaction(reactionID) { result in
@@ -631,6 +635,18 @@ final class GroupChatViewController: MessagesViewController {
                     }
                 }
             }
+        }
+    }
+    
+    private func mapEmoji(_ emoji: String) -> String {
+        switch emoji {
+        case "❤️": return "heart"
+        case "👍": return "like"
+        case "⚡️": return "thunder"
+        case "😭": return "cry"
+        case "👎": return "dislike"
+        case "🐝": return "bzZZ"
+        default: return "unknown"
         }
     }
     
@@ -951,7 +967,12 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     }
     
     func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 0
+        if let message = message as? GroupMessageForwardedStatus {
+            if message.isForwarded == true {
+                return 10
+            }
+        }
+        return 0
     }
     
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
