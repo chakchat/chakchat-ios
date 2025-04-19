@@ -13,4 +13,8 @@ final class GroupChatPresenter: GroupChatPresentationLogic {
     func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID) {
         view?.configureWithData(chatData, myID)
     }
+    
+    func updateGroupPhoto(_ image: UIImage?) {
+        view?.updateGroupPhoto(image)
+    }
 }

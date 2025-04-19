@@ -244,6 +244,12 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
+    func handleUpdateGroupPhoto(_ event: UpdatedGroupPhotoEvent) {
+        DispatchQueue.main.async {
+            self.presenter.updateGroupPhoto(event.photo)
+        }
+    }
+    
     func routeBack() {
         onRouteBack?()
     }
@@ -270,6 +276,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }.store(in: &cancellables)
         eventSubscriber.subscribe(DeletedMemberEvent.self) { [weak self] event in
             self?.handleDeletedMemberEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(UpdatedGroupPhotoEvent.self) { [weak self] event in
+            self?.handleUpdateGroupPhoto(event)
         }.store(in: &cancellables)
     }
     

@@ -29,10 +29,12 @@ final class GroupProfileEditWorker: GroupProfileEditWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.GroupChat.UpdateRequest(name: name, description: description)
         groupService.sendUpdateChatRequest(chatID, request, accessToken) { [weak self] result in
-            guard self != nil else { return }
+            guard let self = self else { return }
             switch result {
             case .success(let response):
-                //self.coreDataManager.updateChat(response.data)
+                DispatchQueue.main.async {
+                    self.coreDataManager.updateChat(response.data)
+                }
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
@@ -44,10 +46,12 @@ final class GroupProfileEditWorker: GroupProfileEditWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.GroupChat.PhotoUpdateRequest(photoID: photoID)
         groupService.sendUpdatePhotoRequest(request, chatID, accessToken) { [weak self] result in
-            guard self != nil else { return }
+            guard let self = self else { return }
             switch result {
             case .success(let response):
-                //self.coreDataManager.updateChat(response.data)
+                DispatchQueue.main.async {
+                    self.coreDataManager.updateChat(response.data)
+                }
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))

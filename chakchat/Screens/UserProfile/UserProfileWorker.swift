@@ -92,7 +92,9 @@ final class UserProfileWorker: UserProfileWorkerLogic {
             guard let self = self else { return }
             switch result {
             case .success(let response):
-                self.coreDataManager.deleteChat(chatID)
+                DispatchQueue.main.async {
+                    self.coreDataManager.deleteChat(chatID)
+                }
                 completion(.success(response.data))
             case .failure(let failure):
                 completion(.failure(failure))
