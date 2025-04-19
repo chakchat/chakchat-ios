@@ -143,6 +143,12 @@
 		AA84F05F2D4E303E00678ABA /* UpdateVibrationNotificationEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84F05E2D4E303E00678ABA /* UpdateVibrationNotificationEvent.swift */; };
 		AA84F0652D53672B00678ABA /* ContextsProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84F0642D53672B00678ABA /* ContextsProtocols.swift */; };
 		AA84F0672D53680E00678ABA /* MainAppContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84F0662D53680E00678ABA /* MainAppContext.swift */; };
+		AA878A492DB37E68002DD34E /* ForwardMessageAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A482DB37E68002DD34E /* ForwardMessageAssembly.swift */; };
+		AA878A4B2DB37E77002DD34E /* ForwardMessageInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A4A2DB37E77002DD34E /* ForwardMessageInteractor.swift */; };
+		AA878A4D2DB37E86002DD34E /* ForwardMessageWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A4C2DB37E86002DD34E /* ForwardMessageWorker.swift */; };
+		AA878A4F2DB37E90002DD34E /* ForwardMessagePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A4E2DB37E90002DD34E /* ForwardMessagePresenter.swift */; };
+		AA878A512DB37EAC002DD34E /* ForwardMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A502DB37EAC002DD34E /* ForwardMessageViewController.swift */; };
+		AA878A532DB37ECB002DD34E /* ForwardMessageProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A522DB37ECB002DD34E /* ForwardMessageProtocols.swift */; };
 		AA87FC6B2D55037E00E8D066 /* UserProfileScreenAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87FC6A2D55037E00E8D066 /* UserProfileScreenAssembly.swift */; };
 		AA87FC6D2D55038900E8D066 /* UserProfileScreenInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87FC6C2D55038900E8D066 /* UserProfileScreenInteractor.swift */; };
 		AA87FC6F2D55039B00E8D066 /* UserProfileScreenWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87FC6E2D55039B00E8D066 /* UserProfileScreenWorker.swift */; };
@@ -196,8 +202,8 @@
 		AA9B62A12D32DFC60064CB23 /* StateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A02D32DFC60064CB23 /* StateMachine.swift */; };
 		AA9B62A32D33D6B50064CB23 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9B62A22D33D6B50064CB23 /* ErrorHandler.swift */; };
 		AA9C2D852DB17F8300AC8DED /* UICustomMediaMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */; };
-		AA9C2D892DB2D1C600AC8DED /* UIReactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */; };
 		AA9C2D872DB2382A00AC8DED /* UIFileMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D862DB2382A00AC8DED /* UIFileMessageCell.swift */; };
+		AA9C2D892DB2D1C600AC8DED /* UIReactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */; };
 		AAA5F3DD2D393A9A00B9D50E /* MockSendCodeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3DC2D393A9A00B9D50E /* MockSendCodeService.swift */; };
 		AAA5F3DF2D393C0F00B9D50E /* MockSendCodePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3DE2D393C0F00B9D50E /* MockSendCodePresenter.swift */; };
 		AAA5F3E22D39561E00B9D50E /* ErrorHandlerProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA5F3E12D39561E00B9D50E /* ErrorHandlerProtocols.swift */; };
@@ -483,6 +489,12 @@
 		AA84F05E2D4E303E00678ABA /* UpdateVibrationNotificationEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateVibrationNotificationEvent.swift; sourceTree = "<group>"; };
 		AA84F0642D53672B00678ABA /* ContextsProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextsProtocols.swift; sourceTree = "<group>"; };
 		AA84F0662D53680E00678ABA /* MainAppContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppContext.swift; sourceTree = "<group>"; };
+		AA878A482DB37E68002DD34E /* ForwardMessageAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageAssembly.swift; sourceTree = "<group>"; };
+		AA878A4A2DB37E77002DD34E /* ForwardMessageInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageInteractor.swift; sourceTree = "<group>"; };
+		AA878A4C2DB37E86002DD34E /* ForwardMessageWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageWorker.swift; sourceTree = "<group>"; };
+		AA878A4E2DB37E90002DD34E /* ForwardMessagePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessagePresenter.swift; sourceTree = "<group>"; };
+		AA878A502DB37EAC002DD34E /* ForwardMessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageViewController.swift; sourceTree = "<group>"; };
+		AA878A522DB37ECB002DD34E /* ForwardMessageProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageProtocols.swift; sourceTree = "<group>"; };
 		AA87FC6A2D55037E00E8D066 /* UserProfileScreenAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileScreenAssembly.swift; sourceTree = "<group>"; };
 		AA87FC6C2D55038900E8D066 /* UserProfileScreenInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileScreenInteractor.swift; sourceTree = "<group>"; };
 		AA87FC6E2D55039B00E8D066 /* UserProfileScreenWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileScreenWorker.swift; sourceTree = "<group>"; };
@@ -539,8 +551,8 @@
 		AA9B62A02D32DFC60064CB23 /* StateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMachine.swift; sourceTree = "<group>"; };
 		AA9B62A22D33D6B50064CB23 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
 		AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomMediaMessageCell.swift; sourceTree = "<group>"; };
-		AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIReactionView.swift; sourceTree = "<group>"; };
 		AA9C2D862DB2382A00AC8DED /* UIFileMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIFileMessageCell.swift; sourceTree = "<group>"; };
+		AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIReactionView.swift; sourceTree = "<group>"; };
 		AAA5F3DC2D393A9A00B9D50E /* MockSendCodeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSendCodeService.swift; sourceTree = "<group>"; };
 		AAA5F3DE2D393C0F00B9D50E /* MockSendCodePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSendCodePresenter.swift; sourceTree = "<group>"; };
 		AAA5F3E12D39561E00B9D50E /* ErrorHandlerProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandlerProtocols.swift; sourceTree = "<group>"; };
@@ -1067,6 +1079,19 @@
 			path = ProfileEvent;
 			sourceTree = "<group>";
 		};
+		AA878A472DB37E58002DD34E /* ForwardMessage */ = {
+			isa = PBXGroup;
+			children = (
+				AA878A482DB37E68002DD34E /* ForwardMessageAssembly.swift */,
+				AA878A4A2DB37E77002DD34E /* ForwardMessageInteractor.swift */,
+				AA878A4C2DB37E86002DD34E /* ForwardMessageWorker.swift */,
+				AA878A4E2DB37E90002DD34E /* ForwardMessagePresenter.swift */,
+				AA878A502DB37EAC002DD34E /* ForwardMessageViewController.swift */,
+				AA878A522DB37ECB002DD34E /* ForwardMessageProtocols.swift */,
+			);
+			path = ForwardMessage;
+			sourceTree = "<group>";
+		};
 		AA87FC692D54FFAD00E8D066 /* UserProfileScreen */ = {
 			isa = PBXGroup;
 			children = (
@@ -1201,6 +1226,7 @@
 		AA9B621D2D2D5E650064CB23 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				AA878A472DB37E58002DD34E /* ForwardMessage */,
 				AA8312F62D91B8C800924F56 /* AddUser */,
 				AA2781772D7DE1820049ACAF /* Group */,
 				AAB3024D2D75BBFC00BECA3B /* UserProfile */,
@@ -1911,6 +1937,7 @@
 				AA75DCBF2D81E42400775199 /* UpdatedGroupInfoEvent.swift in Sources */,
 				AA84F0162D4BBE6900678ABA /* PhoneVisibilityScreenAssembly.swift in Sources */,
 				E19609D52D60E8C6008E27C0 /* LanguageInteractor.swift in Sources */,
+				AA878A4D2DB37E86002DD34E /* ForwardMessageWorker.swift in Sources */,
 				AA84F0012D4912C900678ABA /* ConfidentialityScreenViewController.swift in Sources */,
 				AA2781642D7DA1630049ACAF /* GroupChatPresenter.swift in Sources */,
 				AA7BAE002D3FCA740030AC82 /* SettingsScreenViewController.swift in Sources */,
@@ -1972,6 +1999,7 @@
 				AA8313022D91BA7700924F56 /* AddUserProtocols.swift in Sources */,
 				AA9B62292D2D6C970064CB23 /* SendCodePresenter.swift in Sources */,
 				AA9B626F2D2FD2660064CB23 /* SignupModels.swift in Sources */,
+				AA878A4F2DB37E90002DD34E /* ForwardMessagePresenter.swift in Sources */,
 				E135ED402D4D373F006CE143 /* Format.swift in Sources */,
 				AA9B62252D2D6C490064CB23 /* SendCodeAssembly.swift in Sources */,
 				AA9B624A2D2EC7A90064CB23 /* VerifyPresenter.swift in Sources */,
@@ -1989,6 +2017,7 @@
 				AA9B622B2D2D6CA40064CB23 /* SendCodeViewController.swift in Sources */,
 				AA7BADF82D3FCA360030AC82 /* SettingsScreenPresenter.swift in Sources */,
 				AA7BAE032D3FD1900030AC82 /* SettingsMenuCell.swift in Sources */,
+				AA878A532DB37ECB002DD34E /* ForwardMessageProtocols.swift in Sources */,
 				AA84F0672D53680E00678ABA /* MainAppContext.swift in Sources */,
 				AA27817D2D7DE1C90049ACAF /* GroupProfileEditWorker.swift in Sources */,
 				E1960A692D6DE52B008E27C0 /* NewGroupInteractor.swift in Sources */,
@@ -2082,6 +2111,7 @@
 				AA2781662D7DA16C0049ACAF /* GroupChatViewController.swift in Sources */,
 				AA27817B2D7DE1BE0049ACAF /* GroupProfileEditInteractor.swift in Sources */,
 				AA1C0E4D2D43C9B7008E47D8 /* ProfileSettingsViewController.swift in Sources */,
+				AA878A492DB37E68002DD34E /* ForwardMessageAssembly.swift in Sources */,
 				E1960A222D6B49E8008E27C0 /* CacheProtocols.swift in Sources */,
 				AA7BADE32D3F9F050030AC82 /* ChatsScreenInteractor.swift in Sources */,
 				AAB300B32D6DA7E900BECA3B /* UISearchControllerCell.swift in Sources */,
@@ -2093,6 +2123,7 @@
 				AA75DCC32D89876C00775199 /* UIProfilePhoto.swift in Sources */,
 				AA9B62412D2EC0170064CB23 /* KeychainManager.swift in Sources */,
 				AA2781812D7DE1DA0049ACAF /* GroupProfileEditViewController.swift in Sources */,
+				AA878A512DB37EAC002DD34E /* ForwardMessageViewController.swift in Sources */,
 				E1960A822D7C8010008E27C0 /* UIMessageInputView.swift in Sources */,
 				E1960A502D6BE62A008E27C0 /* NewMessageAssembly.swift in Sources */,
 				E1960A262D6B4A2A008E27C0 /* CacheViewController.swift in Sources */,
@@ -2217,6 +2248,7 @@
 				AAB300DA2D6F2FF500BECA3B /* SecretGroupChatService.swift in Sources */,
 				E1960A5A2D6CADA2008E27C0 /* UINewGroupButton.swift in Sources */,
 				AA84F04D2D4D0C3600678ABA /* NotificationScreenAssembly.swift in Sources */,
+				AA878A4B2DB37E77002DD34E /* ForwardMessageInteractor.swift in Sources */,
 				AAB302002D72075E00BECA3B /* CoreDataManagerProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
