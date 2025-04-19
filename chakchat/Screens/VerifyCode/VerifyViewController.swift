@@ -113,11 +113,10 @@ final class VerifyViewController: UIViewController {
         rawPhone = phone
     }
     
-    // TODO: локализировать ошибки
     func showError(_ message: String?) {
         if message != nil {
             errorLabel.showError(message)
-            if message == "Incorrect code" {
+            if message == LocalizationManager.shared.localizedString(for: "incorrect_code") {
                 vibrateOnError()
                 incorrectCode()
             }

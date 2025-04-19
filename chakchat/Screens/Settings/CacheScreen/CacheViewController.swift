@@ -12,6 +12,9 @@ class CacheViewController: UIViewController {
     
     private enum Constants {
         static let arrowLabel: String = "arrow.left"
+        static let minCacheLimitMB: Int = 100
+        static let maxCacheLimitMB: Int = 20000
+        static let gbThreshold: Int = 1000
     }
     
     private let cacheInfoLabel = UILabel()
@@ -23,7 +26,6 @@ class CacheViewController: UIViewController {
     private let titleLabel: UILabel = UILabel()
     private let stackView = UIStackView()
     private let interactor: CacheBusinessLogic
-    
     
     init(interactor: CacheBusinessLogic) {
         self.interactor = interactor
@@ -39,7 +41,6 @@ class CacheViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
         configureViews()
-
     }
     
     private func configureUI() {
@@ -140,8 +141,8 @@ class CacheViewController: UIViewController {
     }
     
     private func configureCacheLimitSlider() {
-        cacheLimitSlider.minimumValue = 10
-        cacheLimitSlider.maximumValue = 1000
+        cacheLimitSlider.minimumValue = Float(Constants.minCacheLimitMB)
+        cacheLimitSlider.maximumValue = Float(Constants.maxCacheLimitMB)
         let currentLimit = ImageCacheManager.shared.getCurrentCacheLimit()
         cacheLimitSlider.value = Float(currentLimit)
     }
@@ -182,7 +183,14 @@ class CacheViewController: UIViewController {
     }
     
     private func updateCacheLimitLabel(value: Int) {
-        cacheLimitLabel.text = "\(LocalizationManager.shared.localizedString(for: "cache_limit")) \(value) MB"
+        if value >= Constants.gbThreshold {
+            let gbValue = Float(value) / Float(Constants.gbThreshold)
+            cacheLimitLabel.text = String(format: "%@ %.1f GB",
+                                        LocalizationManager.shared.localizedString(for: "cache_limit"),
+                                        gbValue)
+        } else {
+            cacheLimitLabel.text = "\(LocalizationManager.shared.localizedString(for: "cache_limit")) \(value) MB"
+        }
     }
     
     // MARK: - Actions

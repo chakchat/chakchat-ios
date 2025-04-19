@@ -114,3 +114,9 @@
 "are_you_sure_delete_account" = "Are you sure you want to delete account? All your data will be deleted.";
 "logout_account" = "Log out of account";
 "are_you_sure_logout" = "Are you sure you want to log out of account?";
+"incorrect_code" = "Incorrect code";
+"fail_to_change_secret_key" = "Failed to change secret key";
+"try_again" = "Try again please";
+"fail_to_save_secret_key" = "Failed to save secret key";
+"you_input_empty_key" = "You input empty key";
+"send_email" = "Send Email";

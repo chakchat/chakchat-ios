@@ -215,7 +215,7 @@ final class UserProfileViewController: UIViewController {
     }
     
     func showFailDisclaimer() {
-        let disclaimer = UIAlertController(title: "Failed to change secret key", message: "Try again please", preferredStyle: .alert)
+        let disclaimer = UIAlertController(title: LocalizationManager.shared.localizedString(for: "fail_to_change_secret_key"), message: LocalizationManager.shared.localizedString(for: "try_again"), preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
         disclaimer.addAction(ok)
         self.present(disclaimer, animated: true)

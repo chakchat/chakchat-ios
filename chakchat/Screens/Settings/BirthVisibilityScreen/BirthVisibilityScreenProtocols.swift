@@ -11,6 +11,7 @@ import Foundation
 protocol BirthVisibilityScreenBusinessLogic {
     /// тут все аналогично экрану PhoneVisibility
     func backToConfidentialityScreen()
+    func showAddUsersScreen()
     
     func loadUserRestrictions()
     func showUserRestrictions(_ userRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData)
