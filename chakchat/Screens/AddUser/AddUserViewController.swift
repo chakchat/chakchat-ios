@@ -102,7 +102,7 @@ final class AddUserViewController: UIViewController {
         selectedUsersTable.backgroundColor = Colors.backgroundSettings
         selectedUsersTable.delegate = self
         selectedUsersTable.dataSource = self
-        selectedUsersTable.pinTop(view.safeAreaLayoutGuide.topAnchor, -10)
+        selectedUsersTable.pinTop(view.safeAreaLayoutGuide.topAnchor, 0)
         selectedUsersTable.pinHorizontal(view)
         selectedUsersTable.pinBottom(view.safeAreaLayoutGuide.bottomAnchor, 0)
         selectedUsersTable.register(UISearchControllerCell.self, forCellReuseIdentifier: "SelectedUserCell")
@@ -113,7 +113,7 @@ final class AddUserViewController: UIViewController {
         searchResultsTable.backgroundColor = Colors.backgroundSettings
         searchResultsTable.delegate = self
         searchResultsTable.dataSource = self
-        searchResultsTable.pinTop(view.safeAreaLayoutGuide.topAnchor, -10)
+        searchResultsTable.pinTop(view.safeAreaLayoutGuide.topAnchor, 0)
         searchResultsTable.pinHorizontal(view)
         searchResultsTable.pinBottom(view.safeAreaLayoutGuide.bottomAnchor, 0)
         searchResultsTable.register(UISearchControllerCell.self, forCellReuseIdentifier: "SearchResultCell")
@@ -267,7 +267,7 @@ extension AddUserViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         if tableView == selectedUsersTable {
-            let deleteAction = UIContextualAction(style: .destructive, title: "Удалить") { [weak self] (_, _, completion) in
+            let deleteAction = UIContextualAction(style: .destructive, title: "_") { [weak self] (_, _, completion) in
                 guard let self = self else { return }
                 
                 self.selectedUsers.remove(at: indexPath.row)

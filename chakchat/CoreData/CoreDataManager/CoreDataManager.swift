@@ -17,7 +17,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
         case update = "UpdateModel"
     }
     
-    //MARK: Chats CRUD
+    // MARK: Chats CRUD
     
     func createChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         let encoder = JSONEncoder()
