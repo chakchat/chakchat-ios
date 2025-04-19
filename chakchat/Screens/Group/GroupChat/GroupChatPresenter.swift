@@ -17,4 +17,8 @@ final class GroupChatPresenter: GroupChatPresentationLogic {
     func updateGroupPhoto(_ image: UIImage?) {
         view?.updateGroupPhoto(image)
     }
+    
+    func updateGroupInfo(_ name: String, _ description: String?) {
+        view?.updateGroupInfo(name, description)
+    }
 }

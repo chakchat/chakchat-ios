@@ -31,9 +31,9 @@ enum ChatsModels {
         /// сделал кастомный декодер потому что по умолчанию пустая строка не может преобразоваться в URL?
         struct GroupInfo: Codable {
             let admin: UUID
-            let name: String
-            let description: String?
-            let groupPhoto: URL?
+            var name: String
+            var description: String?
+            var groupPhoto: URL?
             
             enum CodingKeys: String, CodingKey {
                 case admin = "admin_id"
@@ -83,7 +83,7 @@ enum ChatsModels {
             let type: ChatType
             var members: [UUID]
             let createdAt: Date
-            let info: Info
+            var info: Info
             
             enum CodingKeys: String, CodingKey {
                 case chatID = "chat_id"

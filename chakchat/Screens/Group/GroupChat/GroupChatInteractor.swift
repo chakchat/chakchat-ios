@@ -245,8 +245,23 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func handleUpdateGroupPhoto(_ event: UpdatedGroupPhotoEvent) {
+        if case .group(var info) = chatData.info {
+            info.groupPhoto = event.photoURL
+            chatData.info = .group(info)
+        }
         DispatchQueue.main.async {
             self.presenter.updateGroupPhoto(event.photo)
+        }
+    }
+    
+    func handleUpdateGroupInfo(_ event: UpdatedGroupInfoEvent) {
+        if case .group(var info) = chatData.info {
+            info.name = event.name
+            info.description = event.description
+            chatData.info = .group(info)
+        }
+        DispatchQueue.main.async {
+            self.presenter.updateGroupInfo(event.name, event.description)
         }
     }
     
@@ -279,6 +294,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }.store(in: &cancellables)
         eventSubscriber.subscribe(UpdatedGroupPhotoEvent.self) { [weak self] event in
             self?.handleUpdateGroupPhoto(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(UpdatedGroupInfoEvent.self) { [weak self] event in
+            self?.handleUpdateGroupInfo(event)
         }.store(in: &cancellables)
     }
     

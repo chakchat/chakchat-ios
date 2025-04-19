@@ -212,6 +212,10 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
+    func updateGroupInfo(_ name: String, _ description: String?) {
+        groupNameLabel.text = name
+    }
+    
     func configureWithData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID) {
         if case .group(let groupInfo) = chatData.info {
             let color = UIColor.random()
