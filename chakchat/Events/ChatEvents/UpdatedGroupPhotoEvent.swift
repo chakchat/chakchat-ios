@@ -9,8 +9,10 @@ import UIKit
 
 final class UpdatedGroupPhotoEvent: Event {
     let photo: UIImage?
+    let photoURL: URL?
     
-    init(photo: UIImage?) {
+    init(photo: UIImage?, photoURL: URL? = nil) {
         self.photo = photo
+        self.photoURL = photoURL
     }
 }

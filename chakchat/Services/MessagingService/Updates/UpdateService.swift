@@ -33,8 +33,7 @@ final class UpdateService: UpdateServiceProtocol {
                    encoding: URLEncoding.default,
                    headers: headers)
         .validate()
-        .responseDecodable(of: Updates.self) { response in
-            print(response.response)
+        .responseDecodable(of: SuccessResponse<Updates>.self) { response in
             if let data = response.data {
                 let responseString = String(data: data, encoding: .utf8)
                 print("Response as String:", responseString ?? "Failed to decode")
@@ -42,7 +41,7 @@ final class UpdateService: UpdateServiceProtocol {
             switch response.result {
             case .success(let model):
                 print(model)
-                completion(.success(model))
+                completion(.success(model.data))
             case .failure(let error):
                 print(error)
                 completion(.failure(error))

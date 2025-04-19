@@ -68,7 +68,9 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
                 guard let self = self else { return }
                 switch result {
                 case .success(let response):
-                    self.coreDataManager.createChats(response.data)
+                    DispatchQueue.main.async {
+                        self.coreDataManager.createChats(response.data)
+                    }
                     completion(.success(response.data))
                 case .failure(let failure):
                     completion(.failure(failure))
@@ -84,7 +86,9 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
                 guard let self = self else { return }
                 switch result {
                 case .success(let response):
-                    self.coreDataManager.createUsers(response.data)
+                    DispatchQueue.main.async {
+                        self.coreDataManager.createUsers(response.data)
+                    }
                     completion(.success(response.data))
                 case .failure(let failure):
                     completion(.failure(failure))

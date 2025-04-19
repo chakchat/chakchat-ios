@@ -38,6 +38,8 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
 
 protocol GroupChatPresentationLogic {
     func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID)
+    func updateGroupPhoto(_ image: UIImage?)
+    func updateGroupInfo(_ name: String, _ description: String?)
 }
 
 protocol GroupChatWorkerLogic {

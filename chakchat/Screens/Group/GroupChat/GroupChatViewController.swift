@@ -196,6 +196,26 @@ final class GroupChatViewController: MessagesViewController {
         messages = messages.filter { deleteMessageDict[$0.messageId] != $0.sender.senderId }
     }
     
+    func updateGroupPhoto(_ image: UIImage?) {
+        if let image {
+            iconImageView.image = image
+        } else {
+            let color = UIColor.random()
+            guard let groupName = groupNameLabel.text else { return }
+            let image = UIImage.imageWithText(
+                text: groupName,
+                size: CGSize(width: Constants.navigationItemHeight, height: Constants.navigationItemHeight),
+                color: color,
+                borderWidth: Constants.borderWidth
+            )
+            iconImageView.image = image
+        }
+    }
+    
+    func updateGroupInfo(_ name: String, _ description: String?) {
+        groupNameLabel.text = name
+    }
+    
     func configureWithData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID) {
         if case .group(let groupInfo) = chatData.info {
             let color = UIColor.random()
