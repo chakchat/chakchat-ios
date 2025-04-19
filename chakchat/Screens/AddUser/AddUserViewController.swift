@@ -249,14 +249,13 @@ extension AddUserViewController: UITableViewDataSource, UITableViewDelegate {
             let deleteAction = UIContextualAction(style: .destructive, title: "Удалить") { [weak self] (_, _, completion) in
                 guard let self = self else { return }
                 
-                let userToDelete = self.selectedUsers[indexPath.row]
-                print("delete")
-//                self.interactor.deleteSelectedUser(userToDelete) { success in
-//                    if success {
-//                        self.interactor.loadCurrentSelection()
-//                    }
-//                    completion(success)
-//                }
+                self.selectedUsers.remove(at: indexPath.row)
+                
+                tableView.performBatchUpdates({
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
+                }, completion: { _ in
+                    completion(true)
+                })
             }
             deleteAction.backgroundColor = .systemRed
             deleteAction.image = UIImage(systemName: "trash")
