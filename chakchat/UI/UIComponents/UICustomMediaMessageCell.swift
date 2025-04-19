@@ -134,6 +134,10 @@ extension CustomMediaMessageCell: UIContextMenuInteractionDelegate {
                 self.cellDelegate?.didTapLoad(for: indexPath)
             }
             
+            let forward = UIAction(title: "Forward", image: UIImage(systemName: "arrow.up.message")) { _ in
+                self.cellDelegate?.didTapForwardFile(for: indexPath)
+            }
+            
             let deleteForMe = UIAction(title: "Delete for me", image: UIImage(systemName: "person")) { _ in
                 self.cellDelegate?.didTapDelete(for: indexPath, mode: .DeleteModeForSender)
             }
@@ -144,7 +148,7 @@ extension CustomMediaMessageCell: UIContextMenuInteractionDelegate {
             
             let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
             
-            return UIMenu(title: "", children: [copy, reactions, reply, load, deleteMenu])
+            return UIMenu(title: "", children: [copy, reactions, reply, load, forward, deleteMenu])
         }
     }
     
