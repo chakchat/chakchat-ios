@@ -14,8 +14,6 @@ protocol AddUserBusinessLogic: SearchInteractor {
 }
 
 protocol AddUserPresentationLogic {
-    func loadData(_ users: [ProfileSettingsModels.ProfileUserData])
-    func loadSpecifiedUsers(_ users: [UUID]?)
 }
 
 protocol AddUserWorkerLogic {

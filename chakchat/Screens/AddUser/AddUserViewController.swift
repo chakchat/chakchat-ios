@@ -9,6 +9,7 @@ import UIKit
 import Combine
 
 final class AddUserViewController: UIViewController {
+    
     private var searchController: UISearchController = UISearchController()
     private let selectedUsersTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
     private let searchResultsTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -101,7 +102,7 @@ final class AddUserViewController: UIViewController {
         selectedUsersTable.backgroundColor = Colors.backgroundSettings
         selectedUsersTable.delegate = self
         selectedUsersTable.dataSource = self
-        selectedUsersTable.pinTop(view.safeAreaLayoutGuide.topAnchor, 0)
+        selectedUsersTable.pinTop(view.safeAreaLayoutGuide.topAnchor, -10)
         selectedUsersTable.pinHorizontal(view)
         selectedUsersTable.pinBottom(view.safeAreaLayoutGuide.bottomAnchor, 0)
         selectedUsersTable.register(UISearchControllerCell.self, forCellReuseIdentifier: "SelectedUserCell")
@@ -112,7 +113,7 @@ final class AddUserViewController: UIViewController {
         searchResultsTable.backgroundColor = Colors.backgroundSettings
         searchResultsTable.delegate = self
         searchResultsTable.dataSource = self
-        searchResultsTable.pinTop(view.safeAreaLayoutGuide.topAnchor, 0)
+        searchResultsTable.pinTop(view.safeAreaLayoutGuide.topAnchor, -10)
         searchResultsTable.pinHorizontal(view)
         searchResultsTable.pinBottom(view.safeAreaLayoutGuide.bottomAnchor, 0)
         searchResultsTable.register(UISearchControllerCell.self, forCellReuseIdentifier: "SearchResultCell")
@@ -228,11 +229,31 @@ extension AddUserViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
     
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return CGFloat.leastNonzeroMagnitude
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return nil
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return CGFloat.leastNonzeroMagnitude
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
         if tableView == selectedUsersTable {
-            // Возможно, переход в профиль выбранного юзера
+            print("tap to cell")
         } else {
             if let fetchedUsers = fetchedUsers, !fetchedUsers.isEmpty {
                 let user = fetchedUsers[indexPath.row]
