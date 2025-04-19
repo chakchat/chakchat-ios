@@ -649,6 +649,7 @@ final class ChatViewController: MessagesViewController {
                 messagesCollectionView.reloadData()
             }
             
+            let emoji = mapEmoji(emoji)
             interactor.sendReaction(emoji, onMessage) { result in
                 DispatchQueue.main.async {
                     switch result {
@@ -688,6 +689,19 @@ final class ChatViewController: MessagesViewController {
             }
         }
     }
+    
+    private func mapEmoji(_ emoji: String) -> String {
+        switch emoji {
+        case "❤️": return "heart"
+        case "👍": return "like"
+        case "⚡️": return "thunder"
+        case "😭": return "cry"
+        case "👎": return "dislike"
+        case "🐝": return "bzZZ"
+        default: return "unknown"
+        }
+    }
+    
     private func showEmptyDisclaimer() {
         let disclaimer = UIAlertController(title: LocalizationManager.shared.localizedString(for: "you_input_empty_key"), message: LocalizationManager.shared.localizedString(for: "try_again"), preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
