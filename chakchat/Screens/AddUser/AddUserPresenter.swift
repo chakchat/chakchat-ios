@@ -10,9 +10,4 @@ import UIKit
 final class AddUserPresenter: AddUserPresentationLogic {
     
     weak var view: AddUserViewController?
-    
-    func loadData(_ users: [ProfileSettingsModels.ProfileUserData]) {
-        view?.configureWithData(users)
-    }
-    
 }

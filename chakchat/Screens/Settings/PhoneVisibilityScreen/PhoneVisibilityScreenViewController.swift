@@ -44,11 +44,6 @@ final class PhoneVisibilityScreenViewController: UIViewController {
         super.viewDidLoad()
         configureUI()
     }
-    // для сохранения выбора пользователя
-    override func viewWillDisappear(_ animated: Bool) {
-        let phoneRestriction = transferRestriction()
-        interactor.saveNewRestrictions(phoneRestriction)
-    }
     
     // MARK: - UI Configuration
     private func configureUI() {
@@ -116,10 +111,11 @@ final class PhoneVisibilityScreenViewController: UIViewController {
         return "everyone"
     }
     
-    // MARK: - Actions
     @objc
     private func backButtonPressed() {
         interactor.backToConfidentialityScreen()
+        let phoneRestriction = transferRestriction()
+        interactor.saveNewRestrictions(phoneRestriction)
     }
 }
 

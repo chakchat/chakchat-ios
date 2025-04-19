@@ -8,7 +8,8 @@
 import UIKit
 
 enum AddUserAssembly {
-    static func build(with context: MainAppContextProtocol) -> UIViewController {
+    static func build(with context: MainAppContextProtocol,
+                      completion: @escaping ([ProfileSettingsModels.ProfileUserData]) -> Void) -> UIViewController {
         let presenter = AddUserPresenter()
         let userService = UserService()
         let worker = AddUserWorker(
@@ -23,6 +24,7 @@ enum AddUserAssembly {
             logger: context.logger
         )
         let view = AddUserViewController(interactor: interactor)
+        view.onUsersSelected = completion
         presenter.view = view
         return view
     }

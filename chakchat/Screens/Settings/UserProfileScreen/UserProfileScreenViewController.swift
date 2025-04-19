@@ -244,7 +244,6 @@ final class UserProfileScreenViewController: UIViewController {
     
     @objc
     private func logOutButtonPressed() {
-        // TODO: show alert "Are u sure?" and log out of from account.
         UIView.animate(withDuration: UIConstants.animationDuration, animations: {
             self.logOutButton.transform = CGAffineTransform(scaleX: UIConstants.buttonScale, y: UIConstants.buttonScale)
             }, completion: { _ in

@@ -27,15 +27,6 @@ final class AddUserInteractor: AddUserBusinessLogic {
         self.logger = logger
     }
     
-    func loadData() {
-        worker.loadUsers() { users in
-            DispatchQueue.main.async {
-                guard let users else { return }
-                self.presenter.loadData(users)
-            }
-        }
-    }
-    
     func fetchUsers(_ name: String?, _ username: String?, _ page: Int, _ limit: Int, completion: @escaping (Result<ProfileSettingsModels.Users, any Error>) -> Void) {
         worker.fetchUsers(name, username, page, limit) { [weak self] result in
             guard let self = self else { return }
@@ -54,5 +45,17 @@ final class AddUserInteractor: AddUserBusinessLogic {
     func handleError(_ error: Error) {
         _ = errorHandler.handleError(error)
         print(error)
+    }
+    
+    func loadCoreDataUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void) {
+        worker.loadCoreDataUsers() { users in
+            completion(users)
+        }
+    }
+    
+    func loadSelectedUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void) {
+        worker.loadSelectedUsers() { users in
+            completion(users)
+        }
     }
 }

@@ -21,6 +21,7 @@ final class PhoneVisibilityScreenInteractor: PhoneVisibilityScreenBusinessLogic 
     
     var onRouteToConfidentialityScreen: (() -> Void)?
     var onRouteToAddUsersScreen: (() -> Void)?
+    var selectedUsers: [ProfileSettingsModels.ProfileUserData] = []
     
     // MARK: - Initialization
     init(presenter: PhoneVisibilityScreenPresenter, 
@@ -51,7 +52,7 @@ final class PhoneVisibilityScreenInteractor: PhoneVisibilityScreenBusinessLogic 
     
     func saveNewRestrictions(_ restriction: String) {
         let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
-            phone: ConfidentialityDetails(openTo: restriction, specifiedUsers: nil),
+            phone: ConfidentialityDetails(openTo: restriction, specifiedUsers: selectedUsers.map { $0.id }),
             dateOfBirth: userRestrictionsSnap.dateOfBirth)
         worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
             DispatchQueue.main.async {

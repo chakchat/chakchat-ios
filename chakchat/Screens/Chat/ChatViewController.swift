@@ -254,7 +254,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     func showSecretKeyFail() {
-        let failAllert = UIAlertController(title: "Failed to save secret key", message: "Try to save in again in profile", preferredStyle: .alert)
+        let failAllert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "fail_to_save_secret_key"), message: LocalizationManager.shared.localizedString(for: "try_again"), preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default)
         failAllert.addAction(ok)
     }
@@ -688,6 +688,12 @@ final class ChatViewController: MessagesViewController {
             }
         }
     }
+    private func showEmptyDisclaimer() {
+        let disclaimer = UIAlertController(title: LocalizationManager.shared.localizedString(for: "you_input_empty_key"), message: LocalizationManager.shared.localizedString(for: "try_again"), preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default)
+        disclaimer.addAction(ok)
+        self.present(disclaimer, animated: true)
+    }
     
     private func showReplyPreview(for message: MessageType, type: ReplyType) {
         replyPreviewView?.removeFromSuperview()
@@ -863,12 +869,6 @@ final class ChatViewController: MessagesViewController {
         return messages[indexPath.section].sender.senderId == messages[indexPath.section + 1].sender.senderId
     }
     
-    private func showEmptyDisclaimer() {
-        let disclaimer = UIAlertController(title: "You input empty key", message: "Try input key again", preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: .default)
-        disclaimer.addAction(ok)
-        self.present(disclaimer, animated: true)
-    }
     
     @objc private func handleTitleTap() {
         interactor.routeToProfile()

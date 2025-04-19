@@ -256,8 +256,8 @@ final class AppCoordinator {
         navigationController.pushViewController(groupEditVC, animated: true)
     }
     
-    func showAddUsersScreen() {
-        let addUsersVC = AddUserAssembly.build(with: mainAppContext)
+    func showAddUsersScreen(completion: @escaping ([ProfileSettingsModels.ProfileUserData]) -> Void) {
+        let addUsersVC = AddUserAssembly.build(with: mainAppContext, completion: completion)
         navigationController.pushViewController(addUsersVC, animated: true)
     }
     

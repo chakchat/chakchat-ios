@@ -450,7 +450,6 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
     
     @objc
     private func deleteButtonPressed() {
-        // TODO: show alert "Are u sure?" and delete account.
         UIView.animate(withDuration: UIConstants.animationDuration, animations: {
             self.deleteButton.transform = CGAffineTransform(scaleX: UIConstants.buttonScale, y: UIConstants.buttonScale)
             }, completion: { _ in
@@ -502,8 +501,7 @@ final class ProfileSettingsViewController: UIViewController, CropViewControllerD
         phoneTextField.localize()
         birthTextField.localize()
     }
-    
-    // TODO: - Probably it is interactor logic
+
     private func handleDateSelection(_ date: Date?) {
         if let date = date {
             dateFormatter.dateFormat = "dd.MM.yyyy"

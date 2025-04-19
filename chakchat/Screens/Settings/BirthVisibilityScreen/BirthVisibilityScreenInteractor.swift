@@ -20,6 +20,8 @@ final class BirthVisibilityScreenInteractor: BirthVisibilityScreenBusinessLogic 
     private let userRestrictionsSnap: ConfidentialitySettingsModels.ConfidentialityUserData
     
     var onRouteToConfidentialityScreen: (() -> Void)?
+    var onRouteToAddUsersScreen: (() -> Void)?
+    var selectedUsers: [ProfileSettingsModels.ProfileUserData] = []
     
     // MARK: - Initialization
     init(presenter: BirthVisibilityScreenPresentationLogic, 
@@ -51,7 +53,7 @@ final class BirthVisibilityScreenInteractor: BirthVisibilityScreenBusinessLogic 
     func saveNewRestrictions(_ restriction: String) {
         let newUserRestrictions = ConfidentialitySettingsModels.ConfidentialityUserData(
             phone: userRestrictionsSnap.phone,
-            dateOfBirth: ConfidentialityDetails(openTo: restriction, specifiedUsers: nil))
+            dateOfBirth: ConfidentialityDetails(openTo: restriction, specifiedUsers: selectedUsers.map { $0.id }))
         worker.updateUserRestriction(newUserRestrictions) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -74,5 +76,9 @@ final class BirthVisibilityScreenInteractor: BirthVisibilityScreenBusinessLogic 
     // MARK: - Rounting
     func backToConfidentialityScreen() {
         onRouteToConfidentialityScreen?()
+    }
+    
+    func showAddUsersScreen() {
+        onRouteToAddUsersScreen?()
     }
 }
