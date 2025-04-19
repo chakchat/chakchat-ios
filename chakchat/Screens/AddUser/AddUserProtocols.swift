@@ -8,18 +8,20 @@
 import Foundation
 
 protocol AddUserBusinessLogic: SearchInteractor {
-    func loadData()
-    
     func handleError(_ error: Error)
+    func loadCoreDataUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
+    func loadSelectedUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
 }
 
 protocol AddUserPresentationLogic {
     func loadData(_ users: [ProfileSettingsModels.ProfileUserData])
+    func loadSpecifiedUsers(_ users: [UUID]?)
 }
 
 protocol AddUserWorkerLogic {
     
-    func loadUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
+    func loadCoreDataUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
+    func loadSelectedUsers(completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
     
     func fetchUsers(
         _ name: String?,
