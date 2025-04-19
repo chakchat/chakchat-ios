@@ -12,8 +12,7 @@ protocol ForwardMessageBusinessLogic {
     
     func getUserInfo(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
     
-    func forwardTextMessage(_ messageID: Int64, _ chatToID: UUID)
-    func forwardFileMessage(_ messageID: Int64, _ chatToID: UUID)
+    func forwardMessage(_ chatToID: UUID)
 }
 
 protocol ForwardMessageWorkerLogic {

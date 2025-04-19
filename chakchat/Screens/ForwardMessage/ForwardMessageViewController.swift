@@ -31,7 +31,7 @@ final class ForwardMessageViewController: UIViewController {
         
         let label = UILabel()
         label.text = message
-        label.textColor = .white
+        label.textColor = status ? .green : .red
         label.textAlignment = .center
         label.numberOfLines = 0
         
@@ -47,6 +47,8 @@ final class ForwardMessageViewController: UIViewController {
         
         image.pinCenterX(messageView.centerXAnchor)
         image.pinCenterY(messageView.centerYAnchor)
+        image.setHeight(150)
+        image.setWidth(150)
         image.image = status ? UIImage(systemName: "checkmark.seal.fill") : UIImage(systemName: "xmark.seal.fill")
         image.tintColor = status ? .green : .red
         
@@ -92,7 +94,11 @@ final class ForwardMessageViewController: UIViewController {
 }
 
 extension ForwardMessageViewController: UITableViewDelegate {
-    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let cell = chats[indexPath.row]
+        interactor.forwardMessage(cell.chatID)
+    }
 }
 
 extension ForwardMessageViewController: UITableViewDataSource {
@@ -107,7 +113,7 @@ extension ForwardMessageViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: UISearchControllerCell.cellIdentifier, for: indexPath) as? UISearchControllerCell else { return UITableViewCell() }
         let chat = chats[indexPath.row]
-        if case .personal(let personalInfo) = chat.info {
+        if case .personal(_) = chat.info {
             interactor.getUserInfo(chat.members) { [weak self] result in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
@@ -129,5 +135,9 @@ extension ForwardMessageViewController: UITableViewDataSource {
             return cell
         }
         return UITableViewCell()
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
     }
 }

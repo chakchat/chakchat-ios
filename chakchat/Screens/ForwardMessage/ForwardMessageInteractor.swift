@@ -12,15 +12,21 @@ final class ForwardMessageInteractor: ForwardMessageBusinessLogic {
     private let presenter: ForwardMessagePresentationLogic
     private let worker: ForwardMessageWorkerLogic
     private let chatFromID: UUID
+    private let messageID: Int64
+    private let forwardType: ForwardType
     
     init(
         presenter: ForwardMessagePresentationLogic,
         worker: ForwardMessageWorkerLogic,
-        chatFromID: UUID
+        chatFromID: UUID,
+        messageID: Int64,
+        forwardType: ForwardType
     ) {
         self.presenter = presenter
         self.worker = worker
         self.chatFromID = chatFromID
+        self.messageID = messageID
+        self.forwardType = forwardType
     }
     
     func loadChatData() -> [ChatsModels.GeneralChatModel.ChatData] {
@@ -38,7 +44,16 @@ final class ForwardMessageInteractor: ForwardMessageBusinessLogic {
         }
     }
     
-    func forwardTextMessage(_ messageID: Int64, _ chatToID: UUID) {
+    func forwardMessage(_ chatToID: UUID) {
+        if forwardType == .text {
+            forwardTextMessage(chatToID)
+        }
+        if forwardType == .file {
+            forwardFileMessage(chatToID)
+        }
+    }
+    
+    private func forwardTextMessage(_ chatToID: UUID) {
         worker.forwardTextMessage(chatFromID, chatToID, messageID) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -52,7 +67,7 @@ final class ForwardMessageInteractor: ForwardMessageBusinessLogic {
         }
     }
     
-    func forwardFileMessage(_ messageID: Int64, _ chatToID: UUID) {
+    private func forwardFileMessage(_ chatToID: UUID) {
         worker.forwardFileMessage(chatFromID, chatToID, messageID) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
