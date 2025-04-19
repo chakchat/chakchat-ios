@@ -25,6 +25,13 @@ enum BirthVisibilityScreenAssembly {
         interactor.onRouteToConfidentialityScreen = {
             AppCoordinator.shared.popScreen()
         }
+        
+        interactor.onRouteToAddUsersScreen = { [weak interactor] in
+            AppCoordinator.shared.showAddUsersScreen { selectedUsers in
+                interactor?.selectedUsers = selectedUsers
+            }
+        }
+        
         let view = BirthVisibilityScreenViewController(interactor: interactor)
         presenter.view = view
         return view

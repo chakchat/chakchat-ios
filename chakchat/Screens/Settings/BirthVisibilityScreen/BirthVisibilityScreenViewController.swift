@@ -43,11 +43,6 @@ final class BirthVisibilityScreenViewController: UIViewController {
         configureUI()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        let birthRestriction = transferRestriction()
-        interactor.saveNewRestrictions(birthRestriction)
-    }
-    
     // MARK: - UI Configuration
     private func configureUI() {
         view.backgroundColor = Colors.backgroundSettings
@@ -116,6 +111,8 @@ final class BirthVisibilityScreenViewController: UIViewController {
     @objc
     private func backButtonPressed() {
         interactor.backToConfidentialityScreen()
+        let birthRestriction = transferRestriction()
+        interactor.saveNewRestrictions(birthRestriction)
     }
 }
 
@@ -208,7 +205,7 @@ extension BirthVisibilityScreenViewController: UITableViewDelegate, UITableViewD
             updateExceptionsSection()
             tableView.reloadData()
         } else {
-            // the logic of the second section has not yet been invented
+            interactor.showAddUsersScreen()
         }
     }
 }
