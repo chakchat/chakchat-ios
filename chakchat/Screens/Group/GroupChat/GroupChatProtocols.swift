@@ -25,6 +25,8 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Bool) -> Void)
     func deleteReaction(_ updateID: Int64, completion: @escaping (Bool) -> Void)
     
+    func forwardMessage(_ message: Int64, _ forwardType: ForwardType)
+    
     func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void)
@@ -68,8 +70,10 @@ protocol MessageEditMenuDelegate: AnyObject {
 
 protocol TextMessageEditMenuDelegate: MessageEditMenuDelegate {
     func didTapEdit(for message: IndexPath)
+    func didTapForwardText(for message: IndexPath)
 }
 
 protocol FileMessageEditMenuDelegate: MessageEditMenuDelegate {
     func didTapLoad(for message: IndexPath)
+    func didTapForwardFile(for message: IndexPath)
 }

@@ -67,13 +67,13 @@ protocol PersonalUpdateServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ForwardMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
     
     func forwardFileMessage(
         _ chatID: UUID,
         _ request: ChatsModels.UpdateModels.ForwardMessageRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.Preview>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<UpdateData>, Error>) -> Void
     )
 }
