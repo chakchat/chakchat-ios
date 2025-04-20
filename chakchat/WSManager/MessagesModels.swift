@@ -196,6 +196,20 @@ struct TextContent: Codable {
         case reactions = "reactions"
         case forwarded = "forwarded"
     }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        replyTo = try container.decodeIfPresent(Int64.self, forKey: .replyTo)
+        text = try container.decode(String.self, forKey: .text)
+        forwarded = try container.decodeIfPresent(Bool.self, forKey: .forwarded)
+        edited = try container.decodeIfPresent(EditedInfo.self, forKey: .edited)
+        
+        if let reactionsArray = try? container.decode([ReactionInfo].self, forKey: .reactions) {
+            reactions = reactionsArray
+        } else {
+            reactions = nil
+        }
+    }
 }
 
 struct EditedInfo: Codable {

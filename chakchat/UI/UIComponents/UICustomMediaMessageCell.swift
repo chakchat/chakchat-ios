@@ -7,6 +7,7 @@
 
 import UIKit
 import MessageKit
+import AVFoundation
 
 class CustomMediaMessageCell: MediaMessageCell {
     
@@ -97,6 +98,26 @@ class CustomMediaMessageCell: MediaMessageCell {
         rotation.repeatCount = .infinity
         cell.messageStatus.layer.add(rotation, forKey: "rotationAnimation")
     }
+    
+    private func generateThumbnail(for videoURL: URL) -> UIImage {
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        
+        let maxSize = CGSize(width: 380, height: 380)
+        generator.maximumSize = maxSize
+        
+        do {
+            let cgImage = try generator.copyCGImage(at: CMTime(value: 1, timescale: 60), actualTime: nil)
+            let thumbnail = UIImage(cgImage: cgImage)
+            
+            let scaledImage = thumbnail.scaledToFit(maxSize: maxSize)
+            return scaledImage
+            
+        } catch {
+            return UIImage(systemName: "play.circle.fill")!
+        }
+    }
 }
 
 class PhotoMessageCellSizeCalculator: MediaMessageSizeCalculator {
@@ -154,7 +175,7 @@ extension CustomMediaMessageCell: UIContextMenuInteractionDelegate {
     
     private func showReactionsMenu(for indexPath: IndexPath) {
         let reactionsVC = ReactionsPreviewViewController()
-        reactionsVC.preferredContentSize = CGSize(width: 240, height: 50)
+        reactionsVC.preferredContentSize = CGSize(width: 280, height: 50)
         reactionsVC.modalPresentationStyle = .popover
         reactionsVC.reactionSelected = { [weak self] emoji in
             self?.cellDelegate?.didSelectReaction(nil, emoji, for: indexPath) // мы только добавляем реакцию, значит у нее пока нет updateID(nil)

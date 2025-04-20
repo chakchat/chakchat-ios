@@ -23,6 +23,7 @@ class FileMessageCell: TextMessageCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        fileURL = nil
     }
     
     override func layoutMessageContainerView(with attributes: MessagesCollectionViewLayoutAttributes) {
@@ -31,27 +32,22 @@ class FileMessageCell: TextMessageCell {
     
     override func configure(with message: any MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
-        
+        messageContainerView.isUserInteractionEnabled = true
         addGesture()
         
         guard case .text(let stringUrl) = message.kind else { return }
+        guard let url = URL(string: stringUrl) else { return }
         
-        self.fileURL = URL(string: stringUrl)
-        messageLabel.text = fileURL?.lastPathComponent
-        
-        let fileExtension = fileURL?.pathExtension.lowercased()
-        switch fileExtension {
-        case "pdf":
-            fileImageView.image = UIImage(systemName: "doc.richtext.fill")
-        case "jpg", "jpeg", "png", "gif":
-            fileImageView.image = UIImage(systemName: "photo.fill")
-        case "txt", "rtf":
-            fileImageView.image = UIImage(systemName: "doc.text.fill")
-        default:
-            fileImageView.image = UIImage(systemName: "document.circle.fill")
+        if let cachedURL = FileCacheManager.shared.getFile(url) {
+            messageLabel.text = cachedURL.lastPathComponent
         }
         
+        messageLabel.pinCenterY(messageContainerView.centerYAnchor)
         messageLabel.pinLeft(fileImageView.trailingAnchor, 5)
+        messageLabel.pinRight(messagesCollectionView.trailingAnchor, 5)
+        messageLabel.setWidth(200)
+        messageLabel.numberOfLines = 1
+        messageLabel.lineBreakMode = .byTruncatingMiddle
     }
     
     private func configureCell() {
@@ -62,10 +58,10 @@ class FileMessageCell: TextMessageCell {
         messageContainerView.addSubview(fileImageView)
         fileImageView.contentMode = .scaleAspectFit
         fileImageView.image = UIImage(systemName: "document.circle.fill")
-        fileImageView.tintColor = .blue
+        fileImageView.tintColor = .orange
         fileImageView.isUserInteractionEnabled = true
-        fileImageView.setWidth(30)
-        fileImageView.setHeight(30)
+        fileImageView.setWidth(50)
+        fileImageView.setHeight(50)
         fileImageView.pinLeft(messageContainerView.leadingAnchor, 5)
         fileImageView.pinCenterY(messageContainerView)
     }
@@ -76,21 +72,46 @@ class FileMessageCell: TextMessageCell {
     }
     
     private func open(_ url: URL) {
-        let documentController = UIDocumentInteractionController(url: url)
-        documentController.delegate = self
-        documentController.presentPreview(animated: true)
+        DispatchQueue.main.async {
+            let documentController = UIDocumentInteractionController(url: url)
+            documentController.delegate = self
+            documentController.presentPreview(animated: true)
+        }
+    }
+    
+    private func updateFileIcon(for fileExtension: String) {
+        let ext = fileExtension.lowercased()
+        switch ext {
+        case "application/pdf":
+            fileImageView.image = UIImage(systemName: "doc.richtext.fill")
+        case "jpg", "jpeg", "png", "gif":
+            fileImageView.image = UIImage(systemName: "photo.fill")
+        case "txt", "rtf":
+            fileImageView.image = UIImage(systemName: "doc.text.fill")
+        case "doc", "docx":
+            fileImageView.image = UIImage(systemName: "doc.fill")
+        case "xls", "xlsx":
+            fileImageView.image = UIImage(systemName: "chart.bar.doc.horizontal.fill")
+        case "ppt", "pptx":
+            fileImageView.image = UIImage(systemName: "rectangle.fill.on.rectangle.fill")
+        default:
+            fileImageView.image = UIImage(systemName: "document.circle.fill")
+        }
     }
     
     @objc private func handleFileIconTap() {
         guard let fileURL = fileURL else { return }
-        open(fileURL)
+        if let cachedURL = FileCacheManager.shared.getFile(fileURL) {
+            open(cachedURL)
+        }
     }
 }
 
 class FileMessageCellSizeCalculator: TextMessageSizeCalculator {
     
     override func messageContainerSize(for message: any MessageType, at indexPath: IndexPath) -> CGSize {
-        let size = super.messageContainerSize(for: message, at: indexPath)
+        var size = super.messageContainerSize(for: message, at: indexPath)
+        size.height -= 20
         return size
     }
     
