@@ -362,7 +362,9 @@ final class ChatInteractor: ChatBusinessLogic {
                 for reaction in reactions {
                     reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
                 }
-                mappedTextUpdate.reactions = reactionsDict
+                if !reactionsDict.isEmpty {
+                    mappedTextUpdate.reactions = reactionsDict
+                }
             }
             mappedTextUpdate.curUserPickedReaction = nil // на этапе ViewController'a
             mappedTextUpdate.status = .sent
@@ -429,7 +431,9 @@ final class ChatInteractor: ChatBusinessLogic {
                 for reaction in reactions {
                     reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
                 }
-                mappedFileUpdate.reactions = reactionsDict
+                if !reactionsDict.isEmpty {
+                    mappedFileUpdate.reactions = reactionsDict
+                }
             }
             mappedFileUpdate.status = .sent
         }
@@ -450,7 +454,7 @@ final class ChatInteractor: ChatBusinessLogic {
                 let mappedFileUpdate = mapToFileMessage(update)
                 mappedUpdates.append(mappedFileUpdate)
             case .reaction:
-                var mappedReactionUpdate: GroupReaction!
+                var mappedReactionUpdate = GroupReaction()
                 if case .reactionContent(let rc) = update.content {
                     mappedReactionUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
                     mappedReactionUpdate.messageId = String(update.updateID)

@@ -186,8 +186,8 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     
     func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let data = try? Data(contentsOf: videoURL) else { return }
-        let fileName = "\(UUID().uuidString).mp4"
-        let mimeType = "video/mp4"
+        let fileName = "\(videoURL.lastPathComponent)"
+        let mimeType = "\(videoURL.pathExtension)"
         worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -209,10 +209,35 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
+    func uploadAudio(_ audioURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+        guard let data = try? Data(contentsOf: audioURL) else { return }
+        let fileName = audioURL.lastPathComponent
+        let mimeType = audioURL.pathExtension
+        worker.uploadImage(data, fileName, mimeType) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let fileMetaData):
+                sendFileMessage(fileMetaData.fileId, nil) { result in
+                    switch result {
+                    case .success(let fileUpdate):
+                        completion(.success(fileUpdate))
+                    case .failure(let failure):
+                        completion(.failure(failure))
+                    }
+                }
+            case .failure(let failure):
+                _ = errorHandler.handleError(failure)
+                os_log("Uploading user audio failed:\n", log: logger, type: .fault)
+                print(failure)
+                completion(.failure(failure))
+            }
+        }
+    }
+    
     func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let data = try? Data(contentsOf: fileURL),
               let mimeType = mimeType else { return }
-        let fileName = "\(UUID().uuidString).mp4"
+        let fileName = "\(fileURL.lastPathComponent)"
         worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -318,7 +343,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 for reaction in reactions {
                     reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
                 }
-                mappedTextUpdate.reactions = reactionsDict
+                if !reactionsDict.isEmpty {
+                    mappedTextUpdate.reactions = reactionsDict
+                }
             }
             mappedTextUpdate.curUserPickedReaction = nil // на этапе ViewController'a
             mappedTextUpdate.status = .sent
@@ -353,13 +380,14 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             mappedFileUpdate.fileURL = fc.file.fileURL
             mappedFileUpdate.isForwarded = fc.forwarded ?? false
             if fc.file.mimeType == "image/jpeg" {
+                let photo = ImageCacheManager.shared.getImage(for: fc.file.fileURL as NSURL)
                 mappedFileUpdate.kind = .photo(
                     PhotoMediaItem(
                         url: fc.file.fileURL,
-                        image: ImageCacheManager.shared.getImage(for: fc.file.fileURL as NSURL),
+                        image: photo,
                         placeholderImage: UIImage(),
                         shimmer: nil,
-                        size: CGSize(width: 200, height: 200),
+                        size: photo?.size ?? CGSize(width: 300, height: 300),
                         status: .sent
                     )
                 )
@@ -378,14 +406,26 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         )
                     )
             } else {
-                mappedFileUpdate.kind = .text(fc.file.fileURL.absoluteString)
+//                mappedFileUpdate.kind =
+//                    .audio(
+//                        AudioMediaItem(
+//                            url: fc.file.fileURL,
+//                            duration: Float(fc.file.fileSize / 1000),
+//                            size: CGSize(width: 200, height: 50),
+//                            fileName: fc.file.fileName,
+//                            mimeType: fc.file.mimeType,
+//                            localURL: "" // На этапе конфигурации
+//                        )
+//                    )
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]
                 for reaction in reactions {
                     reactionsDict.updateValue(reaction.content.reaction, forKey: reaction.updateID)
                 }
-                mappedFileUpdate.reactions = reactionsDict
+                if !reactionsDict.isEmpty {
+                    mappedFileUpdate.reactions = reactionsDict
+                }
             }
             mappedFileUpdate.status = .sent
         }
@@ -406,7 +446,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 let mappedFileUpdate = mapToFileMessage(update)
                 mappedUpdates.append(mappedFileUpdate)
             case .reaction:
-                var mappedReactionUpdate: GroupReaction!
+                var mappedReactionUpdate = GroupReaction()
                 if case .reactionContent(let rc) = update.content {
                     mappedReactionUpdate.sender = GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil)
                     mappedReactionUpdate.messageId = String(update.updateID)
@@ -460,5 +500,16 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         } catch {
             return UIImage(systemName: "play.circle.fill")!
         }
+    }
+    
+    private func downloadAudio(_ remoteURL: URL) async throws -> URL {
+        let (data, _) = try await URLSession.shared.data(from: remoteURL)
+
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileName = remoteURL.lastPathComponent
+        let localURL = tempDir.appendingPathComponent(fileName)
+
+        try data.write(to: localURL)
+        return localURL
     }
 }

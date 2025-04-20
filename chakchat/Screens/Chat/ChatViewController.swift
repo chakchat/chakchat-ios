@@ -516,6 +516,8 @@ final class ChatViewController: MessagesViewController {
                 self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                 inputBar.inputTextView.text = ""
                 
+                removeReplyPreview(.edit)
+                
                 interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
                     DispatchQueue.main.async {
                         guard let self = self else { return }
@@ -731,6 +733,8 @@ final class ChatViewController: MessagesViewController {
         messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         messageInputBar.setNeedsLayout()
         replyPreviewView = nil
+        repliedMessage = nil
+        editingMessage = nil
         if type == .edit {
             messageInputBar.inputTextView.text = ""
         }
@@ -1177,13 +1181,30 @@ extension ChatViewController: TextMessageEditMenuDelegate, FileMessageEditMenuDe
     }
     
     func didTapLoad(for message: IndexPath) {
-        print("Load file")
+        let message = messages[message.section]
+        if case .photo(let photo) = message.kind {
+            guard let url = photo.url,
+                  let image = ImageCacheManager.shared.getImage(for: url as NSURL) else { return }
+            UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveError), nil)
+        }
+        if case .video(let video) = message.kind {
+            guard let url = video.url else { return }
+            UISaveVideoAtPathToSavedPhotosAlbum(url.path, self, #selector(saveError), nil)
+        }
+    }
+    
+    @objc func saveError(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            print("Failed to save image in galery: \(error.localizedDescription)")
+        } else {
+            print("Saved in galery")
+        }
     }
 }
 //MARK: - CameraInputBarAccessoryViewDelegate
 extension ChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        if editingMessageID != nil {
+        if editingMessage != nil {
             sendEditRequest(inputBar, text)
         } else if repliedMessage != nil {
             sendReplyRequest(inputBar, text)

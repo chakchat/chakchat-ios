@@ -58,7 +58,7 @@ final class ForwardMessageWorker: ForwardMessageWorkerLogic {
     
     func forwardTextMessage(_ chatFromID: UUID, _ chatToID: UUID, _ messageID: Int64, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        let request = ChatsModels.UpdateModels.ForwardMessageRequest(messages: [messageID], fromChatID: chatFromID)
+        let request = ChatsModels.UpdateModels.ForwardMessageRequest(message: messageID, fromChatID: chatFromID)
         if fromWhere == .personal {
             personalUpdate.forwardTextMessage(chatToID, request, accessToken) { result in
                 switch result {
@@ -83,7 +83,7 @@ final class ForwardMessageWorker: ForwardMessageWorkerLogic {
     
     func forwardFileMessage(_ chatFromID: UUID, _ chatToID: UUID, _ messageID: Int64, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        let request = ChatsModels.UpdateModels.ForwardMessageRequest(messages: [messageID], fromChatID: chatFromID)
+        let request = ChatsModels.UpdateModels.ForwardMessageRequest(message: messageID, fromChatID: chatFromID)
         if fromWhere == .personal {
             personalUpdate.forwardFileMessage(chatToID, request, accessToken) { result in
                 switch result {

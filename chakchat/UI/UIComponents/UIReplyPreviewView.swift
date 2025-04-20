@@ -90,7 +90,8 @@ final class ReplyPreviewView: UIView {
             previewImageView.pinTop(senderLabel.bottomAnchor, 4)
             previewImageView.setWidth(30)
             previewImageView.setHeight(30)
-            previewImageView.image = mediaItem.image
+            guard let url = mediaItem.url else { return }
+            previewImageView.image = mediaItem.image ?? ImageCacheManager.shared.getImage(for: url as NSURL)
             messageLabel.isHidden = true
         default: break
         }

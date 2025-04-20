@@ -33,6 +33,7 @@ final class GroupChatViewController: MessagesViewController {
     private let groupNameLabel: UILabel = UILabel()
     private let newChatAlert: UINewChatAlert = UINewChatAlert()
     private var gradientView: ChatBackgroundGradientView = ChatBackgroundGradientView()
+    var audioPlayer: AVAudioPlayer?
     
     private var usersInfo: [ProfileSettingsModels.ProfileUserData] = []
     private let color = UIColor.random()
@@ -473,6 +474,8 @@ final class GroupChatViewController: MessagesViewController {
                 self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                 inputBar.inputTextView.text = ""
                 
+                removeReplyPreview(.edit)
+                
                 interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
                     DispatchQueue.main.async {
                         guard let self = self else { return }
@@ -595,6 +598,7 @@ final class GroupChatViewController: MessagesViewController {
         if let messageIndex = messages.firstIndex(where: {$0.messageId == String(onMessage)}) {
             guard var message = messages[messageIndex] as? GroupMessageWithReactions else { return }
             let newKey = (message.reactions?.keys.max() ?? 0) + 1 // чтобы ключ гарантированно был новый
+            let emoji = mapEmoji(emoji)
             if message.reactions == nil {
                 var reactions: [Int64:String] = [:]
                 reactions.updateValue(emoji, forKey: newKey)
@@ -617,7 +621,6 @@ final class GroupChatViewController: MessagesViewController {
                 messages[messageIndex] = message
                 messagesCollectionView.reloadData()
             }
-            let emoji = mapEmoji(emoji)
             interactor.sendReaction(emoji, onMessage) { result in
                 DispatchQueue.main.async {
                     switch result {
@@ -692,6 +695,8 @@ final class GroupChatViewController: MessagesViewController {
         messageInputBar.topStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         messageInputBar.setNeedsLayout()
         replyPreviewView = nil
+        repliedMessage = nil
+        editingMessage = nil
         if type == .edit {
             messageInputBar.inputTextView.text = ""
         }
@@ -750,6 +755,35 @@ final class GroupChatViewController: MessagesViewController {
         }
     }
     
+    func sendAudio(_ audioURL: URL) {
+        guard var audioMessage = mapAudio(audioURL) else { return }
+        messages.append(audioMessage)
+        messagesCollectionView.reloadData()
+        interactor.uploadAudio(audioURL) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self,
+                      let index = self.messages.firstIndex(where: {$0.messageId == audioMessage.messageId}) else { return }
+                switch result {
+                case .success(let fileUpdate):
+                    if case .fileContent(let fc) = fileUpdate.content {
+                        FileCacheManager.shared.saveFile(fc.file.fileURL) {_ in}
+                    }
+                    var updatedAudioMessage = self.interactor.mapToFileMessage(fileUpdate)
+                    updatedAudioMessage.status = .sent
+                    self.messages[index] = updatedAudioMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                case .failure(let failure):
+                    audioMessage.status = .error
+                    self.messages[index] = audioMessage
+                    self.messagesCollectionView.reloadSections(IndexSet(integer: index))
+                    self.messagesCollectionView.scrollToLastItem(animated: false)
+                    print(failure)
+                }
+            }
+        }
+    }
+    
     func sendFile(_ url: URL, _ mimeType: String?) {
         var fileMessage = mapFile(url)
         messages.append(fileMessage)
@@ -760,6 +794,10 @@ final class GroupChatViewController: MessagesViewController {
                       let index = self.messages.firstIndex(where: {$0.messageId == fileMessage.messageId}) else { return }
                 switch result {
                 case .success(let fileUpdate):
+                    if case .fileContent(let fc) = fileUpdate.content {
+                        FileCacheManager.shared.saveFile(fc.file.fileURL)
+                        { _ in}
+                    }
                     var uploadedFileMessage = self.interactor.mapToFileMessage(fileUpdate)
                     uploadedFileMessage.status = .sent
                     self.messages[index] = uploadedFileMessage
@@ -814,6 +852,21 @@ final class GroupChatViewController: MessagesViewController {
             media: MockMediaItem(url: videoURL, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: size),
             status: .sending
         )
+    }
+    
+    private func mapAudio(_ audioURL: URL) -> OutgoingAudioMessage? {
+        let audioPlayer = try? AVAudioPlayer(contentsOf: audioURL)
+        if let audioPlayer = audioPlayer {
+            let duration = Float(audioPlayer.duration)
+            return OutgoingAudioMessage(
+                sender: curUser,
+                messageId: UUID().uuidString,
+                sentDate: Date(),
+                media: MockAudioItem(url: audioURL, duration: duration, size: CGSize(width: 200, height: 40)),
+                status: .sending
+            )
+        }
+        return nil
     }
     
     private func mapFile(_ fileURL: URL) -> OutgoingFileMessage {
@@ -1074,6 +1127,33 @@ extension GroupChatViewController: MessageCellDelegate {
         }
     }
     
+    func didTapPlayButton(in cell: AudioMessageCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell),
+              let message = messagesCollectionView.messagesDataSource?.messageForItem(at: indexPath, in: messagesCollectionView),
+              case let .audio(audioItem) = message.kind else { return }
+
+        URLSession.shared.dataTask(with: audioItem.url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Download error:", error ?? "Unknown error")
+                return
+            }
+            
+            let tempDir = FileManager.default.temporaryDirectory
+            let tempFileURL = tempDir.appendingPathComponent("tempAudio.mp3")
+
+            do {
+                try data.write(to: tempFileURL)
+                DispatchQueue.main.async {
+                    self.audioPlayer = try? AVAudioPlayer(contentsOf: tempFileURL)
+                    self.audioPlayer?.prepareToPlay()
+                    self.audioPlayer?.play()
+                }
+            } catch {
+                print("File save/play error:", error)
+            }
+        }.resume()
+    }
+    
     func didTapImage(in cell: MessageCollectionViewCell) {
         guard let indexPath = messagesCollectionView.indexPath(for: cell),
               case .video(let mediaItem) = messages[indexPath.section].kind,
@@ -1146,13 +1226,59 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
     }
     
     func didTapLoad(for message: IndexPath) {
-        print("Load file")
+        let message = messages[message.section]
+        if case .photo(let photo) = message.kind {
+            guard let url = photo.url,
+                  let image = ImageCacheManager.shared.getImage(for: url as NSURL) else { return }
+            UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveError), nil)
+        }
+        if case .video(let video) = message.kind {
+            guard let url = video.url else { return }
+            let pathExtension = url.pathExtension
+            let fileName: String
+            if pathExtension.isEmpty {
+                fileName = UUID().uuidString + ".mp4"
+            } else {
+                fileName = url.lastPathComponent
+            }
+            
+            let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            let localURL = cacheDirectory.appendingPathComponent(fileName)
+            
+            if FileManager.default.fileExists(atPath: localURL.path) {
+                DispatchQueue.main.async {
+                    UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
+                }
+            } else {
+                URLSession.shared.downloadTask(with: url) { tempURL, _, error in
+                    guard let tempURL = tempURL, error == nil else { return }
+                    
+                    do {
+                        try FileManager.default.moveItem(at: tempURL, to: localURL)
+                        DispatchQueue.main.async {
+                            UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
+                        }
+                    } catch {
+                        debugPrint("Failed to save \(error)")
+                    }
+                }.resume()
+            }
+        }
+    }
+    
+    
+    @objc func saveError(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            print("Failed to save in galery: \(error.localizedDescription)")
+        } else {
+            print("Saved in galery")
+        }
     }
 }
 // MARK: - InputBar delegate
 extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        if editingMessageID != nil {
+        if editingMessage != nil {
             sendEditRequest(inputBar, text)
         } else if repliedMessage != nil {
             sendReplyRequest(inputBar, text)
@@ -1167,12 +1293,11 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
                 sendPhoto(image)
             }
             if case .url(let url) = attachment {
-                if let mimeType = mimeTypeForURL(url) {
-                    if !mimeType.contains("video") {
-                        sendFile(url, mimeTypeForURL(url))
-                    } else {
-                        sendVideo(url)
-                    }
+                let mimeType = url.pathExtension
+                if mimeType.contains("mp3") || mimeType.contains("audio") || mimeType.contains("mpeg") {
+                    sendAudio(url)
+                } else {
+                    sendVideo(url)
                 }
             }
         }
@@ -1361,39 +1486,43 @@ class ReactionTextMessageCell: TextMessageCell {
                 messageTopConstraint?.isActive = true
             }
             if let pickedReaction = message.curUserPickedReaction {
-                self.pickedReaction = pickedReaction
+                if !pickedReaction.isEmpty {
+                    self.pickedReaction = pickedReaction
+                }
             }
             if let reactions = message.reactions {
-                reactionsView.isHidden = false
-
-                messageBottomConstraint?.isActive = false
-                messageBottomConstraint = messageLabel.bottomAnchor.constraint(equalTo: reactionsView.topAnchor, constant: 0)
-                messageBottomConstraint?.isActive = true
-                
-                let reactionCount = reactions.reduce(into: [String: Int]()) { result, reaction in
-                    result[reaction.value, default: 0] += 1
-                }
-                
-                for (reaction, count) in reactionCount {
-                    let isPicked = pickedReaction?.contains(where: {$0 == reaction })
+                if !reactions.isEmpty {
+                    reactionsView.isHidden = false
                     
-                    let keys = reactions
-                        .filter { $0.value == reaction }
-                        .map {$0.key }
-                    let sortedKeys = keys.sorted()
+                    messageBottomConstraint?.isActive = false
+                    messageBottomConstraint = messageLabel.bottomAnchor.constraint(equalTo: reactionsView.topAnchor, constant: 0)
+                    messageBottomConstraint?.isActive = true
                     
-                    let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", reactions: sortedKeys, count: count, isPicked: isPicked ?? false)
-                    
-                    reactionView.onReactionChanged = { [weak self] id, emojj in
-                        self?.cellDelegate?.didSelectReaction(id, emojj, for: indexPath)
+                    let reactionCount = reactions.reduce(into: [String: Int]()) { result, reaction in
+                        result[reaction.value, default: 0] += 1
                     }
                     
-                    reactionView.onRemove = { [weak self, weak reactionView] in
-                        guard let reactionView = reactionView else { return }
-                        self?.reactionsStack.removeArrangedSubview(reactionView)
-                        reactionView.removeFromSuperview()
+                    for (reaction, count) in reactionCount {
+                        let isPicked = pickedReaction?.contains(where: {$0 == reaction })
+                        
+                        let keys = reactions
+                            .filter { $0.value == reaction }
+                            .map {$0.key }
+                        let sortedKeys = keys.sorted()
+                        
+                        let reactionView = ReactionView(reaction: getEmoji(reaction) ?? "bzZZ", reactions: sortedKeys, count: count, isPicked: isPicked ?? false)
+                        
+                        reactionView.onReactionChanged = { [weak self] id, emojj in
+                            self?.cellDelegate?.didSelectReaction(id, emojj, for: indexPath)
+                        }
+                        
+                        reactionView.onRemove = { [weak self, weak reactionView] in
+                            guard let reactionView = reactionView else { return }
+                            self?.reactionsStack.removeArrangedSubview(reactionView)
+                            reactionView.removeFromSuperview()
+                        }
+                        reactionsStack.addArrangedSubview(reactionView)
                     }
-                    reactionsStack.addArrangedSubview(reactionView)
                 }
             }
         }
@@ -1453,18 +1582,20 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
                 }
             }
             if let reactions = message.reactions {
-                var set = Set<String>()
-                reactions.forEach { reaction in
-                    set.insert(reaction.value)
-                }
-                var reactionViewWidth = spacing * 2
-                size.height += 50
-                set.forEach { reaction in
-                    reactionViewWidth += emojiWidth
-                    reactionViewWidth += spacing
-                }
-                if size.width < CGFloat(reactionViewWidth) {
-                    size.width = CGFloat(reactionViewWidth)
+                if !reactions.isEmpty  {
+                    var set = Set<String>()
+                    reactions.forEach { reaction in
+                        set.insert(reaction.value)
+                    }
+                    var reactionViewWidth = spacing * 2
+                    size.height += 50
+                    set.forEach { reaction in
+                        reactionViewWidth += emojiWidth
+                        reactionViewWidth += spacing
+                    }
+                    if size.width < CGFloat(reactionViewWidth) {
+                        size.width = CGFloat(reactionViewWidth)
+                    }
                 }
             }
         }

@@ -410,11 +410,11 @@ enum ChatsModels {
         }
         
         struct ForwardMessageRequest: Codable {
-            let messages: [Int64]
+            let message: Int64
             let fromChatID: UUID
             
             enum CodingKeys: String, CodingKey {
-                case messages = "messages"
+                case message = "message"
                 case fromChatID = "from_chat_id"
             }
         }

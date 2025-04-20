@@ -137,6 +137,16 @@ struct GroupReaction: MessageType, GroupMessageStatusProtocol {
     var reaction: String
     
     var status: MessageStatus
+    
+    init() {
+        sender = GroupSender(senderId: "", displayName: "")
+        messageId = ""
+        sentDate = Date()
+        kind = .text("")
+        onMessageID = 0
+        reaction = ""
+        status = .sending
+    }
 }
 
 struct GroupMessageDelete: MessageType, GroupMessageStatusProtocol {
@@ -190,6 +200,17 @@ struct VideoMediaItem: MediaItem, GroupMessageStatusProtocol {
     var status: MessageStatus
 }
 
+struct AudioMediaItem: AudioItem {
+    var url: URL
+    var duration: Float
+    var size: CGSize
+    
+    var fileName: String
+    var mimeType: String
+    var localURL: String
+    
+}
+
 struct FileItem: GroupMessageStatusProtocol {
     var url: URL
     var status: MessageStatus
@@ -211,6 +232,17 @@ struct OutgoingPhotoMessage: MessageType, GroupMessageStatusProtocol {
     var status: MessageStatus
 }
 
+struct OutgoingAudioMessage: MessageType, GroupMessageStatusProtocol {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind {
+        return .audio(media)
+    }
+    let media: MockAudioItem
+    var status: MessageStatus
+}
+
 struct OutgoingFileMessage: MessageType, GroupMessageStatusProtocol {
     var sender: SenderType
     var messageId: String
@@ -223,6 +255,12 @@ struct MockMediaItem: MediaItem {
     var url: URL?
     var image: UIImage?
     var placeholderImage: UIImage
+    var size: CGSize
+}
+
+struct MockAudioItem: AudioItem {
+    var url: URL
+    var duration: Float
     var size: CGSize
 }
 

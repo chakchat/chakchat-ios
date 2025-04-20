@@ -29,6 +29,7 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     
     func uploadImage(_ image: UIImage, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void)
+    func uploadAudio(_ audioURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage

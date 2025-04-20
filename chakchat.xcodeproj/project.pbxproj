@@ -72,6 +72,7 @@
 		AA5F71952DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */; };
 		AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71972DA5BE8A00BC12AA /* CropViewController */; };
 		AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71992DA5BE8A00BC12AA /* TOCropViewController */; };
+		AA6164012DB54900007ADFD6 /* UICustomAudioMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */; };
 		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
 		AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
@@ -422,6 +423,7 @@
 		AA57589E2DAD2E8800CC3331 /* UpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateServiceProtocol.swift; sourceTree = "<group>"; };
 		AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 		AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICameraInputBarAccessoryView.swift; sourceTree = "<group>"; };
+		AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomAudioMessageCell.swift; sourceTree = "<group>"; };
 		AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHiddenMessageCellSizeCalculator.swift; sourceTree = "<group>"; };
 		AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
@@ -1123,6 +1125,7 @@
 			children = (
 				AA9C2D882DB2D1C600AC8DED /* UIReactionView.swift */,
 				AA9C2D842DB17F8300AC8DED /* UICustomMediaMessageCell.swift */,
+				AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */,
 				E1960A7F2D7C6841008E27C0 /* UIUserProfileButton.swift */,
 				AA92EC5E2D381B5E007DEC76 /* UIChakChatStackView.swift */,
 				AA92EC622D382057007DEC76 /* UIGradientButton.swift */,
@@ -1938,6 +1941,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAB302552D75BC5500BECA3B /* UserProfileProtocols.swift in Sources */,
+				AA6164012DB54900007ADFD6 /* UICustomAudioMessageCell.swift in Sources */,
 				AA87FC6B2D55037E00E8D066 /* UserProfileScreenAssembly.swift in Sources */,
 				AA84EFFB2D49129C00678ABA /* ConfidentialityScreenAssembly.swift in Sources */,
 				AA75DCBF2D81E42400775199 /* UpdatedGroupInfoEvent.swift in Sources */,
@@ -2472,6 +2476,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = chakchat/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Разрешите доступ для съемки фотографий для личных и групповых чатов пользователя";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Мы хотим сохранить фото/видео в вашу галерею";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Разрешите доступ к галерее, чтобы загрузить фото/видео";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -2482,7 +2488,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mrdr;
+				PRODUCT_BUNDLE_IDENTIFIER = MRDRYOOO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2503,6 +2509,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = chakchat/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Разрешите доступ для съемки фотографий для личных и групповых чатов пользователя";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Мы хотим сохранить фото/видео в вашу галерею";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Разрешите доступ к галерее, чтобы загрузить фото/видео";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -2513,7 +2521,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mrdr;
+				PRODUCT_BUNDLE_IDENTIFIER = MRDRYOOO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;

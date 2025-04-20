@@ -98,7 +98,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
         let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler: nil)
         
         let alert = UIAlertController(title: "Choose visual", message: nil, preferredStyle: .actionSheet)
-        alert.addAction(file)
+        //alert.addAction(file)
         alert.addAction(photoLibraryAction)
         alert.addAction(cameraAction)
         alert.addAction(cancelAction)
@@ -122,7 +122,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
     
     func showDocumentsPicker() {
         let documentPicker = UIDocumentPickerViewController(
-            forOpeningContentTypes: [.item], asCopy: true
+            forOpeningContentTypes: [.mp3], asCopy: true
         )
         documentPicker.delegate = self
         documentPicker.allowsMultipleSelection = false
