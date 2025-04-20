@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24E248" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="DeleteUpdate" representedClassName="DeleteUpdate" syncable="YES" codeGenerationType="class">
+    <entity name="DeleteUpdate" representedClassName="DeleteUpdate" syncable="YES">
         <attribute name="chatID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="deletedID" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -9,7 +9,7 @@
         <attribute name="type" attributeType="String"/>
         <attribute name="updateID" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="EditUpdate" representedClassName="EditUpdate" syncable="YES" codeGenerationType="class">
+    <entity name="EditUpdate" representedClassName="EditUpdate" syncable="YES">
         <attribute name="chatID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="messageID" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -19,7 +19,7 @@
         <attribute name="updateID" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="originalMessage" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TextUpdate" inverseName="edited" inverseEntity="TextUpdate"/>
     </entity>
-    <entity name="FileUpdate" representedClassName="FileUpdate" syncable="YES" codeGenerationType="class">
+    <entity name="FileUpdate" representedClassName="FileUpdate" syncable="YES">
         <attribute name="chatID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="fileCreatedAt" attributeType="Date" usesScalarValueType="NO"/>
@@ -35,7 +35,7 @@
         <attribute name="updateID" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="reactions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ReactionUpdate" inverseName="fileMessage" inverseEntity="ReactionUpdate"/>
     </entity>
-    <entity name="ReactionUpdate" representedClassName="ReactionUpdate" syncable="YES" codeGenerationType="class">
+    <entity name="ReactionUpdate" representedClassName="ReactionUpdate" syncable="YES">
         <attribute name="chatID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="messageID" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -46,7 +46,7 @@
         <relationship name="fileMessage" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FileUpdate" inverseName="reactions" inverseEntity="FileUpdate"/>
         <relationship name="message" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TextUpdate" inverseName="reactions" inverseEntity="TextUpdate"/>
     </entity>
-    <entity name="TextUpdate" representedClassName="TextUpdate" syncable="YES" codeGenerationType="class">
+    <entity name="TextUpdate" representedClassName="TextUpdate" syncable="YES">
         <attribute name="chatID" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="forwarded" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>

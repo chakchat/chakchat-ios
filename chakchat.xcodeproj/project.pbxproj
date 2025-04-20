@@ -73,16 +73,16 @@
 		AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71972DA5BE8A00BC12AA /* CropViewController */; };
 		AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71992DA5BE8A00BC12AA /* TOCropViewController */; };
 		AA6164012DB54900007ADFD6 /* UICustomAudioMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */; };
-		AA6164202DB5685D007ADFD6 /* DeleteUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164162DB5685D007ADFD6 /* DeleteUpdate+CoreDataClass.swift */; };
-		AA6164212DB5685D007ADFD6 /* DeleteUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164172DB5685D007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */; };
-		AA6164222DB5685D007ADFD6 /* EditUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164182DB5685D007ADFD6 /* EditUpdate+CoreDataClass.swift */; };
-		AA6164232DB5685D007ADFD6 /* EditUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164192DB5685D007ADFD6 /* EditUpdate+CoreDataProperties.swift */; };
-		AA6164242DB5685D007ADFD6 /* FileUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61641A2DB5685D007ADFD6 /* FileUpdate+CoreDataClass.swift */; };
-		AA6164252DB5685D007ADFD6 /* FileUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61641B2DB5685D007ADFD6 /* FileUpdate+CoreDataProperties.swift */; };
-		AA6164262DB5685D007ADFD6 /* ReactionUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61641C2DB5685D007ADFD6 /* ReactionUpdate+CoreDataClass.swift */; };
-		AA6164272DB5685D007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61641D2DB5685D007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */; };
-		AA6164282DB5685D007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61641E2DB5685D007ADFD6 /* TextUpdate+CoreDataClass.swift */; };
-		AA6164292DB5685D007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61641F2DB5685D007ADFD6 /* TextUpdate+CoreDataProperties.swift */; };
+		AA6164342DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642A2DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift */; };
+		AA6164352DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642B2DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */; };
+		AA6164362DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642C2DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift */; };
+		AA6164372DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642D2DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift */; };
+		AA6164382DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642E2DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift */; };
+		AA6164392DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642F2DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift */; };
+		AA61643A2DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164302DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift */; };
+		AA61643B2DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */; };
+		AA61643C2DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */; };
+		AA61643D2DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */; };
 		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
 		AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
@@ -420,16 +420,16 @@
 		AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 		AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICameraInputBarAccessoryView.swift; sourceTree = "<group>"; };
 		AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomAudioMessageCell.swift; sourceTree = "<group>"; };
-		AA6164162DB5685D007ADFD6 /* DeleteUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "DeleteUpdate+CoreDataClass.swift"; path = "../../DeleteUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AA6164172DB5685D007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "DeleteUpdate+CoreDataProperties.swift"; path = "../../DeleteUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AA6164182DB5685D007ADFD6 /* EditUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "EditUpdate+CoreDataClass.swift"; path = "../../EditUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AA6164192DB5685D007ADFD6 /* EditUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "EditUpdate+CoreDataProperties.swift"; path = "../../EditUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AA61641A2DB5685D007ADFD6 /* FileUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FileUpdate+CoreDataClass.swift"; path = "../../FileUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AA61641B2DB5685D007ADFD6 /* FileUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FileUpdate+CoreDataProperties.swift"; path = "../../FileUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AA61641C2DB5685D007ADFD6 /* ReactionUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ReactionUpdate+CoreDataClass.swift"; path = "../../ReactionUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AA61641D2DB5685D007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ReactionUpdate+CoreDataProperties.swift"; path = "../../ReactionUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AA61641E2DB5685D007ADFD6 /* TextUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TextUpdate+CoreDataClass.swift"; path = "../../TextUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AA61641F2DB5685D007ADFD6 /* TextUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TextUpdate+CoreDataProperties.swift"; path = "../../TextUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA61642A2DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeleteUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA61642B2DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeleteUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA61642C2DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA61642D2DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA61642E2DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA61642F2DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA6164302DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHiddenMessageCellSizeCalculator.swift; sourceTree = "<group>"; };
 		AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
@@ -1530,16 +1530,16 @@
 		AAB301FD2D72055900BECA3B /* GeneratedModels */ = {
 			isa = PBXGroup;
 			children = (
-				AA6164162DB5685D007ADFD6 /* DeleteUpdate+CoreDataClass.swift */,
-				AA6164172DB5685D007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */,
-				AA6164182DB5685D007ADFD6 /* EditUpdate+CoreDataClass.swift */,
-				AA6164192DB5685D007ADFD6 /* EditUpdate+CoreDataProperties.swift */,
-				AA61641A2DB5685D007ADFD6 /* FileUpdate+CoreDataClass.swift */,
-				AA61641B2DB5685D007ADFD6 /* FileUpdate+CoreDataProperties.swift */,
-				AA61641C2DB5685D007ADFD6 /* ReactionUpdate+CoreDataClass.swift */,
-				AA61641D2DB5685D007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */,
-				AA61641E2DB5685D007ADFD6 /* TextUpdate+CoreDataClass.swift */,
-				AA61641F2DB5685D007ADFD6 /* TextUpdate+CoreDataProperties.swift */,
+				AA61642A2DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift */,
+				AA61642B2DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */,
+				AA61642C2DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift */,
+				AA61642D2DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift */,
+				AA61642E2DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift */,
+				AA61642F2DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift */,
+				AA6164302DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift */,
+				AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */,
+				AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */,
+				AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */,
 				AA055CD52DA7E3DF0080BA1A /* Chat+CoreDataClass.swift */,
 				AA055CD62DA7E3DF0080BA1A /* Chat+CoreDataProperties.swift */,
 				AAB302442D74AF1700BECA3B /* User+CoreDataClass.swift */,
@@ -2041,16 +2041,16 @@
 				AAEF168B2D9FDBC60022B30F /* MessagesModels.swift in Sources */,
 				9B1EC08D2D3A834600E01E00 /* ErrorId.swift in Sources */,
 				AA92EC662D392CEB007DEC76 /* MockSendCodeWorker.swift in Sources */,
-				AA6164202DB5685D007ADFD6 /* DeleteUpdate+CoreDataClass.swift in Sources */,
-				AA6164212DB5685D007ADFD6 /* DeleteUpdate+CoreDataProperties.swift in Sources */,
-				AA6164222DB5685D007ADFD6 /* EditUpdate+CoreDataClass.swift in Sources */,
-				AA6164232DB5685D007ADFD6 /* EditUpdate+CoreDataProperties.swift in Sources */,
-				AA6164242DB5685D007ADFD6 /* FileUpdate+CoreDataClass.swift in Sources */,
-				AA6164252DB5685D007ADFD6 /* FileUpdate+CoreDataProperties.swift in Sources */,
-				AA6164262DB5685D007ADFD6 /* ReactionUpdate+CoreDataClass.swift in Sources */,
-				AA6164272DB5685D007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */,
-				AA6164282DB5685D007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */,
-				AA6164292DB5685D007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */,
+				AA6164342DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift in Sources */,
+				AA6164352DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift in Sources */,
+				AA6164362DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift in Sources */,
+				AA6164372DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift in Sources */,
+				AA6164382DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift in Sources */,
+				AA6164392DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift in Sources */,
+				AA61643A2DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift in Sources */,
+				AA61643B2DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */,
+				AA61643C2DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */,
+				AA61643D2DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */,
 				E1960A6F2D6E0286008E27C0 /* UINewGroupTitleLabel.swift in Sources */,
 				AA9C2D892DB2D1C600AC8DED /* UIReactionView.swift in Sources */,
 				AA87FC752D5503B400E8D066 /* UserProfileScreenViewController.swift in Sources */,
