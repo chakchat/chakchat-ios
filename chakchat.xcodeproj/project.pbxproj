@@ -149,6 +149,8 @@
 		AA878A4F2DB37E90002DD34E /* ForwardMessagePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A4E2DB37E90002DD34E /* ForwardMessagePresenter.swift */; };
 		AA878A512DB37EAC002DD34E /* ForwardMessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A502DB37EAC002DD34E /* ForwardMessageViewController.swift */; };
 		AA878A532DB37ECB002DD34E /* ForwardMessageProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A522DB37ECB002DD34E /* ForwardMessageProtocols.swift */; };
+		AA878A552DB4CFF5002DD34E /* FileCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A542DB4CFF5002DD34E /* FileCacheManager.swift */; };
+		AA878A572DB4D002002DD34E /* FileCacheProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA878A562DB4D002002DD34E /* FileCacheProtocol.swift */; };
 		AA87FC6B2D55037E00E8D066 /* UserProfileScreenAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87FC6A2D55037E00E8D066 /* UserProfileScreenAssembly.swift */; };
 		AA87FC6D2D55038900E8D066 /* UserProfileScreenInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87FC6C2D55038900E8D066 /* UserProfileScreenInteractor.swift */; };
 		AA87FC6F2D55039B00E8D066 /* UserProfileScreenWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA87FC6E2D55039B00E8D066 /* UserProfileScreenWorker.swift */; };
@@ -495,6 +497,8 @@
 		AA878A4E2DB37E90002DD34E /* ForwardMessagePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessagePresenter.swift; sourceTree = "<group>"; };
 		AA878A502DB37EAC002DD34E /* ForwardMessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageViewController.swift; sourceTree = "<group>"; };
 		AA878A522DB37ECB002DD34E /* ForwardMessageProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForwardMessageProtocols.swift; sourceTree = "<group>"; };
+		AA878A542DB4CFF5002DD34E /* FileCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCacheManager.swift; sourceTree = "<group>"; };
+		AA878A562DB4D002002DD34E /* FileCacheProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCacheProtocol.swift; sourceTree = "<group>"; };
 		AA87FC6A2D55037E00E8D066 /* UserProfileScreenAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileScreenAssembly.swift; sourceTree = "<group>"; };
 		AA87FC6C2D55038900E8D066 /* UserProfileScreenInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileScreenInteractor.swift; sourceTree = "<group>"; };
 		AA87FC6E2D55039B00E8D066 /* UserProfileScreenWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileScreenWorker.swift; sourceTree = "<group>"; };
@@ -1422,6 +1426,8 @@
 			children = (
 				AAB300AE2D6CDC1400BECA3B /* ImageCacheProtocol.swift */,
 				AAB300B02D6CDE5F00BECA3B /* ImageCacheManager.swift */,
+				AA878A542DB4CFF5002DD34E /* FileCacheManager.swift */,
+				AA878A562DB4D002002DD34E /* FileCacheProtocol.swift */,
 			);
 			path = Cache;
 			sourceTree = "<group>";
@@ -2007,6 +2013,7 @@
 				AA84F05F2D4E303E00678ABA /* UpdateVibrationNotificationEvent.swift in Sources */,
 				AA84F0182D4BBE7C00678ABA /* PhoneVisibilityScreenInteractor.swift in Sources */,
 				AAB3024C2D74DCD000BECA3B /* UserModel.xcdatamodeld in Sources */,
+				AA878A572DB4D002002DD34E /* FileCacheProtocol.swift in Sources */,
 				AA84F00A2D491AB600678ABA /* ConfidentialityMenuCell.swift in Sources */,
 				AAA5F3E22D39561E00B9D50E /* ErrorHandlerProtocols.swift in Sources */,
 				AAB302492D74B35500BECA3B /* CoreDataStack.swift in Sources */,
@@ -2059,6 +2066,7 @@
 				AA57589A2DAD14DB00CC3331 /* GroupChatModels.swift in Sources */,
 				AAB300CB2D6F0A7900BECA3B /* PersonalChatServiceProtocol.swift in Sources */,
 				AA22CD7B2D65C5A200A7A4F1 /* IdentityServiceEndpoints.swift in Sources */,
+				AA878A552DB4CFF5002DD34E /* FileCacheManager.swift in Sources */,
 				AA84F0322D4BEF2700678ABA /* BirthVisibilityScreenWorker.swift in Sources */,
 				AA84F01C2D4BBEA800678ABA /* PhoneVisibilityScreenWorker.swift in Sources */,
 				AAB300C62D6F00DA00BECA3B /* ChatsScreenModels.swift in Sources */,
