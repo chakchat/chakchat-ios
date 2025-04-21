@@ -250,46 +250,4 @@ final class CoreDataManager: CoreDataManagerProtocol {
         
         CoreDataStack.shared.saveContext(for: Models.user.rawValue)
     }
-    
-    func deleteUpdate(_ updateID: Int64) {
-        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
-        let request: NSFetchRequest<Update> = Update.fetchRequest()
-        request.predicate = NSPredicate(format: "updateID == %lld", updateID)
-        request.fetchLimit = 1
-        do {
-            if let update = try context.fetch(request).first {
-                context.delete(update)
-                CoreDataStack.shared.saveContext(for: Models.update.rawValue)
-            }
-        } catch {
-            debugPrint("Failed to delete update with id: \(updateID)")
-        }
-    }
-    
-    func deleteAllUpdates(_ chatID: UUID) {
-        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
-        let request: NSFetchRequest<NSFetchRequestResult> = Update.fetchRequest()
-        request.predicate = NSPredicate(format: "chatID == %@", chatID as CVarArg)
-        
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
-        deleteRequest.resultType = .resultTypeObjectIDs
-        
-        do {
-            let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
-            if let objectIDs = result?.result as? [NSManagedObjectID] {
-                let changes = [NSDeletedObjectsKey: objectIDs]
-                NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
-            }
-            print("All updates for chat \(chatID) deleted")
-        } catch {
-            print("Failed to delete updates for chat \(chatID): \(error)")
-        }
-    }
-    
-    private func fetchUpdate(by id: Int64) -> Update? {
-        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
-        let request: NSFetchRequest<Update> = Update.fetchRequest()
-        request.predicate = NSPredicate(format: "updateID == %lld", id)
-        return try? context.fetch(request).first
-    }
 }
