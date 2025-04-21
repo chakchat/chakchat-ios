@@ -29,6 +29,4 @@ protocol CoreDataManagerProtocol {
     func deleteAllUsers()
     
     func createUpdate(_ updateData: UpdateData)
-    func deleteUpdate(_ updateID: Int64)
-    func deleteAllUpdates(_ chatID: UUID)
 }
