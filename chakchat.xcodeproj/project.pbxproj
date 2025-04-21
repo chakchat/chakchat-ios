@@ -73,6 +73,16 @@
 		AA5F71982DA5BE8A00BC12AA /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71972DA5BE8A00BC12AA /* CropViewController */; };
 		AA5F719A2DA5BE8A00BC12AA /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = AA5F71992DA5BE8A00BC12AA /* TOCropViewController */; };
 		AA6164012DB54900007ADFD6 /* UICustomAudioMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */; };
+		AA6164342DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642A2DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift */; };
+		AA6164352DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642B2DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */; };
+		AA6164362DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642C2DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift */; };
+		AA6164372DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642D2DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift */; };
+		AA6164382DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642E2DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift */; };
+		AA6164392DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA61642F2DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift */; };
+		AA61643A2DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164302DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift */; };
+		AA61643B2DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */; };
+		AA61643C2DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */; };
+		AA61643D2DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */; };
 		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
 		AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
@@ -259,20 +269,6 @@
 		AAEF16892D9FD2D70022B30F /* WSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16882D9FD2D70022B30F /* WSManager.swift */; };
 		AAEF168B2D9FDBC60022B30F /* MessagesModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF168A2D9FDBC60022B30F /* MessagesModels.swift */; };
 		AAEF16912DA1652D0022B30F /* UpdateModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = AAEF168F2DA1652D0022B30F /* UpdateModel.xcdatamodeld */; };
-		AAEF16A02DA176E60022B30F /* TextMessageUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16922DA176E60022B30F /* TextMessageUpdate+CoreDataClass.swift */; };
-		AAEF16A12DA176E60022B30F /* TextMessageUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16932DA176E60022B30F /* TextMessageUpdate+CoreDataProperties.swift */; };
-		AAEF16A22DA176E60022B30F /* Update+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16942DA176E60022B30F /* Update+CoreDataClass.swift */; };
-		AAEF16A32DA176E60022B30F /* Update+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16952DA176E60022B30F /* Update+CoreDataProperties.swift */; };
-		AAEF16A42DA176E60022B30F /* FileMessageUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16962DA176E60022B30F /* FileMessageUpdate+CoreDataClass.swift */; };
-		AAEF16A52DA176E60022B30F /* FileMessageUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16972DA176E60022B30F /* FileMessageUpdate+CoreDataProperties.swift */; };
-		AAEF16A62DA176E60022B30F /* SecretUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16982DA176E60022B30F /* SecretUpdate+CoreDataClass.swift */; };
-		AAEF16A72DA176E60022B30F /* SecretUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16992DA176E60022B30F /* SecretUpdate+CoreDataProperties.swift */; };
-		AAEF16A82DA176E60022B30F /* ReactionUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF169A2DA176E60022B30F /* ReactionUpdate+CoreDataClass.swift */; };
-		AAEF16A92DA176E60022B30F /* ReactionUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF169B2DA176E60022B30F /* ReactionUpdate+CoreDataProperties.swift */; };
-		AAEF16AA2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF169C2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataClass.swift */; };
-		AAEF16AB2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF169D2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataProperties.swift */; };
-		AAEF16AC2DA176E60022B30F /* DeletedUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF169E2DA176E60022B30F /* DeletedUpdate+CoreDataClass.swift */; };
-		AAEF16AD2DA176E60022B30F /* DeletedUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF169F2DA176E60022B30F /* DeletedUpdate+CoreDataProperties.swift */; };
 		AAEF16B02DA19FDB0022B30F /* GroupUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16AF2DA19FDB0022B30F /* GroupUpdateService.swift */; };
 		AAEF16B22DA19FE60022B30F /* GroupUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B12DA19FE60022B30F /* GroupUpdateServiceProtocol.swift */; };
 		AAEF16B52DA284EF0022B30F /* SecretGroupUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B42DA284EF0022B30F /* SecretGroupUpdate.swift */; };
@@ -424,6 +420,16 @@
 		AA5F718E2DA3FE5A00BC12AA /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 		AA5F71942DA57B8900BC12AA /* UICameraInputBarAccessoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICameraInputBarAccessoryView.swift; sourceTree = "<group>"; };
 		AA6164002DB54900007ADFD6 /* UICustomAudioMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UICustomAudioMessageCell.swift; sourceTree = "<group>"; };
+		AA61642A2DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeleteUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA61642B2DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeleteUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA61642C2DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA61642D2DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA61642E2DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA61642F2DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA6164302DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
+		AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHiddenMessageCellSizeCalculator.swift; sourceTree = "<group>"; };
 		AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
@@ -612,20 +618,6 @@
 		AAEF16882D9FD2D70022B30F /* WSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSManager.swift; sourceTree = "<group>"; };
 		AAEF168A2D9FDBC60022B30F /* MessagesModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesModels.swift; sourceTree = "<group>"; };
 		AAEF16902DA1652D0022B30F /* Update.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Update.xcdatamodel; sourceTree = "<group>"; };
-		AAEF16922DA176E60022B30F /* TextMessageUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextMessageUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF16932DA176E60022B30F /* TextMessageUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextMessageUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AAEF16942DA176E60022B30F /* Update+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Update+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF16952DA176E60022B30F /* Update+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Update+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AAEF16962DA176E60022B30F /* FileMessageUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileMessageUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF16972DA176E60022B30F /* FileMessageUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileMessageUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AAEF16982DA176E60022B30F /* SecretUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecretUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF16992DA176E60022B30F /* SecretUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecretUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AAEF169A2DA176E60022B30F /* ReactionUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF169B2DA176E60022B30F /* ReactionUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AAEF169C2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextMessageEditedUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF169D2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextMessageEditedUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		AAEF169E2DA176E60022B30F /* DeletedUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeletedUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
-		AAEF169F2DA176E60022B30F /* DeletedUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeletedUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AAEF16AF2DA19FDB0022B30F /* GroupUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupUpdateService.swift; sourceTree = "<group>"; };
 		AAEF16B12DA19FE60022B30F /* GroupUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupUpdateServiceProtocol.swift; sourceTree = "<group>"; };
 		AAEF16B42DA284EF0022B30F /* SecretGroupUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretGroupUpdate.swift; sourceTree = "<group>"; };
@@ -1538,22 +1530,18 @@
 		AAB301FD2D72055900BECA3B /* GeneratedModels */ = {
 			isa = PBXGroup;
 			children = (
+				AA61642A2DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift */,
+				AA61642B2DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift */,
+				AA61642C2DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift */,
+				AA61642D2DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift */,
+				AA61642E2DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift */,
+				AA61642F2DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift */,
+				AA6164302DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift */,
+				AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */,
+				AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */,
+				AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */,
 				AA055CD52DA7E3DF0080BA1A /* Chat+CoreDataClass.swift */,
 				AA055CD62DA7E3DF0080BA1A /* Chat+CoreDataProperties.swift */,
-				AAEF16922DA176E60022B30F /* TextMessageUpdate+CoreDataClass.swift */,
-				AAEF16932DA176E60022B30F /* TextMessageUpdate+CoreDataProperties.swift */,
-				AAEF16942DA176E60022B30F /* Update+CoreDataClass.swift */,
-				AAEF16952DA176E60022B30F /* Update+CoreDataProperties.swift */,
-				AAEF16962DA176E60022B30F /* FileMessageUpdate+CoreDataClass.swift */,
-				AAEF16972DA176E60022B30F /* FileMessageUpdate+CoreDataProperties.swift */,
-				AAEF16982DA176E60022B30F /* SecretUpdate+CoreDataClass.swift */,
-				AAEF16992DA176E60022B30F /* SecretUpdate+CoreDataProperties.swift */,
-				AAEF169A2DA176E60022B30F /* ReactionUpdate+CoreDataClass.swift */,
-				AAEF169B2DA176E60022B30F /* ReactionUpdate+CoreDataProperties.swift */,
-				AAEF169C2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataClass.swift */,
-				AAEF169D2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataProperties.swift */,
-				AAEF169E2DA176E60022B30F /* DeletedUpdate+CoreDataClass.swift */,
-				AAEF169F2DA176E60022B30F /* DeletedUpdate+CoreDataProperties.swift */,
 				AAB302442D74AF1700BECA3B /* User+CoreDataClass.swift */,
 				AAB302452D74AF1700BECA3B /* User+CoreDataProperties.swift */,
 			);
@@ -2053,6 +2041,16 @@
 				AAEF168B2D9FDBC60022B30F /* MessagesModels.swift in Sources */,
 				9B1EC08D2D3A834600E01E00 /* ErrorId.swift in Sources */,
 				AA92EC662D392CEB007DEC76 /* MockSendCodeWorker.swift in Sources */,
+				AA6164342DB56975007ADFD6 /* DeleteUpdate+CoreDataClass.swift in Sources */,
+				AA6164352DB56975007ADFD6 /* DeleteUpdate+CoreDataProperties.swift in Sources */,
+				AA6164362DB56975007ADFD6 /* EditUpdate+CoreDataClass.swift in Sources */,
+				AA6164372DB56975007ADFD6 /* EditUpdate+CoreDataProperties.swift in Sources */,
+				AA6164382DB56975007ADFD6 /* FileUpdate+CoreDataClass.swift in Sources */,
+				AA6164392DB56975007ADFD6 /* FileUpdate+CoreDataProperties.swift in Sources */,
+				AA61643A2DB56975007ADFD6 /* ReactionUpdate+CoreDataClass.swift in Sources */,
+				AA61643B2DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */,
+				AA61643C2DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */,
+				AA61643D2DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */,
 				E1960A6F2D6E0286008E27C0 /* UINewGroupTitleLabel.swift in Sources */,
 				AA9C2D892DB2D1C600AC8DED /* UIReactionView.swift in Sources */,
 				AA87FC752D5503B400E8D066 /* UserProfileScreenViewController.swift in Sources */,
@@ -2166,21 +2164,7 @@
 				E1960A2D2D6B79C6008E27C0 /* HelpProtocols.swift in Sources */,
 				AA27815B2D7AE2300049ACAF /* ChatCell.swift in Sources */,
 				AA87FC6D2D55038900E8D066 /* UserProfileScreenInteractor.swift in Sources */,
-				AAEF16A02DA176E60022B30F /* TextMessageUpdate+CoreDataClass.swift in Sources */,
-				AAEF16A12DA176E60022B30F /* TextMessageUpdate+CoreDataProperties.swift in Sources */,
-				AAEF16A22DA176E60022B30F /* Update+CoreDataClass.swift in Sources */,
 				AA9C2D852DB17F8300AC8DED /* UICustomMediaMessageCell.swift in Sources */,
-				AAEF16A32DA176E60022B30F /* Update+CoreDataProperties.swift in Sources */,
-				AAEF16A42DA176E60022B30F /* FileMessageUpdate+CoreDataClass.swift in Sources */,
-				AAEF16A52DA176E60022B30F /* FileMessageUpdate+CoreDataProperties.swift in Sources */,
-				AAEF16A62DA176E60022B30F /* SecretUpdate+CoreDataClass.swift in Sources */,
-				AAEF16A72DA176E60022B30F /* SecretUpdate+CoreDataProperties.swift in Sources */,
-				AAEF16A82DA176E60022B30F /* ReactionUpdate+CoreDataClass.swift in Sources */,
-				AAEF16A92DA176E60022B30F /* ReactionUpdate+CoreDataProperties.swift in Sources */,
-				AAEF16AA2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataClass.swift in Sources */,
-				AAEF16AB2DA176E60022B30F /* TextMessageEditedUpdate+CoreDataProperties.swift in Sources */,
-				AAEF16AC2DA176E60022B30F /* DeletedUpdate+CoreDataClass.swift in Sources */,
-				AAEF16AD2DA176E60022B30F /* DeletedUpdate+CoreDataProperties.swift in Sources */,
 				AAB300DC2D6F2FFC00BECA3B /* SecretGroupChatServiceProtocol.swift in Sources */,
 				AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */,
 				AA9B62432D2EC4840064CB23 /* KeychainManagerProtocol.swift in Sources */,
