@@ -19,6 +19,8 @@ final class OnlineVisibilityScreenInteractor: OnlineVisibilityScreenBusinessLogi
     private let logger: OSLog
     
     var onRouteToConfidentialityScreen: (() -> Void)?
+    var onRouteToAddUsersScreen: (() -> Void)?
+    var selectedUsers: [ProfileSettingsModels.ProfileUserData] = []
     
     // MARK: - Initialization
     init(presenter: OnlineVisibilityScreenPresentationLogic, 
@@ -60,4 +62,7 @@ final class OnlineVisibilityScreenInteractor: OnlineVisibilityScreenBusinessLogi
         onRouteToConfidentialityScreen?()
     }
     
+    func showAddUsersScreen() {
+        onRouteToAddUsersScreen?()
+    }
 }

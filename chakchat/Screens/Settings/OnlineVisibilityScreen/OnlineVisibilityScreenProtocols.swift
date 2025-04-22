@@ -14,6 +14,7 @@ protocol OnlineVisibilityScreenBusinessLogic {
     func loadUserRestrictions()
     func showUserRestrictions(_ onlineRestriction: OnlineVisibilityStatus)
     func saveNewRestrictions(_ onlineRestriction: OnlineVisibilityStatus)
+    func showAddUsersScreen()
 }
 
 protocol OnlineVisibilityScreenPresentationLogic {

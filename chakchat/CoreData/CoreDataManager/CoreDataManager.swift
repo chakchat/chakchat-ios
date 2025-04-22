@@ -250,6 +250,4 @@ final class CoreDataManager: CoreDataManagerProtocol {
         
         CoreDataStack.shared.saveContext(for: Models.user.rawValue)
     }
-    
-
 }

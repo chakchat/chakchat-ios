@@ -23,6 +23,11 @@ enum OnlineVisibilityScreenAssembly {
         interactor.onRouteToConfidentialityScreen = {
             AppCoordinator.shared.popScreen()
         }
+        interactor.onRouteToAddUsersScreen = { [weak interactor] in
+            AppCoordinator.shared.showAddUsersScreen { selectedUsers in
+                interactor?.selectedUsers = selectedUsers
+            }
+        }
         let view = OnlineVisibilityScreenViewController(interactor: interactor)
         presenter.view = view
         return view
