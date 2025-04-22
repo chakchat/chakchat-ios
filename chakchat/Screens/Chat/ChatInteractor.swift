@@ -56,7 +56,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func passUserData() {
         let myID = worker.getMyID()
         if let chatD = chatData {
-            presenter.passUserData(chatD, userData, chatD.type.rawValue == "personal_secret", myID)
+            presenter.passUserData(chatD, userData, chatD.type == .secretPersonal, myID)
         } else {
             presenter.passUserData(nil, userData, false, myID)
         }
@@ -130,7 +130,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -142,7 +142,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+        worker.editTextMessage(chatData.chatID, updateID, text, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -154,7 +154,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -167,7 +167,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
         guard let chatData = chatData else { return }
-        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
+        worker.sendReaction(chatData.chatID, reaction, messageID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -179,7 +179,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.deleteReaction(chatData.chatID, updateID) { result in
+        worker.deleteReaction(chatData.chatID, updateID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -303,7 +303,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     private func send(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let cd = chatData else { return }
-        worker.sendTextMessage(cd.chatID, message, replyTo) { [weak self] result in
+        worker.sendTextMessage(cd.chatID, message, replyTo, cd.type) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
@@ -336,7 +336,7 @@ final class ChatInteractor: ChatBusinessLogic {
     // чат не может быть секретным если даже обычный еще не был создан
     func routeToProfile() {
         if let chatD = chatData {
-            let profileConfiguration = ProfileConfiguration(isSecret: chatD.type.rawValue == "personal_secret", fromGroupChat: false)
+            let profileConfiguration = ProfileConfiguration(isSecret: chatD.type == .secretPersonal, fromGroupChat: false)
             onRouteToProfile?(userData, chatD, profileConfiguration)
         } else {
             let profileConfiguration = ProfileConfiguration(isSecret: false, fromGroupChat: false)
@@ -477,9 +477,79 @@ final class ChatInteractor: ChatBusinessLogic {
                     mappedDeleteUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedDeleteUpdate)
+            case .secret:
+                if let secretUpdate = resolveSecretType(update) {
+                    let sub = mapToMessageType(
+                        [UpdateData(
+                            secretUpdate.chatID,
+                            secretUpdate.updateID,
+                            secretUpdate.type,
+                            secretUpdate.senderID,
+                            secretUpdate.createdAt,
+                            secretUpdate.content
+                        )]
+                    )
+                    mappedUpdates.append(sub[0])
+                }
             }
         }
         return mappedUpdates
+    }
+    
+    private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
+        if let data = try? JSONEncoder().encode(update.content) {
+            if let textContent = try? JSONDecoder().decode(TextContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .textMessage,
+                    update.senderID,
+                    update.createdAt,
+                    .textContent(textContent)
+                )
+            }
+            if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .textEdited,
+                    update.senderID,
+                    update.createdAt,
+                    .editedContent(editedContent)
+                )
+            }
+            if let fileContent = try? JSONDecoder().decode(FileContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .file,
+                    update.senderID,
+                    update.createdAt,
+                    .fileContent(fileContent)
+                )
+            }
+            if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .reaction,
+                    update.senderID,
+                    update.createdAt,
+                    .reactionContent(reactionContent)
+                )
+            }
+            if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .delete,
+                    update.senderID,
+                    update.createdAt,
+                    .deletedContent(deletedContent)
+                )
+            }
+        }
+        return nil
     }
     
     private func getSenderName(_ senderID: UUID) -> String {

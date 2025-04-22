@@ -1,15 +1,16 @@
 //
-//  SecretGroupUpdate.swift
+//  SecretUpdateService.swift
 //  chakchat
 //
-//  Created by Кирилл Исаев on 06.04.2025.
+//  Created by Кирилл Исаев on 26.02.2025.
 //
 
 import Foundation
 
-final class SecretGroupUpdate: SecretGroupUpdateProtocol {
+// MARK: - SecretUpdateService
+final class SecretPersonalUpdateService: SecretPersonalUpdateServiceProtocol {
     
-    private let baseAPI: String = "/api/messaging/v1.0/chat/group/secret"
+    private let baseAPI: String = "/api/messaging/v1.0/chat/personal/secret/"
     
     func sendSecretMessage(
         _ request: ChatsModels.SecretUpdateModels.SendMessageRequest,

@@ -81,7 +81,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        worker.sendTextMessage(chatData.chatID, message, replyTo) { result in
+        worker.sendTextMessage(chatData.chatID, message, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -92,7 +92,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -103,7 +103,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+        worker.editTextMessage(chatData.chatID, updateID, text, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -114,7 +114,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
-        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -126,7 +126,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
-        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
+        worker.sendReaction(chatData.chatID, reaction, messageID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -137,7 +137,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
-        worker.deleteReaction(chatData.chatID, updateID) { result in
+        worker.deleteReaction(chatData.chatID, updateID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -469,9 +469,79 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     mappedDeleteUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedDeleteUpdate)
+            case .secret:
+                if let secretUpdate = resolveSecretType(update) {
+                    let sub = mapToMessageType(
+                        [UpdateData(
+                            secretUpdate.chatID,
+                            secretUpdate.updateID,
+                            secretUpdate.type,
+                            secretUpdate.senderID,
+                            secretUpdate.createdAt,
+                            secretUpdate.content
+                        )]
+                    )
+                    mappedUpdates.append(sub[0])
+                }
             }
         }
         return mappedUpdates
+    }
+    
+    private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
+        if let data = try? JSONEncoder().encode(update.content) {
+            if let textContent = try? JSONDecoder().decode(TextContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .textMessage,
+                    update.senderID,
+                    update.createdAt,
+                    .textContent(textContent)
+                )
+            }
+            if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .textEdited,
+                    update.senderID,
+                    update.createdAt,
+                    .editedContent(editedContent)
+                )
+            }
+            if let fileContent = try? JSONDecoder().decode(FileContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .file,
+                    update.senderID,
+                    update.createdAt,
+                    .fileContent(fileContent)
+                )
+            }
+            if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .reaction,
+                    update.senderID,
+                    update.createdAt,
+                    .reactionContent(reactionContent)
+                )
+            }
+            if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .delete,
+                    update.senderID,
+                    update.createdAt,
+                    .deletedContent(deletedContent)
+                )
+            }
+        }
+        return nil
     }
     
     private func getSenderName(_ senderID: UUID) -> String {

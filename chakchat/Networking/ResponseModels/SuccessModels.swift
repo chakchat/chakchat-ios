@@ -39,11 +39,11 @@ enum SuccessModels {
     
     struct UploadResponse: Codable {
         let fileName: String
-        let fileSize: Int
+        let fileSize: Int64
         let mimeType: String
         let fileId: UUID
         let fileURL: URL
-        let createdAt: String
+        let createdAt: Date
         
         enum CodingKeys: String, CodingKey {
             case fileName = "file_name"

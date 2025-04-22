@@ -21,6 +21,7 @@ enum ChatAssembly {
         let secretPersonalChatService = SecretPersonalChatService()
         let updateService = UpdateService()
         let personalUpdateService = PersonalUpdateService()
+        let secretPersonalUpdateService = SecretPersonalUpdateService()
         let fileService = FileStorageService()
         
         let worker = ChatWorker(
@@ -31,7 +32,8 @@ enum ChatAssembly {
             secretPersonalChatService: secretPersonalChatService,
             updateService: updateService,
             fileService: fileService,
-            personalUpdateService: personalUpdateService
+            personalUpdateService: personalUpdateService,
+            secretPersonalUpdateService: secretPersonalUpdateService
         )
         
         let interactor = ChatInteractor(
