@@ -129,10 +129,6 @@ class CacheViewController: UIViewController {
     
     private func configureClearCacheButton() {
         clearCacheButton.titleLabel?.font = Fonts.systemB20
-        
-//        clearCacheButton.backgroundColor = .systemRed
-//        clearCacheButton.tintColor = Colors.backgroundSettings
-//        clearCacheButton.layer.cornerRadius = 10
     }
     
     private func configureCacheLimitLabel() {
