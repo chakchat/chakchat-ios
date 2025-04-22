@@ -77,23 +77,16 @@ final class ChatsScreenViewController: UIViewController {
     
     // MARK: - Public Methods
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {
-        chatsData = allChatsData.chats.sorted {
-            switch ($0.updatePreview?.first?.createdAt, $1.updatePreview?.first?.createdAt) {
-            case let (date1?, date2?):
-                return date1 > date2
-            case (_?, nil):
-                return true
-            case (nil, _?):
-                return false
-            case (nil, nil):
-                return $0.createdAt > $1.createdAt
-            }
+        chatsData = allChatsData.chats.sorted { chat1, chat2 in
+            let date1 = chat1.updatePreview?.first?.createdAt ?? chat1.createdAt
+            let date2 = chat2.updatePreview?.first?.createdAt ?? chat2.createdAt
+            return date1 > date2
         }
         chatsTableView.reloadData()
     }
     
     func addNewChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
-        chatsData?.append(chatData)
+        chatsData?.insert(chatData, at: 0)
         chatsTableView.reloadData()
     }
     
