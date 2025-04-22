@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - SecretUpdateService
-final class SecretUpdateService: SecretUpdateServiceProtocol {
+final class SecretPersonalUpdateService: SecretUpdateServiceProtocol {
     
     private let baseAPI: String = "/api/messaging/v1.0/chat/personal/secret/"
     
