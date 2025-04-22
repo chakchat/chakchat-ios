@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class SecretGroupUpdate: SecretGroupUpdateProtocol {
+final class SecretGroupUpdateService: SecretGroupUpdateServiceProtocol {
     
     private let baseAPI: String = "/api/messaging/v1.0/chat/group/secret"
     

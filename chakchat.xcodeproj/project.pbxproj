@@ -245,7 +245,7 @@
 		AAB300DC2D6F2FFC00BECA3B /* SecretGroupChatServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300DB2D6F2FFC00BECA3B /* SecretGroupChatServiceProtocol.swift */; };
 		AAB300DE2D6F336900BECA3B /* PersonalUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300DD2D6F336900BECA3B /* PersonalUpdateService.swift */; };
 		AAB300E02D6F337200BECA3B /* PersonalUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300DF2D6F337200BECA3B /* PersonalUpdateServiceProtocol.swift */; };
-		AAB300E32D6F4EFC00BECA3B /* SecretUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300E22D6F4EFC00BECA3B /* SecretUpdateService.swift */; };
+		AAB300E32D6F4EFC00BECA3B /* SecretPersonalUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300E22D6F4EFC00BECA3B /* SecretPersonalUpdateService.swift */; };
 		AAB300E52D6F4F0300BECA3B /* SecretUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300E42D6F4F0300BECA3B /* SecretUpdateServiceProtocol.swift */; };
 		AAB302002D72075E00BECA3B /* CoreDataManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB301FF2D72075E00BECA3B /* CoreDataManagerProtocol.swift */; };
 		AAB302022D72076400BECA3B /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB302012D72076400BECA3B /* CoreDataManager.swift */; };
@@ -271,8 +271,8 @@
 		AAEF16912DA1652D0022B30F /* UpdateModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = AAEF168F2DA1652D0022B30F /* UpdateModel.xcdatamodeld */; };
 		AAEF16B02DA19FDB0022B30F /* GroupUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16AF2DA19FDB0022B30F /* GroupUpdateService.swift */; };
 		AAEF16B22DA19FE60022B30F /* GroupUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B12DA19FE60022B30F /* GroupUpdateServiceProtocol.swift */; };
-		AAEF16B52DA284EF0022B30F /* SecretGroupUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B42DA284EF0022B30F /* SecretGroupUpdate.swift */; };
-		AAEF16B72DA284F90022B30F /* SecretGroupUpdateProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B62DA284F90022B30F /* SecretGroupUpdateProtocol.swift */; };
+		AAEF16B52DA284EF0022B30F /* SecretGroupUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B42DA284EF0022B30F /* SecretGroupUpdateService.swift */; };
+		AAEF16B72DA284F90022B30F /* SecretGroupUpdateServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEF16B62DA284F90022B30F /* SecretGroupUpdateServiceProtocol.swift */; };
 		E10019002D8DB5A7001DA208 /* UINewChatAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */; };
 		E11D350B2D40009F00A698EA /* UIErrorLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350A2D40009F00A698EA /* UIErrorLabel.swift */; };
 		E11D350D2D409DB000A698EA /* UIFont+LoadCustomFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11D350C2D409DB000A698EA /* UIFont+LoadCustomFont.swift */; };
@@ -594,7 +594,7 @@
 		AAB300DB2D6F2FFC00BECA3B /* SecretGroupChatServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretGroupChatServiceProtocol.swift; sourceTree = "<group>"; };
 		AAB300DD2D6F336900BECA3B /* PersonalUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalUpdateService.swift; sourceTree = "<group>"; };
 		AAB300DF2D6F337200BECA3B /* PersonalUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalUpdateServiceProtocol.swift; sourceTree = "<group>"; };
-		AAB300E22D6F4EFC00BECA3B /* SecretUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretUpdateService.swift; sourceTree = "<group>"; };
+		AAB300E22D6F4EFC00BECA3B /* SecretPersonalUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretPersonalUpdateService.swift; sourceTree = "<group>"; };
 		AAB300E42D6F4F0300BECA3B /* SecretUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretUpdateServiceProtocol.swift; sourceTree = "<group>"; };
 		AAB301FF2D72075E00BECA3B /* CoreDataManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManagerProtocol.swift; sourceTree = "<group>"; };
 		AAB302012D72076400BECA3B /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
@@ -620,8 +620,8 @@
 		AAEF16902DA1652D0022B30F /* Update.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Update.xcdatamodel; sourceTree = "<group>"; };
 		AAEF16AF2DA19FDB0022B30F /* GroupUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupUpdateService.swift; sourceTree = "<group>"; };
 		AAEF16B12DA19FE60022B30F /* GroupUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupUpdateServiceProtocol.swift; sourceTree = "<group>"; };
-		AAEF16B42DA284EF0022B30F /* SecretGroupUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretGroupUpdate.swift; sourceTree = "<group>"; };
-		AAEF16B62DA284F90022B30F /* SecretGroupUpdateProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretGroupUpdateProtocol.swift; sourceTree = "<group>"; };
+		AAEF16B42DA284EF0022B30F /* SecretGroupUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretGroupUpdateService.swift; sourceTree = "<group>"; };
+		AAEF16B62DA284F90022B30F /* SecretGroupUpdateServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretGroupUpdateServiceProtocol.swift; sourceTree = "<group>"; };
 		E10018FF2D8DB5A7001DA208 /* UINewChatAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINewChatAlert.swift; sourceTree = "<group>"; };
 		E11D350A2D40009F00A698EA /* UIErrorLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIErrorLabel.swift; sourceTree = "<group>"; };
 		E11D350C2D409DB000A698EA /* UIFont+LoadCustomFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+LoadCustomFont.swift"; sourceTree = "<group>"; };
@@ -1501,7 +1501,7 @@
 		AAB300D82D6F2FB400BECA3B /* SecretPersonalUpdate */ = {
 			isa = PBXGroup;
 			children = (
-				AAB300E22D6F4EFC00BECA3B /* SecretUpdateService.swift */,
+				AAB300E22D6F4EFC00BECA3B /* SecretPersonalUpdateService.swift */,
 				AAB300E42D6F4F0300BECA3B /* SecretUpdateServiceProtocol.swift */,
 			);
 			path = SecretPersonalUpdate;
@@ -1608,8 +1608,8 @@
 		AAEF16B32DA284DA0022B30F /* SecretGroupUpdate */ = {
 			isa = PBXGroup;
 			children = (
-				AAEF16B42DA284EF0022B30F /* SecretGroupUpdate.swift */,
-				AAEF16B62DA284F90022B30F /* SecretGroupUpdateProtocol.swift */,
+				AAEF16B42DA284EF0022B30F /* SecretGroupUpdateService.swift */,
+				AAEF16B62DA284F90022B30F /* SecretGroupUpdateServiceProtocol.swift */,
 			);
 			path = SecretGroupUpdate;
 			sourceTree = "<group>";
@@ -1962,10 +1962,10 @@
 				AA9B62342D2D71A30064CB23 /* PhoneValidator.swift in Sources */,
 				9B1EC0822D383F0B00E01E00 /* UIColor+Hex.swift in Sources */,
 				E1960A192D6A35E1008E27C0 /* ThemeManagerProtocols.swift in Sources */,
-				AAB300E32D6F4EFC00BECA3B /* SecretUpdateService.swift in Sources */,
+				AAB300E32D6F4EFC00BECA3B /* SecretPersonalUpdateService.swift in Sources */,
 				AA84F01A2D4BBE8800678ABA /* PhoneVisibilityScreenPresenter.swift in Sources */,
 				AA84F02C2D4BEF1000678ABA /* BirthVisibilityScreenAssembly.swift in Sources */,
-				AAEF16B72DA284F90022B30F /* SecretGroupUpdateProtocol.swift in Sources */,
+				AAEF16B72DA284F90022B30F /* SecretGroupUpdateServiceProtocol.swift in Sources */,
 				AA9B62692D2FD2390064CB23 /* SignupInteractor.swift in Sources */,
 				E1960A562D6BE66B008E27C0 /* NewMessageInteractor.swift in Sources */,
 				AAB302712D7615C700BECA3B /* ChatViewController.swift in Sources */,
@@ -2097,7 +2097,7 @@
 				AA9B627D2D300DEE0064CB23 /* SignupDataValidator.swift in Sources */,
 				AA84EFFD2D4912AB00678ABA /* ConfidentialityScreenInteractor.swift in Sources */,
 				AA9B62522D2EC7DC0064CB23 /* VerifyProtocols.swift in Sources */,
-				AAEF16B52DA284EF0022B30F /* SecretGroupUpdate.swift in Sources */,
+				AAEF16B52DA284EF0022B30F /* SecretGroupUpdateService.swift in Sources */,
 				9B1EC0802D36CEEF00E01E00 /* UIView+Pin.swift in Sources */,
 				AA1C0E332D43A081008E47D8 /* Event.swift in Sources */,
 				AA84F0552D4D0C6900678ABA /* NotificationScreenViewController.swift in Sources */,

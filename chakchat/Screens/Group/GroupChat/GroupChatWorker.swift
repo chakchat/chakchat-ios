@@ -17,7 +17,7 @@ final class GroupChatWorker: GroupChatWorkerLogic {
     private let updateService: UpdateServiceProtocol
     private let fileService: FileStorageServiceProtocol
     private let groupUpdateService: GroupUpdateServiceProtocol
-    private let secretGroupUpdateService: SecretGroupUpdateProtocol
+    private let secretGroupUpdateService: SecretGroupUpdateServiceProtocol
     
     init(
         keychainManager: KeychainManagerBusinessLogic,
@@ -27,7 +27,7 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         updateService: UpdateServiceProtocol,
         fileService: FileStorageServiceProtocol,
         groupUpdateService: GroupUpdateServiceProtocol,
-        secretGroupUpdateService: SecretGroupUpdateProtocol
+        secretGroupUpdateService: SecretGroupUpdateServiceProtocol
     ) {
         self.keychainManager = keychainManager
         self.coreDataManager = coreDataManager

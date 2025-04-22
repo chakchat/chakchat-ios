@@ -189,6 +189,14 @@ struct TextContent: Codable {
     let edited: EditedInfo?
     let reactions: [ReactionInfo]?
     
+    init(_ replyTo: Int64?, _ text: String, _ forwarded: Bool?, _ edited: EditedInfo?, _ reactions: [ReactionInfo]?) {
+        self.replyTo = replyTo
+        self.text = text
+        self.forwarded = forwarded
+        self.edited = edited
+        self.reactions = reactions
+    }
+    
     enum CodingKeys: String, CodingKey {
         case text = "text"
         case edited = "edited"
