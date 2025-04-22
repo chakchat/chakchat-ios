@@ -56,7 +56,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func passUserData() {
         let myID = worker.getMyID()
         if let chatD = chatData {
-            presenter.passUserData(chatD, userData, chatD.type.rawValue == "secret_personal", myID)
+            presenter.passUserData(chatD, userData, chatD.type == .secretPersonal, myID)
         } else {
             presenter.passUserData(nil, userData, false, myID)
         }
@@ -130,7 +130,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -142,7 +142,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+        worker.editTextMessage(chatData.chatID, updateID, text, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -154,7 +154,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -167,7 +167,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
         guard let chatData = chatData else { return }
-        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
+        worker.sendReaction(chatData.chatID, reaction, messageID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -179,7 +179,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.deleteReaction(chatData.chatID, updateID) { result in
+        worker.deleteReaction(chatData.chatID, updateID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -303,7 +303,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     private func send(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let cd = chatData else { return }
-        worker.sendTextMessage(cd.chatID, message, replyTo) { [weak self] result in
+        worker.sendTextMessage(cd.chatID, message, replyTo, cd.type) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
