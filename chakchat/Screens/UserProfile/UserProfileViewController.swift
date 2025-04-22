@@ -84,9 +84,11 @@ final class UserProfileViewController: UIViewController {
             iconImageView.layer.cornerRadius = Constants.cornerRadius
         }
         nicknameLabel.text = userData.name
-        guard let phone = userData.phone else { return }
+        if let phone = userData.phone {
+            userTableViewData[1].value = Format.number(phone) ?? ""
+        }
         userTableViewData[0].value = userData.username
-        userTableViewData[1].value = Format.number(phone) ?? ""
+        
         
         if let birth = userData.dateOfBirth {
             let inputFormatter = DateFormatter()
@@ -109,9 +111,15 @@ final class UserProfileViewController: UIViewController {
             buttonStackView.addArrangedSubview(chatButton)
             buttonStackView.setWidth(310)
         case (true, false):
+            buttonStackView.subviews[2].isHidden = true
+            buttonStackView.removeArrangedSubview(buttonStackView.subviews[2])
             let secretKeyButton = createButton("key.card", "Secret key")
+            secretKeyButton.addTarget(self, action: #selector(secretKeyButtonPressed), for: .touchUpInside)
+            let deleteButton = createButton("trash.fill", "Delete chat")
+            deleteButton.addTarget(self, action: #selector(deleteButtonPressed), for: .touchUpInside)
             buttonStackView.addArrangedSubview(secretKeyButton)
-            buttonStackView.setWidth(310)
+            buttonStackView.addArrangedSubview(deleteButton)
+            buttonStackView.setWidth(390)
         case (false, true):
             let chatButton = createButton("message.fill",
                                           LocalizationManager.shared.localizedString(for: "chat_l"))
@@ -129,24 +137,26 @@ final class UserProfileViewController: UIViewController {
             buttonStackView.addArrangedSubview(secretChatButton)
             buttonStackView.setWidth(310)
         }
-        if isBlocked {
-            let unblockAction = UIAction(title: LocalizationManager.shared.localizedString(for: "unblock_chat"), image: UIImage(systemName: "lock.open.fill")) { _ in
-                self.unblockChat()
+        if !profileConfiguration.isSecret {
+            if isBlocked {
+                let unblockAction = UIAction(title: LocalizationManager.shared.localizedString(for: "unblock_chat"), image: UIImage(systemName: "lock.open.fill")) { _ in
+                    self.unblockChat()
+                }
+                let deleteAction = UIAction(title: LocalizationManager.shared.localizedString(for: "delete_chat"), image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
+                    self.showBlockDeletion()
+                }
+                optionsMenu = UIMenu(title: LocalizationManager.shared.localizedString(for: "choose_option"), children: [unblockAction, deleteAction])
+                setMenu(optionsMenu)
+            } else {
+                let blockAction = UIAction(title: LocalizationManager.shared.localizedString(for: "block_chat"), image: UIImage(systemName: "lock.fill")) { _ in
+                    self.showBlockConfirmation()
+                }
+                let deleteAction = UIAction(title: LocalizationManager.shared.localizedString(for: "delete_chat"), image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
+                    self.showBlockDeletion()
+                }
+                optionsMenu = UIMenu(title: LocalizationManager.shared.localizedString(for: "choose_option"), children: [blockAction, deleteAction])
+                setMenu(optionsMenu)
             }
-            let deleteAction = UIAction(title: LocalizationManager.shared.localizedString(for: "delete_chat"), image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
-                self.showBlockDeletion()
-            }
-            optionsMenu = UIMenu(title: LocalizationManager.shared.localizedString(for: "choose_option"), children: [unblockAction, deleteAction])
-            setMenu(optionsMenu)
-        } else {
-            let blockAction = UIAction(title: LocalizationManager.shared.localizedString(for: "block_chat"), image: UIImage(systemName: "lock.fill")) { _ in
-                self.showBlockConfirmation()
-            }
-            let deleteAction = UIAction(title: LocalizationManager.shared.localizedString(for: "delete_chat"), image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
-                self.showBlockDeletion()
-            }
-            optionsMenu = UIMenu(title: LocalizationManager.shared.localizedString(for: "choose_option"), children: [blockAction, deleteAction])
-            setMenu(optionsMenu)
         }
     }
     
@@ -349,6 +359,48 @@ final class UserProfileViewController: UIViewController {
         userDataTable.estimatedRowHeight = Constants.userTableEstimateRow
     }
     
+    private func showAlert() {
+        let alert = UIAlertController(title: "Encryption key", message: "Input encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let cancel = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel)
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.createSecretChat(key)
+                }
+            }
+        }
+        alert.addAction(cancel)
+        alert.addAction(ok)
+        present(alert, animated: true)
+    }
+    
+    private func showChangeSecretKeyAlert() {
+        let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let cancel = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel)
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.changeSecretKey(key)
+                }
+            }
+        }
+        alert.addAction(cancel)
+        alert.addAction(ok)
+        present(alert, animated: true)
+    }
+    
     // MARK: - Interactor methods
     private func blockChat() {
         interactor.blockChat()
@@ -366,16 +418,24 @@ final class UserProfileViewController: UIViewController {
         interactor.deleteChat(DeleteMode.DeleteModeForAll)
     }
     
+    @objc private func deleteButtonPressed() {
+        showBlockDeletion()
+    }
+    
     @objc private func chatButtonPressed() {
         interactor.searchForExistingChat()
     }
     
     @objc private func secretChatButtonPressed() {
-        interactor.createSecretChat()
+        showAlert()
     }
     
     @objc private func backButtonPressed() {
         interactor.routeBack()
+    }
+    
+    @objc private func secretKeyButtonPressed() {
+        showChangeSecretKeyAlert()
     }
 }
 
@@ -387,7 +447,13 @@ extension UserProfileViewController: UITableViewDelegate, UITableViewDataSource 
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return userTableViewData[2].value == "" ? 2 : 3
+        var numbersOfRowsInSection = 0
+        for row in userTableViewData {
+            if row.value != "" {
+                numbersOfRowsInSection += 1
+            }
+        }
+        return numbersOfRowsInSection
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

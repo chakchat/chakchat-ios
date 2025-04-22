@@ -52,12 +52,13 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
         presenter.passUserData(isBlocked, userData, profileConfiguration)
     }
     
-    func createSecretChat() {
+    func createSecretChat(_ key: String) {
         worker.createSecretChat(userData.id) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let data):
                 os_log("Secret chat with id: %@ created", log: logger, type: .default, data.chatID as CVarArg)
+                _ = worker.changeSecretKey(key)
                 let event = CreatedChatEvent(
                     chatID: data.chatID,
                     type: data.type,
@@ -118,14 +119,14 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     }
     
     func deleteChat(_ deleteMode: DeleteMode) {
-        guard let chatID = chatData?.chatID else { return }
-        worker.deleteChat(chatID, deleteMode) { [weak self] result in
+        guard let chatData = chatData else { return }
+        worker.deleteChat(chatData.chatID, deleteMode, chatData.type) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
                 case .success(_):
                     os_log("Chat with id:%@ is deleted", log: self.logger, type: .default, self.userData.id as CVarArg)
-                    let event = DeletedChatEvent(chatID: chatID)
+                    let event = DeletedChatEvent(chatID: chatData.chatID)
                     self.eventPublisher.publish(event: event)
                     self.routeToChatsScreen()
                 case .failure(let failure):
@@ -135,7 +136,6 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                     self.presenter.updateBlockStatus(isBlock: true)
                 }
             }
-
         }
     }
     

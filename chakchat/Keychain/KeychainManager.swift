@@ -39,7 +39,7 @@ final class KeychainManager: KeychainManagerBusinessLogic {
         
         // Delete any existing item
         SecItemDelete(query as CFDictionary)
-        
+        print(value)
         // Add new item
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess

@@ -56,7 +56,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func passUserData() {
         let myID = worker.getMyID()
         if let chatD = chatData {
-            presenter.passUserData(chatD, userData, chatD.type.rawValue == "personal_secret", myID)
+            presenter.passUserData(chatD, userData, chatD.type.rawValue == "secret_personal", myID)
         } else {
             presenter.passUserData(nil, userData, false, myID)
         }
@@ -336,7 +336,7 @@ final class ChatInteractor: ChatBusinessLogic {
     // чат не может быть секретным если даже обычный еще не был создан
     func routeToProfile() {
         if let chatD = chatData {
-            let profileConfiguration = ProfileConfiguration(isSecret: chatD.type.rawValue == "personal_secret", fromGroupChat: false)
+            let profileConfiguration = ProfileConfiguration(isSecret: chatD.type == .secretPersonal, fromGroupChat: false)
             onRouteToProfile?(userData, chatD, profileConfiguration)
         } else {
             let profileConfiguration = ProfileConfiguration(isSecret: false, fromGroupChat: false)

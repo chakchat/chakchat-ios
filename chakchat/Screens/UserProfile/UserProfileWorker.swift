@@ -86,18 +86,33 @@ final class UserProfileWorker: UserProfileWorkerLogic {
         }
     }
     
-    func deleteChat(_ chatID: UUID, _ deleteMode: DeleteMode, completion: @escaping (Result<EmptyResponse, any Error>) -> Void) {
+    func deleteChat(_ chatID: UUID, _ deleteMode: DeleteMode, _ chatType: ChatType, completion: @escaping (Result<EmptyResponse, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        personalChatService.sendDeleteChatRequest(chatID, deleteMode, accessToken) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let response):
-                DispatchQueue.main.async {
-                    self.coreDataManager.deleteChat(chatID)
+        if chatType == .personal {
+            personalChatService.sendDeleteChatRequest(chatID, deleteMode, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.deleteChat(chatID)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
                 }
-                completion(.success(response.data))
-            case .failure(let failure):
-                completion(.failure(failure))
+            }
+        } else if chatType == .secretPersonal {
+            secretPersonalChatService.sendDeleteChatRequest(chatID, deleteMode, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.deleteChat(chatID)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
             }
         }
     }
@@ -114,7 +129,7 @@ final class UserProfileWorker: UserProfileWorkerLogic {
     }
     
     func changeSecretKey(_ key: String) -> Bool {
-        let s = keychainManager.save(key: key, value: KeychainManager.keyForSaveSecretKey)
+        let s = keychainManager.save(key: KeychainManager.keyForSaveSecretKey, value: key)
         return s
     }
     

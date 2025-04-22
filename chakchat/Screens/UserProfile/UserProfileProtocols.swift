@@ -11,7 +11,7 @@ import Foundation
 protocol UserProfileBusinessLogic {
     func routeToChat(_ isChatExisting: ChatsModels.GeneralChatModel.ChatData?)
     func searchForExistingChat()
-    func createSecretChat()
+    func createSecretChat(_ key: String)
     
     func blockChat()
     func unblockChat()
@@ -47,7 +47,7 @@ protocol UserProfileWorkerLogic {
     func blockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
     func unblockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
     
-    func deleteChat(_ chatID: UUID, _ deleteMode: DeleteMode, completion: @escaping (Result<EmptyResponse, Error>) -> Void)
+    func deleteChat(_ chatID: UUID, _ deleteMode: DeleteMode, _ chatType: ChatType, completion: @escaping (Result<EmptyResponse, Error>) -> Void)
     
     func searchForExistingChat(_ memberID: UUID) -> Chat?
     func getMyID() -> UUID

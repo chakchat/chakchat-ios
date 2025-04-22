@@ -112,13 +112,13 @@ enum ChatsModels {
                 case .personal:
                     let personalInfo = try container.decode(PersonalInfo.self, forKey: .info)
                     info = .personal(personalInfo)
-                case .personalSecret:
+                case .secretPersonal:
                     let personalSecretInfo = try container.decode(SecretPersonalInfo.self, forKey: .info)
                     info = .secretPersonal(personalSecretInfo)
                 case .group:
                     let groupInfo = try container.decode(GroupInfo.self, forKey: .info)
                     info = .group(groupInfo)
-                case .groupSecret:
+                case .secretGroup:
                     let secretGroupInfo = try container.decode(SecretGroupInfo.self, forKey: .info)
                     info = .secretGroup(secretGroupInfo)
                 }
@@ -458,7 +458,7 @@ enum DeleteMode: String, Codable {
 
 enum ChatType: String, Codable {
     case personal = "personal"
-    case personalSecret = "personal_secret"
+    case secretPersonal = "secret_personal"
     case group = "group"
-    case groupSecret = "group_secret"
+    case secretGroup = "secret_group"
 }
