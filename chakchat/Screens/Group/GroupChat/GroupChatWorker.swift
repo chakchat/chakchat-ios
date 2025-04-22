@@ -338,7 +338,8 @@ final class GroupChatWorker: GroupChatWorkerLogic {
                     type: ChatType(rawValue: type) ?? .personal,
                     members: members,
                     createdAt: createdAt,
-                    info: mappedInfo
+                    info: mappedInfo,
+                    updatePreview: nil
                 )
                 return mappedChat
             } else {

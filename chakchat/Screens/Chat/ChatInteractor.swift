@@ -95,7 +95,8 @@ final class ChatInteractor: ChatBusinessLogic {
                     type: data.type,
                     members: data.members,
                     createdAt: data.createdAt,
-                    info: data.info
+                    info: data.info,
+                    updatePreview: nil
                 )
                 let event = CreatedChatEvent(
                     chatID: data.chatID,

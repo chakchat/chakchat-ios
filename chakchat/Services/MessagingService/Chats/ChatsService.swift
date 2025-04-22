@@ -14,7 +14,7 @@ final class ChatsService: ChatsServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatsData>, any Error>) -> Void
     ) {
-        let endpoint = MessagingServiceEndpoints.ChatsEndpoints.getAllChats.rawValue
+        let endpoint = "\(MessagingServiceEndpoints.ChatsEndpoints.getAllChats.rawValue)?preview=1"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
