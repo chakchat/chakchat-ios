@@ -30,7 +30,7 @@ struct UpdateData: Codable {
     let content: UpdateContent
     let createdAt: Date
     let senderID: UUID
-    let type: UpdateDataType
+    let type: UpdateDataType?
     let updateID: Int64
     
     enum CodingKeys: String, CodingKey {
@@ -53,24 +53,28 @@ struct UpdateData: Codable {
         let timestamp = try container.decode(Double.self, forKey: .createdAt)
         createdAt = Date(timeIntervalSince1970: timestamp)
         
-        switch type {
-        case .textMessage:
-            let textContent = try container.decode(TextContent.self, forKey: .content)
-            content = .textContent(textContent)
-        case .file:
-            let fileContent = try container.decode(FileContent.self, forKey: .content)
-            content = .fileContent(fileContent)
-        case .reaction:
-            let reactionContent = try container.decode(ReactionContent.self, forKey: .content)
-            content = .reactionContent(reactionContent)
-        case .textEdited:
-            let editedContent = try container.decode(EditedContent.self, forKey: .content)
-            content = .editedContent(editedContent)
-        case .delete:
-            let deletedContent = try container.decode(DeletedContent.self, forKey: .content)
-            content = .deletedContent(deletedContent)
+        if let actualType = type {
+            switch actualType {
+            case .textMessage:
+                let textContent = try container.decode(TextContent.self, forKey: .content)
+                content = .textContent(textContent)
+            case .file:
+                let fileContent = try container.decode(FileContent.self, forKey: .content)
+                content = .fileContent(fileContent)
+            case .reaction:
+                let reactionContent = try container.decode(ReactionContent.self, forKey: .content)
+                content = .reactionContent(reactionContent)
+            case .textEdited:
+                let editedContent = try container.decode(EditedContent.self, forKey: .content)
+                content = .editedContent(editedContent)
+            case .delete:
+                let deletedContent = try container.decode(DeletedContent.self, forKey: .content)
+                content = .deletedContent(deletedContent)
+            }
+        } else {
+            let secretContent = try container.decode(SecretContent.self, forKey: .content)
+            content = .secretContent(secretContent)
         }
-        
     }
     
     func encode(to encoder: Encoder) throws {
@@ -79,7 +83,7 @@ struct UpdateData: Codable {
         try container.encode(chatID, forKey: .chatID)
         try container.encode(senderID, forKey: .senderID)
         try container.encode(updateID, forKey: .updateID)
-        try container.encode(type, forKey: .type)
+        try container.encodeIfPresent(type, forKey: .type)
         try container.encode(createdAt.timeIntervalSince1970, forKey: .createdAt)
         
         switch content {
@@ -93,7 +97,21 @@ struct UpdateData: Codable {
             try container.encode(edited, forKey: .content)
         case .deletedContent(let deleted):
             try container.encode(deleted, forKey: .content)
+        case .secretContent(let secret):
+            try container.encode(secret, forKey: .content)
         }
+    }
+}
+
+struct SecretContent: Codable {
+    let payload: Data
+    let initializationVector: Data
+    let keyHash: Data
+    
+    enum CodingKeys: String, CodingKey {
+        case payload = "payload"
+        case initializationVector = "initialization_vector"
+        case keyHash = "key_hash"
     }
 }
 
@@ -180,6 +198,7 @@ enum UpdateContent: Codable {
     case reactionContent(ReactionContent)
     case editedContent(EditedContent)
     case deletedContent(DeletedContent)
+    case secretContent(SecretContent)
 }
 
 struct TextContent: Codable {
