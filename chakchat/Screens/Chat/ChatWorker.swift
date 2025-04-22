@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CryptoKit
 
 // MARK: - ChatWorker
 final class ChatWorker: ChatWorkerLogic {
@@ -75,7 +76,7 @@ final class ChatWorker: ChatWorkerLogic {
         }
     }
     
-    func sendTextMessage(_ chatID: UUID, _ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
+    func sendTextMessage(_ chatID: UUID, _ message: String, _ replyTo: Int64?, _ chatType: ChatType, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         let request = ChatsModels.UpdateModels.SendMessageRequest(text: message, replyTo: replyTo)
         personalUpdateService.sendTextMessage(request, chatID, accessToken) { result in
@@ -83,7 +84,6 @@ final class ChatWorker: ChatWorkerLogic {
             case .success(let response):
                 let data = response.data
                 completion(.success(data))
-                // сохраняем в coredata
             case .failure(let failure):
                 completion(.failure(failure))
             }
@@ -197,5 +197,54 @@ final class ChatWorker: ChatWorkerLogic {
     func saveSecretKey(_ key: String) -> Bool{
         let s = keychainManager.save(key: key, value: KeychainManager.keyForSaveSecretKey)
         return s
+    }
+    
+    private func sealMessage(_ json: Data) -> ChatsModels.SecretUpdateModels.SendMessageRequest? {
+        guard let key = keychainManager.getString(key: KeychainManager.keyForSaveSecretKey) else {
+            return nil
+        }
+        let nonce = AES.GCM.Nonce()
+        let symmetricKey = SymmetricKey(data: Data(key.utf8))
+        guard let sealedBox = try? AES.GCM.seal(json, using: symmetricKey, nonce: nonce) else {
+            return nil
+        }
+        let combinedPayload = sealedBox.ciphertext + sealedBox.tag
+        
+        let digest = SHA256.hash(data: Data(key.utf8))
+        let keyHash = digest.compactMap { String(format: "%02x", $0) }.joined()
+        
+        return ChatsModels.SecretUpdateModels
+            .SendMessageRequest(
+                payload: combinedPayload.base64EncodedData(),
+                initializationVector: Data(nonce).base64EncodedData(),
+                keyHash: Data(keyHash.utf8).base64EncodedData()
+            )
+    }
+    
+    private func openMessage(_ payload: Data, _ iv: Data, _ sendedKeyHash: Data) -> UpdateData? {
+        guard let key = keychainManager.getString(key: KeychainManager.keyForSaveSecretKey) else {
+            return nil
+        }
+        
+        let digest = SHA256.hash(data: Data(key.utf8))
+        let keyHash = digest.compactMap { String(format: "%02x", $0) }.joined()
+        let keyHashData = Data(keyHash.utf8)
+        
+        if keyHashData == sendedKeyHash {
+            let symmetricKey = SymmetricKey(data: Data(key.utf8))
+            guard let ivData = Data(base64Encoded: iv),
+                  let payloadData = Data(base64Encoded: payload) else {
+                return nil
+            }
+            guard let nonce = try? AES.GCM.Nonce(data: ivData) else { return nil }
+            let ciphertext = payloadData.dropLast(16)
+            let tag = payloadData.suffix(16)
+            
+            guard let sealedBox = try? AES.GCM.SealedBox(nonce: nonce, ciphertext: ciphertext, tag: tag) else { return nil }
+            guard let decryptedData = try? AES.GCM.open(sealedBox, using: symmetricKey) else { return nil }
+            
+            return try? JSONDecoder().decode(UpdateData.self, from: decryptedData)
+        }
+        return nil
     }
 }

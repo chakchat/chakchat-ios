@@ -53,7 +53,7 @@ protocol ChatWorkerLogic {
         _ expiration: String?,
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
-    func sendTextMessage(_ chatID: UUID, _ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
+    func sendTextMessage(_ chatID: UUID, _ message: String, _ replyTo: Int64?, _ chatType: ChatType, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func saveSecretKey(_ key: String) -> Bool
     
     func deleteMessage(_ chatID: UUID, _ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, Error>) -> Void)

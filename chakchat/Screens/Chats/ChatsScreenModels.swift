@@ -422,14 +422,14 @@ enum ChatsModels {
     
     enum SecretUpdateModels {
         struct SendMessageRequest: Codable {
-            let payload: String
-            let initializationVector: String
-            let keyID: UUID
+            let payload: Data
+            let initializationVector: Data
+            let keyHash: Data
             
             enum CodingKeys: String, CodingKey {
                 case payload = "payload"
                 case initializationVector = "initialization_vector"
-                case keyID = "key_id"
+                case keyHash = "key_hash"
             }
         }
         
