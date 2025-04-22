@@ -205,7 +205,7 @@ extension OnlineVisibilityScreenViewController: UITableViewDelegate, UITableView
             updateExceptionsSection()
             tableView.reloadData()
         } else {
-            // the logic of the second section has not yet been invented
+            interactor.showAddUsersScreen()
         }
     }
 }

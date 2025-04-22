@@ -81,11 +81,11 @@ final class SettingsScreenViewController: UIViewController {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            guard let text = nicknameLabel.text else { return }
-            let image = UIProfilePhoto(text, Constants.iconImageSize, Constants.borderWidth).getPhoto()
-            iconImageView.image = image
-        }
+//        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+//            guard let text = nicknameLabel.text else { return }
+//            let image = UIProfilePhoto(text, Constants.iconImageSize, Constants.borderWidth).getPhoto()
+//            iconImageView.image = image
+//        }
     }
     
     // MARK: - Public Methods

@@ -18,7 +18,6 @@ final class ConfidentialityScreenViewController: UIViewController {
         static let arrowName: String = "arrow.left"
     }
     
-    // TODO: change values in confidentilitySection
     // MARK: - Properties
     private var titleLabel: UILabel = UILabel()
     private var confidentialitySettingsTable: UITableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -26,7 +25,7 @@ final class ConfidentialityScreenViewController: UIViewController {
         (LocalizationManager.shared.localizedString(for: "phone_number"), LocalizationManager.shared.localizedString(for: "everyone")),
         (LocalizationManager.shared.localizedString(for: "date_of_birth"), LocalizationManager.shared.localizedString(for: "everyone")),
         (LocalizationManager.shared.localizedString(for: "online_status"), LocalizationManager.shared.localizedString(for: "everyone")),
-        (LocalizationManager.shared.localizedString(for: "black_list"), "10")
+        (LocalizationManager.shared.localizedString(for: "black_list"), "")
     ]
     
     let interactor: ConfidentialityScreenBusinessLogic
@@ -50,6 +49,9 @@ final class ConfidentialityScreenViewController: UIViewController {
     func configureSections(_ userRestrictions: ConfidentialitySettingsModels.ConfidentialityUserData) {
         confidentilitySection[0].1 = LocalizationManager.shared.localizedString(for: userRestrictions.phone.openTo)
         confidentilitySection[1].1 = LocalizationManager.shared.localizedString(for: userRestrictions.dateOfBirth.openTo)
+        DispatchQueue.main.async {
+            self.confidentialitySettingsTable.reloadData()
+        }
     }
     
     // MARK: - Visibility Status Updating
@@ -74,8 +76,8 @@ final class ConfidentialityScreenViewController: UIViewController {
     private func configureUI() {
         view.backgroundColor = Colors.backgroundSettings
         configureBackButton()
-        interactor.loadUserData()
         configureSettingsTable()
+        interactor.loadUserData()
         configureTitleLabel()
         navigationItem.titleView = titleLabel
     }
