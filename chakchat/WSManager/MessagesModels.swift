@@ -30,8 +30,24 @@ struct UpdateData: Codable {
     let content: UpdateContent
     let createdAt: Date
     let senderID: UUID
-    let type: UpdateDataType?
+    let type: UpdateDataType
     let updateID: Int64
+    
+    init(
+        _ chatID: UUID,
+        _ updateID: Int64,
+        _ type: UpdateDataType,
+        _ senderID: UUID,
+        _ createdAt: Date,
+        _ content: UpdateContent
+    ) {
+        self.chatID = chatID
+        self.updateID = updateID
+        self.type = type
+        self.senderID = senderID
+        self.createdAt = createdAt
+        self.content = content
+    }
     
     enum CodingKeys: String, CodingKey {
         case chatID = "chat_id"
@@ -52,26 +68,23 @@ struct UpdateData: Codable {
         
         let timestamp = try container.decode(Double.self, forKey: .createdAt)
         createdAt = Date(timeIntervalSince1970: timestamp)
-        
-        if let actualType = type {
-            switch actualType {
-            case .textMessage:
-                let textContent = try container.decode(TextContent.self, forKey: .content)
-                content = .textContent(textContent)
-            case .file:
-                let fileContent = try container.decode(FileContent.self, forKey: .content)
-                content = .fileContent(fileContent)
-            case .reaction:
-                let reactionContent = try container.decode(ReactionContent.self, forKey: .content)
-                content = .reactionContent(reactionContent)
-            case .textEdited:
-                let editedContent = try container.decode(EditedContent.self, forKey: .content)
-                content = .editedContent(editedContent)
-            case .delete:
-                let deletedContent = try container.decode(DeletedContent.self, forKey: .content)
-                content = .deletedContent(deletedContent)
-            }
-        } else {
+        switch type {
+        case .textMessage:
+            let textContent = try container.decode(TextContent.self, forKey: .content)
+            content = .textContent(textContent)
+        case .file:
+            let fileContent = try container.decode(FileContent.self, forKey: .content)
+            content = .fileContent(fileContent)
+        case .reaction:
+            let reactionContent = try container.decode(ReactionContent.self, forKey: .content)
+            content = .reactionContent(reactionContent)
+        case .textEdited:
+            let editedContent = try container.decode(EditedContent.self, forKey: .content)
+            content = .editedContent(editedContent)
+        case .delete:
+            let deletedContent = try container.decode(DeletedContent.self, forKey: .content)
+            content = .deletedContent(deletedContent)
+        case .secret:
             let secretContent = try container.decode(SecretContent.self, forKey: .content)
             content = .secretContent(secretContent)
         }
@@ -355,4 +368,5 @@ enum UpdateDataType: String, Codable {
     case file = "file_message"
     case reaction = "reaction"
     case delete = "update_deleted"
+    case secret = "secret"
 }

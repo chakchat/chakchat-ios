@@ -63,6 +63,11 @@ final class GroupUpdateService: GroupUpdateServiceProtocol {
         
         let body = try? JSONEncoder().encode(request)
         
+        if let body = body {
+            let responseString = String(data: body, encoding: .utf8)
+            print("Response as String:", responseString ?? "Failed to decode")
+        }
+        
         let headers = [
             "Authorization": "Bearer \(accessToken)",
             "Idempotency-Key": idempotencyKey,

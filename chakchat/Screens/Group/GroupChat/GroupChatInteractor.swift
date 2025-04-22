@@ -469,9 +469,79 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     mappedDeleteUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedDeleteUpdate)
+            case .secret:
+                if let secretUpdate = resolveSecretType(update) {
+                    let sub = mapToMessageType(
+                        [UpdateData(
+                            secretUpdate.chatID,
+                            secretUpdate.updateID,
+                            secretUpdate.type,
+                            secretUpdate.senderID,
+                            secretUpdate.createdAt,
+                            secretUpdate.content
+                        )]
+                    )
+                    mappedUpdates.append(sub[0])
+                }
             }
         }
         return mappedUpdates
+    }
+    
+    private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
+        if let data = try? JSONEncoder().encode(update.content) {
+            if let textContent = try? JSONDecoder().decode(TextContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .textMessage,
+                    update.senderID,
+                    update.createdAt,
+                    .textContent(textContent)
+                )
+            }
+            if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .textEdited,
+                    update.senderID,
+                    update.createdAt,
+                    .editedContent(editedContent)
+                )
+            }
+            if let fileContent = try? JSONDecoder().decode(FileContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .file,
+                    update.senderID,
+                    update.createdAt,
+                    .fileContent(fileContent)
+                )
+            }
+            if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .reaction,
+                    update.senderID,
+                    update.createdAt,
+                    .reactionContent(reactionContent)
+                )
+            }
+            if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: data) {
+                return UpdateData(
+                    update.chatID,
+                    update.updateID,
+                    .delete,
+                    update.senderID,
+                    update.createdAt,
+                    .deletedContent(deletedContent)
+                )
+            }
+        }
+        return nil
     }
     
     private func getSenderName(_ senderID: UUID) -> String {
