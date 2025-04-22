@@ -135,7 +135,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
             type: event.type,
             members: event.members,
             createdAt: event.createdAt,
-            info: event.info
+            info: event.info,
+            updatePreview: nil
         )
         DispatchQueue.main.async {
             self.addNewChat(newChat)
@@ -274,7 +275,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
             type: type,
             members: members,
             createdAt: createdAt,
-            info: info
+            info: info,
+            updatePreview: nil
         )
     }
 }

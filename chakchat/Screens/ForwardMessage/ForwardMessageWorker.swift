@@ -122,7 +122,8 @@ final class ForwardMessageWorker: ForwardMessageWorkerLogic {
                 type: ChatType(rawValue: type) ?? .personal,
                 members: members,
                 createdAt: createdAt,
-                info: info
+                info: info,
+                updatePreview: nil
             )
             mappedChats.append(mappedChat)
         }
