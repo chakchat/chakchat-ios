@@ -88,6 +88,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     }
     
     func loadChats() {
+        self.showDBChats()
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             self?.worker.loadChats() { result in
                 DispatchQueue.main.async {
