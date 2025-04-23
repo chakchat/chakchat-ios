@@ -109,6 +109,21 @@ class FileMessageCell: TextMessageCell {
 
 class FileMessageCellSizeCalculator: TextMessageSizeCalculator {
     
+    private let isGroupChat: Bool
+
+    init(layout: MessagesCollectionViewFlowLayout, isGroupChat: Bool) {
+        self.isGroupChat = isGroupChat
+        super.init(layout: layout)
+
+        if isGroupChat {
+            incomingAvatarSize = CGSize(width: 30, height: 30)
+            outgoingAvatarSize = .zero
+        } else {
+            incomingAvatarSize = .zero
+            outgoingAvatarSize = .zero
+        }
+    }
+    
     override func messageContainerSize(for message: any MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)
         size.height -= 20

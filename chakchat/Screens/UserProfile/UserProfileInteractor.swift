@@ -52,27 +52,29 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
         presenter.passUserData(isBlocked, userData, profileConfiguration)
     }
     
-    func createSecretChat(_ key: String) {
+    func createSecretChat() {
         worker.createSecretChat(userData.id) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let data):
-                os_log("Secret chat with id: %@ created", log: logger, type: .default, data.chatID as CVarArg)
-                _ = worker.changeSecretKey(key)
-                let event = CreatedChatEvent(
-                    chatID: data.chatID,
-                    type: data.type,
-                    members: data.members,
-                    createdAt: data.createdAt,
-                    info: data.info
-                )
-                eventPublisher.publish(event: event)
-                routeToChat(chatData)
-            case .failure(let failure):
-                _ = errorHandler.handleError(failure)
-                os_log("Failed to cread secret chat with %@", log: logger, type: .fault, userData.id as CVarArg)
-                print(failure)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    os_log("Secret chat with id: %@ created", log: self.logger, type: .default, data.chatID as CVarArg)
+                    let event = CreatedChatEvent(
+                        chatID: data.chatID,
+                        type: data.type,
+                        members: data.members,
+                        createdAt: data.createdAt,
+                        info: data.info
+                    )
+                    self.eventPublisher.publish(event: event)
+                    self.routeToChat(data)
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    os_log("Failed to cread secret chat with %@", log: self.logger, type: .fault, self.userData.id as CVarArg)
+                    print(failure)
+                }
             }
+
         }
     }
     
@@ -140,7 +142,8 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     }
     
     func changeSecretKey(_ key: String) {
-        if worker.changeSecretKey(key) {
+        guard let cd = chatData else { return }
+        if worker.changeSecretKey(key, cd.chatID) {
             os_log("Changed secret key", log: logger, type: .default)
         } else {
             os_log("Failed to change secret key", log: logger, type: .fault)

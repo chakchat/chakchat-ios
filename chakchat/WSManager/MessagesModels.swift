@@ -368,5 +368,5 @@ enum UpdateDataType: String, Codable {
     case file = "file_message"
     case reaction = "reaction"
     case delete = "update_deleted"
-    case secret = "secret"
+    case secret = "secret_update"
 }
