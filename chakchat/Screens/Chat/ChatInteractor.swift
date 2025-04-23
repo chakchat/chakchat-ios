@@ -256,7 +256,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let data = try? Data(contentsOf: fileURL),
               let mimeType = mimeType else { return }
-        let fileName = "\(UUID().uuidString).mp4"
+        let fileName = fileURL.lastPathComponent
         worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -436,7 +436,7 @@ final class ChatInteractor: ChatBusinessLogic {
                         )
                     )
             } else {
-                mappedFileUpdate.kind = .text(fc.file.fileURL.absoluteString)
+                mappedFileUpdate.kind = .text("\(fc.file.fileURL.absoluteString)#\(fc.file.fileName)#\(fc.file.mimeType)")
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]

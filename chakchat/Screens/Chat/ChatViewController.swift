@@ -845,6 +845,10 @@ final class ChatViewController: MessagesViewController {
                       let index = self.messages.firstIndex(where: {$0.messageId == fileMessage.messageId}) else { return }
                 switch result {
                 case .success(let fileUpdate):
+                    if case .fileContent(let fc) = fileUpdate.content {
+                        FileCacheManager.shared.saveFile(fc.file.fileURL, fc.file.fileName, fc.file.mimeType)
+                        { _ in}
+                    }
                     var uploadedFileMessage = self.interactor.mapToFileMessage(fileUpdate)
                     uploadedFileMessage.status = .sent
                     self.messages[index] = uploadedFileMessage
@@ -1012,14 +1016,21 @@ extension ChatViewController: MessagesDataSource {
     func textCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
         
         if case .text = message.kind {
+            if message is GroupFileMessage || message is OutgoingFileMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(FileMessageCell.self, for: indexPath)
+                cell.cellDelegate = self
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
+            if message is GroupTextMessage || message is GroupOutgoingMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
+                cell.cellDelegate = self
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
             if message is EncryptedMessage {
                 let cell = messagesCollectionView.dequeueReusableCell(EncryptedCell.self, for: indexPath)
                 cell.configure(with: message, at: indexPath, and: messagesCollectionView)
-                return cell
-            } else {
-                let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
-                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
-                cell.cellDelegate = self
                 return cell
             }
         }
@@ -1186,7 +1197,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     func photoCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .photo = message.kind {
-                return PhotoMessageCellSizeCalculator(layout: layout, isGroupChat: false)
+                return CustomMediaMessageSizeCalculator(layout: layout, isGroupChat: false)
             }
         }
         return nil
@@ -1274,8 +1285,96 @@ extension ChatViewController: TextMessageEditMenuDelegate, FileMessageEditMenuDe
         }
         if case .video(let video) = message.kind {
             guard let url = video.url else { return }
-            UISaveVideoAtPathToSavedPhotosAlbum(url.path, self, #selector(saveError), nil)
+            handleVideoDownload(url)
         }
+        if case .text(let stringURL) = message.kind {
+            let components = stringURL.components(separatedBy: "#")
+            guard let url = URL(string: components[0]) else { return }
+            let fileName = components[1]
+            handleFileDownload(url, fileName)
+        }
+    }
+    
+    private func handleVideoDownload(_ url: URL) {
+        let pathExtension = url.pathExtension
+        let fileName: String
+        if pathExtension.isEmpty {
+            fileName = UUID().uuidString + ".mp4"
+        } else {
+            fileName = url.lastPathComponent
+        }
+        
+        let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+        let localURL = cacheDirectory.appendingPathComponent(fileName)
+        
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            DispatchQueue.main.async {
+                UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
+            }
+        } else {
+            URLSession.shared.downloadTask(with: url) { tempURL, _, error in
+                guard let tempURL = tempURL, error == nil else { return }
+                
+                do {
+                    try FileManager.default.moveItem(at: tempURL, to: localURL)
+                    DispatchQueue.main.async {
+                        UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
+                    }
+                } catch {
+                    debugPrint("Failed to save \(error)")
+                }
+            }.resume()
+        }
+    }
+    
+    private func handleFileDownload(_ url: URL, _ fileName: String) {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let localURL = documentsDirectory.appendingPathComponent(fileName)
+        
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            showFileSavePrompt(for: localURL)
+        } else {
+            downloadFile(from: url, to: localURL) {
+                DispatchQueue.main.async {
+                    self.showFileSavePrompt(for: localURL)
+                }
+            }
+        }
+    }
+    
+    private func downloadFile(from remoteURL: URL, to localURL: URL, completion: @escaping () -> Void) {
+        URLSession.shared.downloadTask(with: remoteURL) { tempURL, _, error in
+            guard let tempURL = tempURL, error == nil else {
+                print("Download error: \(error?.localizedDescription ?? "unknown error")")
+                return
+            }
+            
+            do {
+                try FileManager.default.moveItem(at: tempURL, to: localURL)
+                completion()
+            } catch {
+                print("File save error: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+
+    private func showFileSavePrompt(for fileURL: URL) {
+        let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+        activityVC.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+            if completed {
+                print("File saved successfully")
+            } else if let error = error {
+                print("Error sharing file: \(error.localizedDescription)")
+            }
+        }
+        
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = self.view
+            popover.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
+        present(activityVC, animated: true)
     }
     
     @objc func saveError(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
@@ -1304,12 +1403,11 @@ extension ChatViewController: CameraInputBarAccessoryViewDelegate {
                 sendPhoto(image)
             }
             if case .url(let url) = attachment {
-                if let mimeType = mimeTypeForURL(url) {
-                    if !mimeType.contains("video") {
-                        sendFile(url, mimeTypeForURL(url))
-                    } else {
-                        sendVideo(url)
-                    }
+                let mimeType = url.pathExtension
+                if !mimeType.contains("video") && !mimeType.contains("MOV") && !mimeType.contains("avi") && !mimeType.contains("mpeg") && !mimeType.contains("mpg") && !mimeType.contains("dvi") {
+                    sendFile(url, mimeType)
+                } else {
+                    sendVideo(url)
                 }
             }
         }

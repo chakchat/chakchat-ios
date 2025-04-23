@@ -41,8 +41,6 @@ final class FileStorageService: FileStorageServiceProtocol {
             if let data = response.data, let responseString = String(data: data, encoding: .utf8) {
                 print("Server response: \(responseString)")
             }
-            print(response.response?.statusCode)
-            print(response.result)
             switch response.result {
             case .success(let responseData):
                 completion(.success(responseData))

@@ -8,7 +8,12 @@
 import Foundation
 
 protocol FileCacheProtocol {
-    func saveFile(_ url: URL, completion: @escaping (URL?) -> Void)
+    func saveFile(
+        _ url: URL,
+        _ fileName: String,
+        _ mimeType: String,
+        completion: @escaping (URL?) -> Void
+    )
     func getFile(_ url: URL) -> URL?
 }
 

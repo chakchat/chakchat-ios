@@ -64,7 +64,7 @@ final class GroupChatWorker: GroupChatWorkerLogic {
                     switch result {
                     case .success(let response):
                         users.append(response.data)
-                    case .failure(let failure):
+                    case .failure(_):
                         print("Failed to fetch \(user) info")
                     }
                 }
