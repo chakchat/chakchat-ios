@@ -120,7 +120,7 @@ class CustomMediaMessageCell: MediaMessageCell {
     }
 }
 
-class PhotoMessageCellSizeCalculator: MediaMessageSizeCalculator {
+class CustomMediaMessageSizeCalculator: MediaMessageSizeCalculator {
     
     private let isGroupChat: Bool
 
