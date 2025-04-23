@@ -93,6 +93,11 @@ final class ChatViewController: MessagesViewController {
                 cell.configure(with: message, at: indexPath, and: messagesCollectionView)
                 return cell
             }
+            if message is EncryptedMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(EncryptedCell.self, for: indexPath)
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
             return super.collectionView(collectionView, cellForItemAt: indexPath)
         case .photo, .video:
             let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
@@ -109,9 +114,20 @@ final class ChatViewController: MessagesViewController {
         messagesCollectionView.register(ReactionTextMessageCell.self)
         messagesCollectionView.register(CustomMediaMessageCell.self)
         messagesCollectionView.register(FileMessageCell.self)
+        messagesCollectionView.register(EncryptedCell.self)
+        addSecretKeyObserver()
         loadFirstMessages()
         configureUI()
         interactor.passUserData()
+    }
+    
+    private func addSecretKeyObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleSecretKeyUpdate),
+            name: .secretKeyUpdated,
+            object: nil
+        )
     }
     
     private func loadFirstMessages() {
@@ -168,6 +184,9 @@ final class ChatViewController: MessagesViewController {
                 } else {
                     deleteForSender.append(update)
                 }
+            }
+            if let update = update as? EncryptedMessage {
+                messages.append(update)
             }
         }
         
@@ -952,6 +971,28 @@ final class ChatViewController: MessagesViewController {
             self.view.frame.origin.y = 0
         }
     }
+    
+    @objc func handleSecretKeyUpdate() {
+        DispatchQueue.main.async {
+            self.messages = []
+            self.messagesCollectionView.reloadData()
+            self.interactor.loadFirstMessages { [weak self] result in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let messages):
+                        self.handleMessages(messages)
+                    case .failure(_):
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 extension ChatViewController: MessagesDataSource {
@@ -971,10 +1012,16 @@ extension ChatViewController: MessagesDataSource {
     func textCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
         
         if case .text = message.kind {
-            let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
-            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
-            cell.cellDelegate = self
-            return cell
+            if message is EncryptedMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(EncryptedCell.self, for: indexPath)
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            } else {
+                let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                cell.cellDelegate = self
+                return cell
+            }
         }
         return TextMessageCell()
     }
@@ -1007,7 +1054,10 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
-        isFromCurrentSender(message: message) ? .white : .darkText
+        if message is EncryptedMessage {
+            return .red
+        }
+        return isFromCurrentSender(message: message) ? .white : .darkText
     }
     
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
@@ -1124,6 +1174,9 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
                 }
                 if message is OutgoingFileMessage || message is GroupFileMessage {
                     return FileMessageCellSizeCalculator(layout: layout, isGroupChat: false)
+                }
+                if message is EncryptedMessage {
+                    return EncryptedCellSizeCalculator(layout: layout, isGroupChat: false)
                 }
             }
         }
@@ -1287,4 +1340,8 @@ final class EmptyCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+}
+
+extension Notification.Name {
+    static let secretKeyUpdated = Notification.Name("SecretKeyUpdated")
 }

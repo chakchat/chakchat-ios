@@ -84,6 +84,11 @@ final class GroupChatViewController: MessagesViewController {
                 cell.configure(with: message, at: indexPath, and: messagesCollectionView)
                 return cell
             }
+            if message is EncryptedMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(EncryptedCell.self, for: indexPath)
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
             return super.collectionView(collectionView, cellForItemAt: indexPath)
         case .photo, .video:
             let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
@@ -100,6 +105,7 @@ final class GroupChatViewController: MessagesViewController {
         messagesCollectionView.register(ReactionTextMessageCell.self)
         messagesCollectionView.register(CustomMediaMessageCell.self)
         messagesCollectionView.register(FileMessageCell.self)
+        messagesCollectionView.register(EncryptedCell.self)
         loadUsers()
         loadFirstMessages()
         configureUI()
@@ -174,6 +180,9 @@ final class GroupChatViewController: MessagesViewController {
                 } else {
                     deleteForSender.append(update)
                 }
+            }
+            if let update = update as? EncryptedMessage {
+                messages.append(update)
             }
         }
         
@@ -1025,7 +1034,10 @@ extension GroupChatViewController: MessagesDataSource {
 
 extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
-        isFromCurrentSender(message: message) ? .white : .darkText
+        if message is EncryptedMessage {
+            return .red
+        }
+        return isFromCurrentSender(message: message) ? .white : .darkText
     }
     
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
@@ -1138,6 +1150,9 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
                 }
                 if message is OutgoingFileMessage || message is GroupFileMessage {
                     return FileMessageCellSizeCalculator(layout: layout, isGroupChat: true)
+                }
+                if message is EncryptedMessage {
+                    return EncryptedCellSizeCalculator(layout: layout, isGroupChat: true)
                 }
             }
         }
