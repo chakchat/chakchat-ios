@@ -489,7 +489,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
-        if let data = try? JSONEncoder().encode(update.content) {
+        guard case .secretContent(let sc) = update.content else { return nil }
+        guard let dectyptedData = worker.openMessage(chatData.chatID, sc.payload, sc.initializationVector, sc.keyHash) else { return nil}
+        if let data = try? JSONEncoder().encode(dectyptedData) {    
             if let textContent = try? JSONDecoder().decode(TextContent.self, from: data) {
                 return UpdateData(
                     update.chatID,
