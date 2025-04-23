@@ -47,7 +47,7 @@ final class ChatCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(_ image: URL?, _ name: String, _ message: String, _ uncheckAmount: Int, _ date: Date) {
+    func configure(_ image: URL?, _ name: String, _ message: String, _ uncheckAmount: Int, _ date: String) {
         self.nicknameLabel.text = name
         update(message: message, messagesAmount: uncheckAmount, date: date)
         if let url = image {
@@ -76,9 +76,9 @@ final class ChatCell: UITableViewCell {
         configureDateLabel()
     }
     
-    func update(message: String, messagesAmount: Int, date: Date) {
+    func update(message: String, messagesAmount: Int, date: String) {
         messageLabel.text = message
-        dateLabel.text = formatDate(date)
+        dateLabel.text = date
         if messagesAmount < 1 {
             uncheckCircleView.isHidden = true
             messageAmountLabel.isHidden = true

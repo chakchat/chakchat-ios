@@ -258,7 +258,19 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                     switch result {
                     case .success(let chatInfo):
                         // TODO: Add message, amount, date
-                        cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, "Hello world!", 1, Date.now)
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "HH:mm"
+                        formatter.timeZone = TimeZone.current
+                        if let updatePreview = item.updatePreview {
+                            if !updatePreview.isEmpty {
+                                cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, self.getPreview(updatePreview[0]), 1, self.getDate(updatePreview[0]))
+                            } else {
+                                cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
+                            }
+                        } else {
+                            cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
+                        }
+  
                         cell.backgroundColor = .clear
                         cell.selectionStyle = .none
                     case .failure(let failure):
@@ -268,6 +280,61 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
             }
         }
         return cell
+    }
+    
+    private func getPreview(_ updatePreview: ChatsModels.GeneralChatModel.Preview) -> String {
+        if case .textContent(let tc) = updatePreview.content {
+            return tc.text
+        }
+        if case .fileContent(let fc) = updatePreview.content {
+            if fc.file.mimeType == "image/jpeg"{
+                return "Image 🌅"
+            } else if fc.file.mimeType == "video/mp4" {
+                return "Video 📹"
+            } else {
+                return "File 📄"
+            }
+        }
+        if case .secretContent(_) = updatePreview.content {
+            return "ENCRYPTED 🔐"
+        }
+        return "Hello World!"
+    }
+    
+    private func getCreatePreview(_ chatData: ChatsModels.GeneralChatModel.ChatData) -> String {
+        if case .personal(let pi) = chatData.info {
+            return "Personal chat created!"
+        }
+        if case .secretPersonal(let si) = chatData.info {
+            return "Secret chat created!"
+        }
+        if case .group(let gi) = chatData.info {
+            return "Group \"\(gi.name)\" created"
+        }
+        if case .secretGroup(let sgi) = chatData.info {
+            return "Secret group \"\(sgi.name)\" created"
+        }
+        return ""
+    }
+    
+    private func getDate(_ updatePreview: ChatsModels.GeneralChatModel.Preview) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.timeZone = TimeZone.current
+        if updatePreview.type == .textMessage {
+            let timeString = formatter.string(from: updatePreview.createdAt)
+            return timeString
+        }
+        if case .fileContent(let fc) = updatePreview.content {
+            let timeString = formatter.string(from: fc.file.createdAt)
+            return timeString
+        }
+        if updatePreview.type == .secret {
+ 
+            let timeString = formatter.string(from: updatePreview.createdAt)
+            return timeString
+        }
+        return "00:00"
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
