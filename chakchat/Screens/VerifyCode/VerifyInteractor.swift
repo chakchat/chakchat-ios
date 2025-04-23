@@ -67,6 +67,7 @@ final class VerifyInteractor: VerifyBusinessLogic {
                 switch result {
                 case .success(let state):
                     os_log("Code verified", log: logger, type: .info)
+                    // TODO: send device token from keychain
                     self.routeToChatScreen(state)
                 case .failure(let error):
                     let errorId = self.errorHandler.handleError(error)

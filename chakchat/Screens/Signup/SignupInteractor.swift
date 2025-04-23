@@ -74,6 +74,7 @@ final class SignupInteractor: SignupBusinessLogic {
     // MARK: - Routing
     func successTransition(_ state: SignupState) {
         os_log("Routed to chat menu screen", log: logger, type: .default)
+        // TODO: send device token from keychain
         onRouteToChatScreen?(state)
     }
 }

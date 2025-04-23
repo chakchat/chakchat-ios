@@ -10,6 +10,7 @@ import UIKit
 // MARK: - AppDelegate
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         let attributes: [NSAttributedString.Key : Any] = [
@@ -17,7 +18,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .foregroundColor : UIColor.black
         ]
         UINavigationBar.appearance().titleTextAttributes = attributes
-        // Override point for customization after application launch.
+        
+        UNUserNotificationCenter.current().delegate = self
+        requestNotificationAuthorization()
+        application.registerForRemoteNotifications()
+        
         return true
     }
 
@@ -34,7 +39,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
+}
 
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    private func requestNotificationAuthorization() {
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(options: authOptions) { granted, error in
+            print("Permission granted: \(granted)")
+        }
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        print("Device Token: \(token)")
+        let keychainManager = KeychainManager()
+        keychainManager.save(key: KeychainManager.keyForDeviceToken, value: token)
+    }
 
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register for notifications: \(error.localizedDescription)")
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                              willPresent notification: UNNotification,
+                              withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                              didReceive response: UNNotificationResponse,
+                              withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        completionHandler()
+    }
 }
 

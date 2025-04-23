@@ -167,6 +167,7 @@ final class ProfileSettingsInteractor: ProfileSettingsScreenBusinessLogic {
             switch result {
             case .success(_):
                 os_log("Delete account, data deleted", log: logger, type: .info)
+                // TODO: send delete device token request
                 backToRegistration()
             case .failure(let failure):
                 _ = self.errorHandler.handleError(failure)
