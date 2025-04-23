@@ -13,17 +13,28 @@ final class FileCacheManager: FileCacheProtocol {
     
     private init() {}
     
-    func saveFile(_ url: URL, completion: @escaping (URL?) -> Void) {
+    func saveFile(
+        _ url: URL,
+        _ fileName: String,
+        _ mimeType: String,
+        completion: @escaping (URL?) -> Void
+    ) {
         let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        let fileName = url.lastPathComponent
-        let localURL = cacheDirectory.appendingPathComponent(fileName)
+        let baseName = (fileName as NSString).deletingPathExtension
+        let finalFileName = "\(baseName).\(mimeType)"
+        let localURL = cacheDirectory.appendingPathComponent(finalFileName)
         
         if FileManager.default.fileExists(atPath: localURL.path) {
-            completion(localURL)
-            return
+            do {
+                try FileManager.default.removeItem(at: localURL)
+            } catch {
+                debugPrint("Failed to remove existing file: \(error)")
+                completion(nil)
+                return
+            }
         }
         
-        URLSession.shared.downloadTask(with: url) { tempURL, _ , error in
+        URLSession.shared.downloadTask(with: url) { tempURL, _, error in
             guard let tempURL = tempURL, error == nil else {
                 completion(nil)
                 return
@@ -36,7 +47,6 @@ final class FileCacheManager: FileCacheProtocol {
                 debugPrint("Failed to save file: \(error)")
                 completion(nil)
             }
-            
         }.resume()
     }
     
@@ -46,5 +56,18 @@ final class FileCacheManager: FileCacheProtocol {
         let localURL = cacheDirectory.appendingPathComponent(fileName)
         
         return FileManager.default.fileExists(atPath: localURL.path) ? localURL : nil
+    }
+    
+    private func mimeTypeToExtension(_ mimeType: String) -> String? {
+        let mimeTypes = [
+            "image/jpeg": "jpg",
+            "image/png": "png",
+            "application/pdf": "pdf",
+            "text/plain": "txt",
+            "application/json": "json",
+            "audio/mpeg": "mp3",
+            "video/mp4": "mp4",
+        ]
+        return mimeTypes[mimeType.lowercased()]
     }
 }
