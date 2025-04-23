@@ -243,6 +243,9 @@ final class ChatViewController: MessagesViewController {
                 }
             }
         }
+        if isSecret {
+            interactor.checkForSecretKey()
+        }
     }
     
     func changeInputBar(_ isBlocked: Bool) {
@@ -251,6 +254,26 @@ final class ChatViewController: MessagesViewController {
         } else {
             inputBarType = .custom(messageInputBar)
         }
+    }
+    
+    func showSecretKeyAlert() {
+        let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.saveSecretKey(key)
+                } else {
+                    self?.showSecretKeyAlert()
+                }
+            }
+        }
+        alert.addAction(ok)
+        present(alert, animated: true)
     }
     
     func showSecretKeyFail() {
@@ -1047,8 +1070,12 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 10
-        
+        if let message = message as? GroupTextMessage {
+            if message.isEdited == true {
+                return 12
+            }
+        }
+        return 0
     }
     
     func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
@@ -1093,10 +1120,10 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .text = message.kind {
                 if message is GroupOutgoingMessage || message is GroupTextMessage {
-                    return ReactionMessageSizeCalculator(layout: layout)
+                    return ReactionMessageSizeCalculator(layout: layout, isGroupChat: false)
                 }
                 if message is OutgoingFileMessage || message is GroupFileMessage {
-                    return FileMessageCellSizeCalculator(layout: layout)
+                    return FileMessageCellSizeCalculator(layout: layout, isGroupChat: false)
                 }
             }
         }
@@ -1106,7 +1133,7 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     func photoCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .photo = message.kind {
-                return PhotoMessageCellSizeCalculator(layout: layout)
+                return PhotoMessageCellSizeCalculator(layout: layout, isGroupChat: false)
             }
         }
         return nil

@@ -53,6 +53,29 @@ enum SuccessModels {
             case fileURL = "file_url"
             case createdAt = "created_at"
         }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            fileName = try container.decode(String.self, forKey: .fileName)
+            fileSize = try container.decode(Int64.self, forKey: .fileSize)
+            mimeType = try container.decode(String.self, forKey: .mimeType)
+            fileId = try container.decode(UUID.self, forKey: .fileId)
+            fileURL = try container.decode(URL.self, forKey: .fileURL)
+            
+            let dateString = try container.decode(String.self, forKey: .createdAt)
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            
+            guard let date = formatter.date(from: dateString) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .createdAt,
+                    in: container,
+                    debugDescription: "Date string does not match format expected by formatter."
+                )
+            }
+            createdAt = date
+        }
     }
     
     struct UploadPartResponse: Codable {

@@ -24,4 +24,8 @@ final class ChatPresenter: ChatPresentationLogic {
     func changeInputBar(_ isBlocked: Bool) {
         view?.changeInputBar(isBlocked)
     }
+    
+    func showSecretKeyAlert() {
+        view?.showSecretKeyAlert()
+    }
 }
