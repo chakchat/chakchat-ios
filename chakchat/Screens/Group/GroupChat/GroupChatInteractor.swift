@@ -187,7 +187,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let data = try? Data(contentsOf: videoURL) else { return }
         let fileName = "\(videoURL.lastPathComponent)"
-        let mimeType = "\(videoURL.pathExtension)"
+        let mimeType = "video/mp4"
         worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -422,17 +422,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         )
                     )
             } else {
-//                mappedFileUpdate.kind =
-//                    .audio(
-//                        AudioMediaItem(
-//                            url: fc.file.fileURL,
-//                            duration: Float(fc.file.fileSize / 1000),
-//                            size: CGSize(width: 200, height: 50),
-//                            fileName: fc.file.fileName,
-//                            mimeType: fc.file.mimeType,
-//                            localURL: "" // На этапе конфигурации
-//                        )
-//                    )
+                mappedFileUpdate.kind = .text("\(fc.file.fileURL.absoluteString)#\(fc.file.fileName)#\(fc.file.mimeType)")
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]
