@@ -225,6 +225,8 @@
 		AAA839F22D638A3200C870A4 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = AAA839F12D638A3200C870A4 /* Alamofire */; };
 		AAA839F52D65B96600C870A4 /* IdentityServiceProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA839F42D65B96600C870A4 /* IdentityServiceProtocols.swift */; };
 		AAA839F72D65B9E800C870A4 /* IdentityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA839F62D65B9E800C870A4 /* IdentityService.swift */; };
+		AAAD98E02DB924C7004FB5F4 /* UIEncryptedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAD98DF2DB924C7004FB5F4 /* UIEncryptedCell.swift */; };
+		AAAD98E22DB92764004FB5F4 /* SpecialGothicExpandedOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AAAD98E12DB92764004FB5F4 /* SpecialGothicExpandedOne-Regular.ttf */; };
 		AAB300AF2D6CDC1400BECA3B /* ImageCacheProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300AE2D6CDC1400BECA3B /* ImageCacheProtocol.swift */; };
 		AAB300B12D6CDE5F00BECA3B /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300B02D6CDE5F00BECA3B /* ImageCacheManager.swift */; };
 		AAB300B32D6DA7E900BECA3B /* UISearchControllerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB300B22D6DA7E900BECA3B /* UISearchControllerCell.swift */; };
@@ -574,6 +576,8 @@
 		AAA839E12D62522F00C870A4 /* FileStorageEndpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorageEndpoints.swift; sourceTree = "<group>"; };
 		AAA839F42D65B96600C870A4 /* IdentityServiceProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityServiceProtocols.swift; sourceTree = "<group>"; };
 		AAA839F62D65B9E800C870A4 /* IdentityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityService.swift; sourceTree = "<group>"; };
+		AAAD98DF2DB924C7004FB5F4 /* UIEncryptedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIEncryptedCell.swift; sourceTree = "<group>"; };
+		AAAD98E12DB92764004FB5F4 /* SpecialGothicExpandedOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpecialGothicExpandedOne-Regular.ttf"; sourceTree = "<group>"; };
 		AAB300AE2D6CDC1400BECA3B /* ImageCacheProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheProtocol.swift; sourceTree = "<group>"; };
 		AAB300B02D6CDE5F00BECA3B /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		AAB300B22D6DA7E900BECA3B /* UISearchControllerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UISearchControllerCell.swift; sourceTree = "<group>"; };
@@ -941,6 +945,7 @@
 		AA8316422D3447680029325C /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				AAAD98E12DB92764004FB5F4 /* SpecialGothicExpandedOne-Regular.ttf */,
 				9B1EC0832D395F5D00E01E00 /* Inter-VariableFont_opsz,wght.ttf */,
 				9B1EC0852D39669F00E01E00 /* Poppins-Regular.ttf */,
 				9B1EC0872D3968C500E01E00 /* OpenSans-VariableFont_wdth,wght.ttf */,
@@ -1140,6 +1145,7 @@
 				AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */,
 				AA57588F2DAC002200CC3331 /* UIReplyPreviewView.swift */,
 				AA9C2D862DB2382A00AC8DED /* UIFileMessageCell.swift */,
+				AAAD98DF2DB924C7004FB5F4 /* UIEncryptedCell.swift */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -1904,6 +1910,7 @@
 				E19609BA2D608E98008E27C0 /* Localizable.strings in Resources */,
 				9B1EC0702D369CBA00E01E00 /* RammettoOne-Regular.ttf in Resources */,
 				9B1EC06C2D369C5F00E01E00 /* Montserrat-VariableFont_wght.ttf in Resources */,
+				AAAD98E22DB92764004FB5F4 /* SpecialGothicExpandedOne-Regular.ttf in Resources */,
 				E19609B72D608E8F008E27C0 /* Localizable.strings in Resources */,
 				AA8316482D344B740029325C /* Micro5-Regular.ttf in Resources */,
 				9B1EC06E2D369C6000E01E00 /* RobotoMono-VariableFont_wght.ttf in Resources */,
@@ -1943,6 +1950,7 @@
 				AAB300BA2D6DEA8900BECA3B /* UIShimmerView.swift in Sources */,
 				AA1C0E432D43C968008E47D8 /* ProfileSettingsInteractor.swift in Sources */,
 				AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */,
+				AAAD98E02DB924C7004FB5F4 /* UIEncryptedCell.swift in Sources */,
 				AA2781852D7DE3770049ACAF /* GroupProfileEditModels.swift in Sources */,
 				E1960A202D6B49C4008E27C0 /* CachePresenter.swift in Sources */,
 				AA2781602D7DA1540049ACAF /* GroupChatInteractor.swift in Sources */,
