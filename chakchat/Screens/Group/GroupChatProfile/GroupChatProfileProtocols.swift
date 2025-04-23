@@ -10,6 +10,8 @@ import UIKit
 protocol GroupChatProfileBusinessLogic: SearchInteractor {
     func passChatData()
     
+    func createSecretGroup()
+    
     func deleteGroup()
     func addMember(_ memberID: UUID)
     func deleteMember(_ memberID: UUID)
@@ -35,6 +37,8 @@ protocol GroupChatProfilePresentationLogic {
 }
 
 protocol GroupChatProfileWorkerLogic {
+    func createSecretGroup(_ name: String, _ description: String?, _ members: [UUID], completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
+    
     func deleteGroup(
         _ chatID: UUID,
         completion: @escaping (Result<EmptyResponse, Error>) -> Void

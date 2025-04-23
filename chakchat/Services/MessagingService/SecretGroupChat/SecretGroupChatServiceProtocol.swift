@@ -12,7 +12,7 @@ protocol SecretGroupChatServiceProtocol {
     func sendCreateChatRequest(
         _ request: ChatsModels.GroupChat.CreateRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, Error>) -> Void
     )
     
     func sendUpdateChatRequest(

@@ -13,7 +13,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
     func sendCreateChatRequest(
         _ request: ChatsModels.GroupChat.CreateRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
         let endpoint = MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue
         let idempotencyKey = UUID().uuidString

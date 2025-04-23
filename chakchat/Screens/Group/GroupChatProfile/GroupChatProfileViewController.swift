@@ -187,6 +187,7 @@ final class GroupChatProfileViewController: UIViewController {
                                               LocalizationManager.shared.localizedString(for: "sound_l"))
         let secretChatButton = createButton("key.fill",
                                             LocalizationManager.shared.localizedString(for: "secret_chat_l"))
+        secretChatButton.addTarget(self, action: #selector(secretChatButtonPressed), for: .touchUpInside)
         let searchButton = createButton("magnifyingglass",
                                         LocalizationManager.shared.localizedString(for: "search_l"))
         
@@ -301,6 +302,10 @@ final class GroupChatProfileViewController: UIViewController {
     
     private func deleteGroup() {
         interactor.deleteGroup()
+    }
+    
+    @objc private func secretChatButtonPressed() {
+        interactor.createSecretGroup()
     }
     
     @objc private func editButtonPressed() {
