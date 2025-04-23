@@ -498,6 +498,15 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         )]
                     )
                     mappedUpdates.append(sub[0])
+                } else  {
+                    let encryptedUpdate = EncryptedMessage(
+                        sender: GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .text("ENCRYPTED"),
+                        dummy: 52 // чтобы отличалась от любой другой ячейки реализующей протокол MessageType
+                    )
+                    mappedUpdates.append(encryptedUpdate)
                 }
             }
         }

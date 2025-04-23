@@ -8,6 +8,7 @@
 import UIKit
 
 final class GroupChatPresenter: GroupChatPresentationLogic {
+    
     weak var view: GroupChatViewController?
     
     func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID) {
@@ -20,5 +21,9 @@ final class GroupChatPresenter: GroupChatPresentationLogic {
     
     func updateGroupInfo(_ name: String, _ description: String?) {
         view?.updateGroupInfo(name, description)
+    }
+    
+    func showInputSecretKeyAlert() {
+        view?.showInputSecretKeyAlert()
     }
 }

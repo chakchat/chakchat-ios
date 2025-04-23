@@ -185,4 +185,11 @@ struct ReplyMessage: MessageType, MessageStatusProtocol {
     let replyTo: MessageType
 }
 
-
+struct EncryptedMessage: MessageType {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind
+    
+    var dummy: Float
+}

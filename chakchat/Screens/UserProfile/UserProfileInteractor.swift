@@ -144,6 +144,7 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     func changeSecretKey(_ key: String) {
         guard let cd = chatData else { return }
         if worker.changeSecretKey(key, cd.chatID) {
+            onSecretKeyChanged()
             os_log("Changed secret key", log: logger, type: .default)
         } else {
             os_log("Failed to change secret key", log: logger, type: .fault)
@@ -200,5 +201,9 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
             }
         }
         return false
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }
