@@ -92,14 +92,25 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         } else if chatType == .secretGroup {
             let textContent = TextContent(replyTo, message, nil, nil, nil)
             if let jsonData = try? JSONEncoder().encode(textContent) {
-                if let request = sealMessage(jsonData) {
+                if let request = sealMessage(chatID, jsonData) {
                     secretGroupUpdateService.sendSecretMessage(request, chatID, accessToken) { [weak self] result in
                         guard let self = self else { return }
                         switch result {
                         case .success(let response):
                             let data = response.data
-                            if let updateData = openMessage(data.content.payload, data.content.initializationVector, data.content.keyHash) {
-                                completion(.success(updateData))
+                            if let updateData = openMessage(chatID, data.content.payload, data.content.initializationVector, data.content.keyHash) {
+                                guard let content = try? JSONDecoder().decode(TextContent.self, from: updateData) else {
+                                    return
+                                }
+                                let update = UpdateData(
+                                    data.chatID,
+                                    data.updateID,
+                                    .textMessage,
+                                    data.senderID,
+                                    data.createdAt,
+                                    .textContent(content)
+                                )
+                                completion(.success(update))
                             }
                         case .failure(let failure):
                             completion(.failure(failure))
@@ -126,14 +137,25 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         } else if chatType == .secretGroup {
             let deleteContent = DeletedContent(deletedID: updateID, deletedMode: deleteMode)
             if let jsonData = try? JSONEncoder().encode(deleteContent) {
-                if let request = sealMessage(jsonData) {
+                if let request = sealMessage(chatID, jsonData) {
                     secretGroupUpdateService.sendSecretMessage(request, chatID, accessToken) { [weak self] result in
                         guard let self = self else { return }
                         switch result {
                         case .success(let response):
                             let data = response.data
-                            if let updateData = openMessage(data.content.payload, data.content.initializationVector, data.content.keyHash) {
-                                completion(.success(updateData))
+                            if let updateData = openMessage(chatID, data.content.payload, data.content.initializationVector, data.content.keyHash) {
+                                guard let content = try? JSONDecoder().decode(DeletedContent.self, from: updateData) else {
+                                    return
+                                }
+                                let update = UpdateData(
+                                    data.chatID,
+                                    data.updateID,
+                                    .delete,
+                                    data.senderID,
+                                    data.createdAt,
+                                    .deletedContent(content)
+                                )
+                                completion(.success(update))
                             }
                         case .failure(let failure):
                             completion(.failure(failure))
@@ -161,14 +183,25 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         } else if chatType == .secretGroup {
             let editedContent = EditedContent(newText: text, messageID: updateID)
             if let jsonData = try? JSONEncoder().encode(editedContent) {
-                if let request = sealMessage(jsonData) {
+                if let request = sealMessage(chatID, jsonData) {
                     secretGroupUpdateService.sendSecretMessage(request, chatID, accessToken) { [weak self] result in
                         guard let self = self else { return }
                         switch result {
                         case .success(let response):
                             let data = response.data
-                            if let updateData = openMessage(data.content.payload, data.content.initializationVector, data.content.keyHash) {
-                                completion(.success(updateData))
+                            if let updateData = openMessage(chatID, data.content.payload, data.content.initializationVector, data.content.keyHash) {
+                                guard let content = try? JSONDecoder().decode(EditedContent.self, from: updateData) else {
+                                    return
+                                }
+                                let update = UpdateData(
+                                    data.chatID,
+                                    data.updateID,
+                                    .textEdited,
+                                    data.senderID,
+                                    data.createdAt,
+                                    .editedContent(content)
+                                )
+                                completion(.success(update))
                             }
                         case .failure(let failure):
                             completion(.failure(failure))
@@ -213,13 +246,24 @@ final class GroupChatWorker: GroupChatWorkerLogic {
                         reactions: nil
                     )
                     if let jsonData = try? JSONEncoder().encode(fileContent) {
-                        if let request = self.sealMessage(jsonData) {
+                        if let request = self.sealMessage(chatID, jsonData) {
                             self.secretGroupUpdateService.sendSecretMessage(request, chatID, accessToken) { result in
                                 switch result {
                                 case .success(let response):
                                     let data = response.data
-                                    if let updateData = self.openMessage(data.content.payload, data.content.initializationVector, data.content.keyHash) {
-                                        completion(.success(updateData))
+                                    if let updateData = self.openMessage(chatID, data.content.payload, data.content.initializationVector, data.content.keyHash) {
+                                        guard let content = try? JSONDecoder().decode(FileContent.self, from: updateData) else {
+                                            return
+                                        }
+                                        let update = UpdateData(
+                                            data.chatID,
+                                            data.updateID,
+                                            .file,
+                                            data.senderID,
+                                            data.createdAt,
+                                            .fileContent(content)
+                                        )
+                                        completion(.success(update))
                                     }
                                 case .failure(let failure):
                                     completion(.failure(failure))
@@ -251,13 +295,24 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         } else if chatType == .secretGroup {
             let reactionContent = ReactionContent(reaction: reaction, messageID: messageID)
             if let jsonData = try? JSONEncoder().encode(reactionContent) {
-                if let request = self.sealMessage(jsonData) {
+                if let request = self.sealMessage(chatID, jsonData) {
                     self.secretGroupUpdateService.sendSecretMessage(request, chatID, accessToken) { result in
                         switch result {
                         case .success(let response):
                             let data = response.data
-                            if let updateData = self.openMessage(data.content.payload, data.content.initializationVector, data.content.keyHash) {
-                                completion(.success(updateData))
+                            if let updateData = self.openMessage(chatID, data.content.payload, data.content.initializationVector, data.content.keyHash) {
+                                guard let content = try? JSONDecoder().decode(ReactionContent.self, from: updateData) else {
+                                    return
+                                }
+                                let update = UpdateData(
+                                    data.chatID,
+                                    data.updateID,
+                                    .reaction,
+                                    data.senderID,
+                                    data.createdAt,
+                                    .reactionContent(content)
+                                )
+                                completion(.success(update))
                             }
                         case .failure(let failure):
                             completion(.failure(failure))
@@ -284,14 +339,25 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         } else if chatType == .secretGroup {
             let deleteContent = DeletedContent(deletedID: updateID, deletedMode: .DeleteModeForAll)
             if let jsonData = try? JSONEncoder().encode(deleteContent) {
-                if let request = sealMessage(jsonData) {
+                if let request = sealMessage(chatID, jsonData) {
                     secretGroupUpdateService.sendSecretMessage(request, chatID, accessToken) { [weak self] result in
                         guard let self = self else { return }
                         switch result {
                         case .success(let response):
                             let data = response.data
-                            if let updateData = openMessage(data.content.payload, data.content.initializationVector, data.content.keyHash) {
-                                completion(.success(updateData))
+                            if let updateData = openMessage(chatID, data.content.payload, data.content.initializationVector, data.content.keyHash) {
+                                guard let content = try? JSONDecoder().decode(DeletedContent.self, from: updateData) else {
+                                    return
+                                }
+                                let update = UpdateData(
+                                    data.chatID,
+                                    data.updateID,
+                                    .delete,
+                                    data.senderID,
+                                    data.createdAt,
+                                    .deletedContent(content)
+                                )
+                                completion(.success(update))
                             }
                         case .failure(let failure):
                             completion(.failure(failure))
@@ -350,8 +416,8 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         return nil
     }
     
-    private func sealMessage(_ json: Data) -> ChatsModels.SecretUpdateModels.SendMessageRequest? {
-        guard let key = keychainManager.getString(key: KeychainManager.keyForSaveSecretKey) else {
+    private func sealMessage(_ chatID: UUID, _ json: Data) -> ChatsModels.SecretUpdateModels.SendMessageRequest? {
+        guard let key = keychainManager.getSecretKey(chatID) else {
             return nil
         }
         let nonce = AES.GCM.Nonce()
@@ -375,8 +441,8 @@ final class GroupChatWorker: GroupChatWorkerLogic {
             )
     }
     
-    private func openMessage(_ payload: Data, _ iv: Data, _ sendedKeyHash: Data) -> UpdateData? {
-        guard let key = keychainManager.getString(key: KeychainManager.keyForSaveSecretKey) else {
+    internal func openMessage(_ chatID: UUID, _ payload: Data, _ iv: Data, _ sendedKeyHash: Data) -> Data? {
+        guard let key = keychainManager.getSecretKey(chatID) else {
             return nil
         }
         
@@ -397,7 +463,7 @@ final class GroupChatWorker: GroupChatWorkerLogic {
             guard let sealedBox = try? AES.GCM.SealedBox(nonce: nonce, ciphertext: ciphertext, tag: tag) else { return nil }
             guard let decryptedData = try? AES.GCM.open(sealedBox, using: symmetricKey) else { return nil }
             
-            return try? JSONDecoder().decode(UpdateData.self, from: decryptedData)
+            return decryptedData
         }
         return nil
     }

@@ -1095,10 +1095,10 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .text = message.kind {
                 if message is GroupOutgoingMessage || message is GroupTextMessage {
-                    return ReactionMessageSizeCalculator(layout: layout)
+                    return ReactionMessageSizeCalculator(layout: layout, isGroupChat: true)
                 }
                 if message is OutgoingFileMessage || message is GroupFileMessage {
-                    return FileMessageCellSizeCalculator(layout: layout)
+                    return FileMessageCellSizeCalculator(layout: layout, isGroupChat: true)
                 }
             }
         }
@@ -1108,7 +1108,7 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     func photoCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .photo = message.kind {
-                return PhotoMessageCellSizeCalculator(layout: layout)
+                return PhotoMessageCellSizeCalculator(layout: layout, isGroupChat: true)
             }
         }
         return nil
@@ -1569,6 +1569,21 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
     private let emojiWidth = 40
     private let spacing = 8
+    
+    private let isGroupChat: Bool
+
+    init(layout: MessagesCollectionViewFlowLayout, isGroupChat: Bool) {
+        self.isGroupChat = isGroupChat
+        super.init(layout: layout)
+
+        if isGroupChat {
+            incomingAvatarSize = CGSize(width: 30, height: 30)
+            outgoingAvatarSize = .zero
+        } else {
+            incomingAvatarSize = .zero
+            outgoingAvatarSize = .zero
+        }
+    }
     
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)

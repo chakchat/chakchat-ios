@@ -382,7 +382,7 @@ enum ChatsModels {
             let updateID: Int64
             let chatID: UUID
             let senderID: UUID
-            let createdAt: String
+            let createdAt: Date
             let content: SendMessageRequest
             
             enum CodingKeys: String, CodingKey {

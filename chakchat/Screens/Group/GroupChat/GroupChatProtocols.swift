@@ -56,6 +56,7 @@ protocol GroupChatWorkerLogic {
     func sendReaction(_ chatID: UUID, _ reaction: String, _ messageID: Int64, _ chatType: ChatType, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, _ chatType: ChatType, completion: @escaping (Result<UpdateData, Error>) -> Void)
     
+    func openMessage(_ chatID: UUID, _ payload: Data, _ iv: Data, _ sendedKeyHash: Data) -> Data?
     
     func uploadImage(_ fileData: Data,
                      _ fileName: String,

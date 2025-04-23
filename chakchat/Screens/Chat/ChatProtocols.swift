@@ -37,11 +37,15 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage
     func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited
     func mapToFileMessage(_ update: UpdateData) -> GroupFileMessage
+    
+    func checkForSecretKey()
 }
 
 protocol ChatPresentationLogic {
     func passUserData(_ chatData: ChatsModels.GeneralChatModel.ChatData?, _ userData: ProfileSettingsModels.ProfileUserData, _ isSecret: Bool, _ myID: UUID)
     func showSecretKeyFail()
+    
+    func showSecretKeyAlert()
     
     func changeInputBar(_ isBlocked: Bool)
 }
@@ -61,7 +65,7 @@ protocol ChatWorkerLogic {
         completion: @escaping (Result<UpdateData, any Error>) -> Void
     )
     
-    func saveSecretKey(_ key: String) -> Bool
+    func saveSecretKey(_ key: String, _ chatID: UUID) -> Bool
     
     func deleteMessage(_ chatID: UUID, _ updateID: Int64, _ deleteMode: DeleteMode, _ chatType: ChatType, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func editTextMessage(_ chatID: UUID, _ updateID: Int64, _ text: String, _ chatType: ChatType, completion: @escaping (Result<UpdateData, Error>) -> Void)
@@ -74,10 +78,14 @@ protocol ChatWorkerLogic {
                      _ mimeType: String,
                      completion: @escaping (Result<SuccessModels.UploadResponse, Error>) -> Void)
     
+    func openMessage(_ chatID: UUID, _ payload: Data, _ iv: Data, _ sendedKeyHash: Data) -> Data?
+    
     func loadFirstMessages(_ chatID: UUID, _ from: Int64, _ to: Int64, completion: @escaping (Result<[UpdateData], Error>) -> Void)
     func loadMoreMessages()
     
     func getMyID() -> UUID
+    
+    func getSecretKey(_ chatID: UUID) -> String?
 }
 
 protocol SendingMessagesProtocol: AnyObject {

@@ -359,27 +359,6 @@ final class UserProfileViewController: UIViewController {
         userDataTable.estimatedRowHeight = Constants.userTableEstimateRow
     }
     
-    private func showAlert() {
-        let alert = UIAlertController(title: "Encryption key", message: "Input encryption key", preferredStyle: .alert)
-        
-        alert.addTextField {tf in
-            tf.placeholder = "Input key..."
-        }
-        
-        let cancel = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "cancel"), style: .cancel)
-        
-        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-            if let key = alert.textFields?.first?.text {
-                if key != "" {
-                    self?.interactor.createSecretChat(key)
-                }
-            }
-        }
-        alert.addAction(cancel)
-        alert.addAction(ok)
-        present(alert, animated: true)
-    }
-    
     private func showChangeSecretKeyAlert() {
         let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
         
@@ -427,7 +406,7 @@ final class UserProfileViewController: UIViewController {
     }
     
     @objc private func secretChatButtonPressed() {
-        showAlert()
+        interactor.createSecretChat()
     }
     
     @objc private func backButtonPressed() {

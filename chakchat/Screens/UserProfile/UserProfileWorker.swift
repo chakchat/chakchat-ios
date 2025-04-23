@@ -128,8 +128,8 @@ final class UserProfileWorker: UserProfileWorkerLogic {
         return myID
     }
     
-    func changeSecretKey(_ key: String) -> Bool {
-        let s = keychainManager.save(key: KeychainManager.keyForSaveSecretKey, value: key)
+    func changeSecretKey(_ key: String, _ chatID: UUID) -> Bool {
+        let s = keychainManager.saveSecretKey(key, chatID)
         return s
     }
     
