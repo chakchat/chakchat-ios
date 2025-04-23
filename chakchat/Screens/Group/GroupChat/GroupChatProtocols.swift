@@ -35,12 +35,16 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     func mapToTextMessage(_ update: UpdateData) -> GroupTextMessage
     func mapToEditedMessage(_ update: UpdateData) -> GroupTextMessageEdited
     func mapToFileMessage(_ update: UpdateData) -> GroupFileMessage
+    
+    func checkForSecretKey()
+    func saveSecretKey(_ key: String)
 }
 
 protocol GroupChatPresentationLogic {
     func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ myID: UUID)
     func updateGroupPhoto(_ image: UIImage?)
     func updateGroupInfo(_ name: String, _ description: String?)
+    func showInputSecretKeyAlert()
 }
 
 protocol GroupChatWorkerLogic {
@@ -62,6 +66,9 @@ protocol GroupChatWorkerLogic {
                      _ fileName: String,
                      _ mimeType: String,
                      completion: @escaping (Result<SuccessModels.UploadResponse, Error>) -> Void)
+    
+    func getSecretKey(_ chatID: UUID) -> String?
+    func saveSecretKey(_ key: String, _ chatID: UUID) -> Bool 
 }
 
 protocol MessageEditMenuDelegate: AnyObject {

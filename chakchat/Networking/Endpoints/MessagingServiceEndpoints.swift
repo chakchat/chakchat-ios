@@ -41,7 +41,7 @@ enum MessagingServiceEndpoints {
     }
     /// все аналогично ручкам для обычного группового чата
     enum SecretGroupChatEndpoints: String {
-        case secretGroupChat = "/api/messaging/v1.0/chat/group"
+        case secretGroupChat = "/api/messaging/v1.0/chat/group/secret"
     }
 
     enum PersonalUpdateEndpoints: String {

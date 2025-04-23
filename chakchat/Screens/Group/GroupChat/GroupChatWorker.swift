@@ -390,6 +390,16 @@ final class GroupChatWorker: GroupChatWorkerLogic {
         return userDefaultsManager.loadID()
     }
     
+    func getSecretKey(_ chatID: UUID) -> String? {
+        let key = keychainManager.getSecretKey(chatID)
+        return key
+    }
+    
+    func saveSecretKey(_ key: String, _ chatID: UUID) -> Bool {
+        let s = keychainManager.saveSecretKey(key, chatID)
+        return s
+    }
+    
     private func mapFromCoredata(_ chat: Chat?) -> ChatsModels.GeneralChatModel.ChatData? {
         if let chat = chat {
             guard let chatID = chat.chatID,

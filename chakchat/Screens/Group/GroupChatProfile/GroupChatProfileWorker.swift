@@ -11,6 +11,7 @@ final class GroupChatProfileWorker: GroupChatProfileWorkerLogic {
     private let keychainManager: KeychainManagerBusinessLogic
     private let userDefaultsManager: UserDefaultsManagerProtocol
     private let groupService: GroupChatServiceProtocol
+    private let secretGroupService: SecretGroupChatServiceProtocol
     private let userService: UserServiceProtocol
     private let coreDataManager: CoreDataManagerProtocol
     
@@ -18,14 +19,33 @@ final class GroupChatProfileWorker: GroupChatProfileWorkerLogic {
         keychainManager: KeychainManagerBusinessLogic,
         userDefaultsManager: UserDefaultsManagerProtocol,
         groupService: GroupChatServiceProtocol,
+        secretGroupService: SecretGroupChatServiceProtocol,
         userService: UserServiceProtocol,
         coreDataManager: CoreDataManagerProtocol
     ) {
         self.keychainManager = keychainManager
         self.userDefaultsManager = userDefaultsManager
         self.groupService = groupService
+        self.secretGroupService = secretGroupService
         self.userService = userService
         self.coreDataManager = coreDataManager
+    }
+    
+    func createSecretGroup(_ name: String, _ description: String?, _ members: [UUID], completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
+        guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
+        let request = ChatsModels.GroupChat.CreateRequest(name: name, description: description, members: members)
+        secretGroupService.sendCreateChatRequest(request, accessToken) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let response):
+                DispatchQueue.main.async {
+                    self.coreDataManager.createChat(response.data)
+                }
+                completion(.success(response.data))
+            case .failure(let failure):
+                completion(.failure(failure))
+            }
+        }
     }
     
     func deleteGroup(_ chatID: UUID, completion: @escaping (Result<EmptyResponse, any Error>) -> Void) {

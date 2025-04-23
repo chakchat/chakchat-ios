@@ -25,6 +25,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     var onRouteBack: (() -> Void)?
     var onRouteToProfile: ((ProfileSettingsModels.ProfileUserData, ProfileConfiguration) -> Void)?
     var onRouteToMyProfile: (() -> Void)?
+    var onRouteToSecretChat: ((ChatsModels.GeneralChatModel.ChatData) -> Void)?
     
     init(
         presenter: GroupChatProfilePresentationLogic,
@@ -49,6 +50,32 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
         if case .group(let groupInfo) = chatData.info {
             let isAdmin = myID == groupInfo.admin
             presenter.passChatData(chatData, isAdmin)
+        }
+    }
+    
+    func createSecretGroup() {
+        if case .group(let gi) = chatData.info {
+            worker.createSecretGroup(gi.name, gi.description, chatData.members) { [weak self] result in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let data):
+                        os_log("Created secret group chat with id(%@)", log: self.logger, type: .default, data.chatID as CVarArg)
+                        let event = CreatedChatEvent(
+                            chatID: data.chatID,
+                            type: data.type,
+                            members: data.members,
+                            createdAt: data.createdAt,
+                            info: data.info
+                        )
+                        self.eventManager.publish(event: event)
+                        self.routeToSecretChat(data)
+                    case .failure(let failure):
+                        os_log("Failed to create secret group chat", log: self.logger, type: .fault)
+                        print(failure)
+                    }
+                }
+            }
         }
     }
     
@@ -187,6 +214,11 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     func routeBack() {
         onRouteBack?()
     }
+    
+    private func routeToSecretChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
+        onRouteToSecretChat?(chatData)
+    }
+    
     //MARK: - Top secret methods
     private func getMyID() -> UUID {
         let myID = worker.getMyID()
