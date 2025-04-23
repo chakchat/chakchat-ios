@@ -235,6 +235,45 @@ final class GroupChatViewController: MessagesViewController {
             
             curUser = GroupSender(senderId: myID.uuidString, displayName: "", avatar: nil)
         }
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let color = UIColor.random()
+            let image = UIImage.imageWithText(
+                text: secretGroupInfo.name,
+                size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
+                color: color,
+                borderWidth: Constants.borderWidth
+            )
+            iconImageView.image = image
+            if let photoURL = secretGroupInfo.groupPhoto {
+                iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
+                iconImageView.layer.cornerRadius = Constants.cornerRadius
+            }
+            groupNameLabel.text = secretGroupInfo.name
+            
+            curUser = GroupSender(senderId: myID.uuidString, displayName: "", avatar: nil)
+            
+            interactor.checkForSecretKey()
+        }
+    }
+    
+    public func showInputSecretKeyAlert() {
+        let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.saveSecretKey(key)
+                } else {
+                    self?.showInputSecretKeyAlert()
+                }
+            }
+        }
+        alert.addAction(ok)
+        present(alert, animated: true)
     }
     
     // MARK: - UI Configuration

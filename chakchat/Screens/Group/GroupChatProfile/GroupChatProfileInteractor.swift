@@ -61,6 +61,14 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
                     switch result {
                     case .success(let data):
                         os_log("Created secret group chat with id(%@)", log: self.logger, type: .default, data.chatID as CVarArg)
+                        let event = CreatedChatEvent(
+                            chatID: data.chatID,
+                            type: data.type,
+                            members: data.members,
+                            createdAt: data.createdAt,
+                            info: data.info
+                        )
+                        self.eventManager.publish(event: event)
                         self.routeToSecretChat(data)
                     case .failure(let failure):
                         os_log("Failed to create secret group chat", log: self.logger, type: .fault)

@@ -90,6 +90,25 @@ final class GroupChatProfileViewController: UIViewController {
             }
             groupNameLabel.text = groupInfo.name
         }
+    
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let color = UIColor.random()
+            let image = UIImage.imageWithText(
+                text: secretGroupInfo.name,
+                size: CGSize(width: Constants.configSize, height: Constants.configSize),
+                color: color,
+                borderWidth: Constants.borderWidth
+            )
+            iconImageView.image = image
+            if let photoURL = secretGroupInfo.groupPhoto {
+                iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
+                iconImageView.layer.cornerRadius = Constants.cornerRadius
+            }
+            groupNameLabel.text = secretGroupInfo.name
+            buttonStackView.subviews[1].isHidden = true
+            buttonStackView.removeArrangedSubview(buttonStackView.subviews[1])
+        }
+        
         if isAdmin {
             configureEditButton()
             let optionsButton = createButton("ellipsis",
@@ -100,6 +119,8 @@ final class GroupChatProfileViewController: UIViewController {
             buttonStackView.setWidth(230)
         }
         
+        // MARK: - TODO
+        // TODO: - Здесь вместо return начинаем доставать пользователей из CoreData
         interactor.getUserDataByID(chatData.members) { [weak self] result in
             DispatchQueue.main.async {
                 guard let result else { return }

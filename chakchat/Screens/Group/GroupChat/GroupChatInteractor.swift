@@ -259,6 +259,22 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
         }
     }
     
+    func checkForSecretKey() {
+        let key = worker.getSecretKey(chatData.chatID)
+        if key == nil {
+            presenter.showInputSecretKeyAlert()
+        }
+    }
+    
+    func saveSecretKey(_ key: String) {
+        let s = worker.saveSecretKey(key, chatData.chatID)
+        if s {
+            os_log("Saved secret key(%@)", log: logger, type: .default, key as CVarArg)
+        } else {
+            os_log("Failed to save secret key(%@)", log: logger, type: .fault, key as CVarArg)
+        }
+    }
+    
     func handleAddedMemberEvent(_ event: AddedMemberEvent) {
         print("Handle new member")
     }
