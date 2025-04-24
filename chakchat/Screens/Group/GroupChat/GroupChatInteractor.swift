@@ -81,7 +81,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func sendTextMessage(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        worker.sendTextMessage(chatData.chatID, message, replyTo) { result in
+        worker.sendTextMessage(chatData.chatID, message, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -92,7 +92,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -103,7 +103,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
-        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+        worker.editTextMessage(chatData.chatID, updateID, text, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -114,7 +114,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
-        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -126,7 +126,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
-        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
+        worker.sendReaction(chatData.chatID, reaction, messageID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -137,7 +137,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     }
     
     func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
-        worker.deleteReaction(chatData.chatID, updateID) { result in
+        worker.deleteReaction(chatData.chatID, updateID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -187,7 +187,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func uploadVideo(_ videoURL: URL, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let data = try? Data(contentsOf: videoURL) else { return }
         let fileName = "\(videoURL.lastPathComponent)"
-        let mimeType = "\(videoURL.pathExtension)"
+        let mimeType = "video/mp4"
         worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -256,6 +256,23 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                 print(failure)
                 completion(.failure(failure))
             }
+        }
+    }
+    
+    func checkForSecretKey() {
+        let key = worker.getSecretKey(chatData.chatID)
+        if key == nil {
+            presenter.showInputSecretKeyAlert()
+        }
+    }
+    
+    func saveSecretKey(_ key: String) {
+        let s = worker.saveSecretKey(key, chatData.chatID)
+        if s {
+            onSecretKeyChanged()
+            os_log("Saved secret key(%@)", log: logger, type: .default, key as CVarArg)
+        } else {
+            os_log("Failed to save secret key(%@)", log: logger, type: .fault, key as CVarArg)
         }
     }
     
@@ -406,17 +423,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         )
                     )
             } else {
-//                mappedFileUpdate.kind =
-//                    .audio(
-//                        AudioMediaItem(
-//                            url: fc.file.fileURL,
-//                            duration: Float(fc.file.fileSize / 1000),
-//                            size: CGSize(width: 200, height: 50),
-//                            fileName: fc.file.fileName,
-//                            mimeType: fc.file.mimeType,
-//                            localURL: "" // На этапе конфигурации
-//                        )
-//                    )
+                mappedFileUpdate.kind = .text("\(fc.file.fileURL.absoluteString)#\(fc.file.fileName)#\(fc.file.mimeType)")
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]
@@ -469,9 +476,88 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                     mappedDeleteUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedDeleteUpdate)
+            case .secret:
+                if let secretUpdate = resolveSecretType(update) {
+                    let sub = mapToMessageType(
+                        [UpdateData(
+                            secretUpdate.chatID,
+                            secretUpdate.updateID,
+                            secretUpdate.type,
+                            secretUpdate.senderID,
+                            secretUpdate.createdAt,
+                            secretUpdate.content
+                        )]
+                    )
+                    mappedUpdates.append(sub[0])
+                } else  {
+                    let encryptedUpdate = EncryptedMessage(
+                        sender: GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .text("ENCRYPTED"),
+                        dummy: 52 // чтобы отличалась от любой другой ячейки реализующей протокол MessageType
+                    )
+                    mappedUpdates.append(encryptedUpdate)
+                }
             }
         }
         return mappedUpdates
+    }
+    
+    private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
+        guard case .secretContent(let sc) = update.content else { return nil }
+        guard let dectyptedData = worker.openMessage(chatData.chatID, sc.payload, sc.initializationVector, sc.keyHash) else { return nil}
+        if let textContent = try? JSONDecoder().decode(TextContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .textMessage,
+                update.senderID,
+                update.createdAt,
+                .textContent(textContent)
+            )
+        }
+        if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .textEdited,
+                update.senderID,
+                update.createdAt,
+                .editedContent(editedContent)
+            )
+        }
+        if let fileContent = try? JSONDecoder().decode(FileContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .file,
+                update.senderID,
+                update.createdAt,
+                .fileContent(fileContent)
+            )
+        }
+        if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .reaction,
+                update.senderID,
+                update.createdAt,
+                .reactionContent(reactionContent)
+            )
+        }
+        if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .delete,
+                update.senderID,
+                update.createdAt,
+                .deletedContent(deletedContent)
+            )
+        }
+        return nil
     }
     
     private func getSenderName(_ senderID: UUID) -> String {
@@ -511,5 +597,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
 
         try data.write(to: localURL)
         return localURL
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

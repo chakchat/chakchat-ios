@@ -54,24 +54,32 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     
     func createSecretChat() {
         worker.createSecretChat(userData.id) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let data):
-                os_log("Secret chat with id: %@ created", log: logger, type: .default, data.chatID as CVarArg)
-                let event = CreatedChatEvent(
-                    chatID: data.chatID,
-                    type: data.type,
-                    members: data.members,
-                    createdAt: data.createdAt,
-                    info: data.info
-                )
-                eventPublisher.publish(event: event)
-                routeToChat(chatData)
-            case .failure(let failure):
-                _ = errorHandler.handleError(failure)
-                os_log("Failed to cread secret chat with %@", log: logger, type: .fault, userData.id as CVarArg)
-                print(failure)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    os_log("Secret chat with id: %@ created", log: self.logger, type: .default, data.chatID as CVarArg)
+                    let event = CreatedChatEvent(
+                        chatID: data.chatID,
+                        type: data.type,
+                        members: data.members,
+                        createdAt: data.createdAt,
+                        info: data.info
+                    )
+                    self.eventPublisher.publish(event: event)
+                    self.routeToChat(data)
+                case .failure(let failure):
+                    _ = self.errorHandler.handleError(failure)
+                    if let failure = failure as? APIErrorResponse {
+                        if failure.errorType == "chat_already_exists" {
+                            self.presenter.showSecretChatExists(self.userData.name)
+                        }
+                    }
+                    os_log("Failed to creat secret chat with %@", log: self.logger, type: .fault, self.userData.id as CVarArg)
+                    print(failure)
+                }
             }
+
         }
     }
     
@@ -118,14 +126,14 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
     }
     
     func deleteChat(_ deleteMode: DeleteMode) {
-        guard let chatID = chatData?.chatID else { return }
-        worker.deleteChat(chatID, deleteMode) { [weak self] result in
+        guard let chatData = chatData else { return }
+        worker.deleteChat(chatData.chatID, deleteMode, chatData.type) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
                 case .success(_):
                     os_log("Chat with id:%@ is deleted", log: self.logger, type: .default, self.userData.id as CVarArg)
-                    let event = DeletedChatEvent(chatID: chatID)
+                    let event = DeletedChatEvent(chatID: chatData.chatID)
                     self.eventPublisher.publish(event: event)
                     self.routeToChatsScreen()
                 case .failure(let failure):
@@ -135,12 +143,13 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                     self.presenter.updateBlockStatus(isBlock: true)
                 }
             }
-
         }
     }
     
     func changeSecretKey(_ key: String) {
-        if worker.changeSecretKey(key) {
+        guard let cd = chatData else { return }
+        if worker.changeSecretKey(key, cd.chatID) {
+            onSecretKeyChanged()
             os_log("Changed secret key", log: logger, type: .default)
         } else {
             os_log("Failed to change secret key", log: logger, type: .fault)
@@ -197,5 +206,9 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
             }
         }
         return false
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

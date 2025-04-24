@@ -84,6 +84,11 @@ final class GroupChatViewController: MessagesViewController {
                 cell.configure(with: message, at: indexPath, and: messagesCollectionView)
                 return cell
             }
+            if message is EncryptedMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(EncryptedCell.self, for: indexPath)
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
             return super.collectionView(collectionView, cellForItemAt: indexPath)
         case .photo, .video:
             let cell = messagesCollectionView.dequeueReusableCell(CustomMediaMessageCell.self, for: indexPath)
@@ -100,10 +105,21 @@ final class GroupChatViewController: MessagesViewController {
         messagesCollectionView.register(ReactionTextMessageCell.self)
         messagesCollectionView.register(CustomMediaMessageCell.self)
         messagesCollectionView.register(FileMessageCell.self)
+        messagesCollectionView.register(EncryptedCell.self)
+        addSecretKeyObserver()
         loadUsers()
         loadFirstMessages()
         configureUI()
         interactor.passChatData()
+    }
+    
+    private func addSecretKeyObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleSecretKeyUpdate),
+            name: .secretKeyUpdated,
+            object: nil
+        )
     }
     
     private func loadUsers() {
@@ -175,6 +191,9 @@ final class GroupChatViewController: MessagesViewController {
                     deleteForSender.append(update)
                 }
             }
+            if let update = update as? EncryptedMessage {
+                messages.append(update)
+            }
         }
         
         deleteForAll(deleteForAll)
@@ -235,6 +254,45 @@ final class GroupChatViewController: MessagesViewController {
             
             curUser = GroupSender(senderId: myID.uuidString, displayName: "", avatar: nil)
         }
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let color = UIColor.random()
+            let image = UIImage.imageWithText(
+                text: secretGroupInfo.name,
+                size: CGSize(width: Constants.navigationItemHeight, height:  Constants.navigationItemHeight),
+                color: color,
+                borderWidth: Constants.borderWidth
+            )
+            iconImageView.image = image
+            if let photoURL = secretGroupInfo.groupPhoto {
+                iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
+                iconImageView.layer.cornerRadius = Constants.cornerRadius
+            }
+            groupNameLabel.text = secretGroupInfo.name
+            
+            curUser = GroupSender(senderId: myID.uuidString, displayName: "", avatar: nil)
+            
+            interactor.checkForSecretKey()
+        }
+    }
+    
+    public func showInputSecretKeyAlert() {
+        let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.saveSecretKey(key)
+                } else {
+                    self?.showInputSecretKeyAlert()
+                }
+            }
+        }
+        alert.addAction(ok)
+        present(alert, animated: true)
     }
     
     // MARK: - UI Configuration
@@ -325,9 +383,12 @@ final class GroupChatViewController: MessagesViewController {
         messageInputBar.delegate = self
         messagesCollectionView.isUserInteractionEnabled = true
         messagesCollectionView.messageCellDelegate = self
-        let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
-        layout?.sectionInset = UIEdgeInsets(top: 1, left: 8, bottom: 1, right: 8)
-        layout?.textMessageSizeCalculator.outgoingAvatarSize = .zero
+        if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
+            layout.textMessageSizeCalculator.outgoingAvatarSize = .zero
+            layout.textMessageSizeCalculator.incomingAvatarSize = .zero
+            layout.setMessageIncomingAvatarSize(.zero)
+            layout.setMessageOutgoingAvatarSize(.zero)
+        }
     }
     
     private func configureInputBar() {
@@ -766,7 +827,7 @@ final class GroupChatViewController: MessagesViewController {
                 switch result {
                 case .success(let fileUpdate):
                     if case .fileContent(let fc) = fileUpdate.content {
-                        FileCacheManager.shared.saveFile(fc.file.fileURL) {_ in}
+                        //FileCacheManager.shared.saveFile(fc.file.fileURL) {_ in}
                     }
                     var updatedAudioMessage = self.interactor.mapToFileMessage(fileUpdate)
                     updatedAudioMessage.status = .sent
@@ -795,7 +856,7 @@ final class GroupChatViewController: MessagesViewController {
                 switch result {
                 case .success(let fileUpdate):
                     if case .fileContent(let fc) = fileUpdate.content {
-                        FileCacheManager.shared.saveFile(fc.file.fileURL)
+                        FileCacheManager.shared.saveFile(fc.file.fileURL, fc.file.fileName, fc.file.mimeType)
                         { _ in}
                     }
                     var uploadedFileMessage = self.interactor.mapToFileMessage(fileUpdate)
@@ -905,6 +966,28 @@ final class GroupChatViewController: MessagesViewController {
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
+    
+    @objc func handleSecretKeyUpdate() {
+        DispatchQueue.main.async {
+            self.messages = []
+            self.messagesCollectionView.reloadData()
+            self.interactor.loadFirstMessages { [weak self] result in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let messages):
+                        self.handleMessages(messages)
+                    case .failure(_):
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 extension GroupChatViewController: MessagesDataSource {
@@ -924,10 +1007,23 @@ extension GroupChatViewController: MessagesDataSource {
     func textCell(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UICollectionViewCell? {
         
         if case .text = message.kind {
-            let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
-            cell.configure(with: message, at: indexPath, and: messagesCollectionView)
-            cell.cellDelegate = self
-            return cell
+            if message is GroupFileMessage || message is OutgoingFileMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(FileMessageCell.self, for: indexPath)
+                cell.cellDelegate = self
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
+            if message is GroupTextMessage || message is GroupOutgoingMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(ReactionTextMessageCell.self, for: indexPath)
+                cell.cellDelegate = self
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
+            if message is EncryptedMessage {
+                let cell = messagesCollectionView.dequeueReusableCell(EncryptedCell.self, for: indexPath)
+                cell.configure(with: message, at: indexPath, and: messagesCollectionView)
+                return cell
+            }
         }
         return TextMessageCell()
     }
@@ -986,7 +1082,10 @@ extension GroupChatViewController: MessagesDataSource {
 
 extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     func textColor(for message: MessageType, at _: IndexPath, in _: MessagesCollectionView) -> UIColor {
-        isFromCurrentSender(message: message) ? .white : .darkText
+        if message is EncryptedMessage {
+            return .red
+        }
+        return isFromCurrentSender(message: message) ? .white : .darkText
     }
     
     func backgroundColor(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
@@ -1095,10 +1194,13 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .text = message.kind {
                 if message is GroupOutgoingMessage || message is GroupTextMessage {
-                    return ReactionMessageSizeCalculator(layout: layout)
+                    return ReactionMessageSizeCalculator(layout: layout, isGroupChat: true)
                 }
                 if message is OutgoingFileMessage || message is GroupFileMessage {
-                    return FileMessageCellSizeCalculator(layout: layout)
+                    return FileMessageCellSizeCalculator(layout: layout, isGroupChat: true)
+                }
+                if message is EncryptedMessage {
+                    return EncryptedCellSizeCalculator(layout: layout, isGroupChat: true)
                 }
             }
         }
@@ -1108,7 +1210,7 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     func photoCellSizeCalculator(for message: any MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator? {
         if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             if case .photo = message.kind {
-                return PhotoMessageCellSizeCalculator(layout: layout)
+                return CustomMediaMessageSizeCalculator(layout: layout, isGroupChat: true)
             }
         }
         return nil
@@ -1234,36 +1336,96 @@ extension GroupChatViewController: TextMessageEditMenuDelegate, FileMessageEditM
         }
         if case .video(let video) = message.kind {
             guard let url = video.url else { return }
-            let pathExtension = url.pathExtension
-            let fileName: String
-            if pathExtension.isEmpty {
-                fileName = UUID().uuidString + ".mp4"
-            } else {
-                fileName = url.lastPathComponent
+            handleVideoDownload(url)
+        }
+        if case .text(let stringURL) = message.kind {
+            let components = stringURL.components(separatedBy: "#")
+            guard let url = URL(string: components[0]) else { return }
+            let fileName = components[1]
+            handleFileDownload(url, fileName)
+        }
+    }
+    
+    private func handleVideoDownload(_ url: URL) {
+        let pathExtension = url.pathExtension
+        let fileName: String
+        if pathExtension.isEmpty {
+            fileName = UUID().uuidString + ".mp4"
+        } else {
+            fileName = url.lastPathComponent
+        }
+        
+        let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+        let localURL = cacheDirectory.appendingPathComponent(fileName)
+        
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            DispatchQueue.main.async {
+                UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
             }
-            
-            let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            let localURL = cacheDirectory.appendingPathComponent(fileName)
-            
-            if FileManager.default.fileExists(atPath: localURL.path) {
-                DispatchQueue.main.async {
-                    UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
-                }
-            } else {
-                URLSession.shared.downloadTask(with: url) { tempURL, _, error in
-                    guard let tempURL = tempURL, error == nil else { return }
-                    
-                    do {
-                        try FileManager.default.moveItem(at: tempURL, to: localURL)
-                        DispatchQueue.main.async {
-                            UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
-                        }
-                    } catch {
-                        debugPrint("Failed to save \(error)")
+        } else {
+            URLSession.shared.downloadTask(with: url) { tempURL, _, error in
+                guard let tempURL = tempURL, error == nil else { return }
+                
+                do {
+                    try FileManager.default.moveItem(at: tempURL, to: localURL)
+                    DispatchQueue.main.async {
+                        UISaveVideoAtPathToSavedPhotosAlbum(localURL.path, self, #selector(self.saveError), nil)
                     }
-                }.resume()
+                } catch {
+                    debugPrint("Failed to save \(error)")
+                }
+            }.resume()
+        }
+    }
+    
+    private func handleFileDownload(_ url: URL, _ fileName: String) {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let localURL = documentsDirectory.appendingPathComponent(fileName)
+        
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            showFileSavePrompt(for: localURL)
+        } else {
+            downloadFile(from: url, to: localURL) {
+                DispatchQueue.main.async {
+                    self.showFileSavePrompt(for: localURL)
+                }
             }
         }
+    }
+    
+    private func downloadFile(from remoteURL: URL, to localURL: URL, completion: @escaping () -> Void) {
+        URLSession.shared.downloadTask(with: remoteURL) { tempURL, _, error in
+            guard let tempURL = tempURL, error == nil else {
+                print("Download error: \(error?.localizedDescription ?? "unknown error")")
+                return
+            }
+            
+            do {
+                try FileManager.default.moveItem(at: tempURL, to: localURL)
+                completion()
+            } catch {
+                print("File save error: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+
+    private func showFileSavePrompt(for fileURL: URL) {
+        let activityVC = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+        activityVC.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+            if completed {
+                print("File saved successfully")
+            } else if let error = error {
+                print("Error sharing file: \(error.localizedDescription)")
+            }
+        }
+        
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = self.view
+            popover.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
+        present(activityVC, animated: true)
     }
     
     
@@ -1294,8 +1456,8 @@ extension GroupChatViewController: CameraInputBarAccessoryViewDelegate {
             }
             if case .url(let url) = attachment {
                 let mimeType = url.pathExtension
-                if mimeType.contains("mp3") || mimeType.contains("audio") || mimeType.contains("mpeg") {
-                    sendAudio(url)
+                if !mimeType.contains("video") && !mimeType.contains("MOV") && !mimeType.contains("avi") && !mimeType.contains("mpeg") && !mimeType.contains("mpg") && !mimeType.contains("dvi") {
+                    sendFile(url, mimeType)
                 } else {
                     sendVideo(url)
                 }
@@ -1569,6 +1731,21 @@ class ReactionMessageSizeCalculator: TextMessageSizeCalculator {
     
     private let emojiWidth = 40
     private let spacing = 8
+    
+    private let isGroupChat: Bool
+
+    init(layout: MessagesCollectionViewFlowLayout, isGroupChat: Bool) {
+        self.isGroupChat = isGroupChat
+        super.init(layout: layout)
+
+        if isGroupChat {
+            incomingAvatarSize = CGSize(width: 30, height: 30)
+            outgoingAvatarSize = .zero
+        } else {
+            incomingAvatarSize = .zero
+            outgoingAvatarSize = .zero
+        }
+    }
     
     open override func messageContainerSize(for message: MessageType, at indexPath: IndexPath) -> CGSize {
         var size = super.messageContainerSize(for: message, at: indexPath)

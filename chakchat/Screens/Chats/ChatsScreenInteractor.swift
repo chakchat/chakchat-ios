@@ -88,6 +88,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     }
     
     func loadChats() {
+        self.showDBChats()
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             self?.worker.loadChats() { result in
                 DispatchQueue.main.async {
@@ -135,7 +136,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
             type: event.type,
             members: event.members,
             createdAt: event.createdAt,
-            info: event.info
+            info: event.info,
+            updatePreview: nil
         )
         DispatchQueue.main.async {
             self.addNewChat(newChat)
@@ -184,7 +186,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     
     func getChatInfo(_ chat: ChatsModels.GeneralChatModel.ChatData, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatInfo, any Error>) -> Void) {
         switch chat.type {
-        case .personal, .personalSecret:
+        case .personal, .secretPersonal:
             getUserDataByID(chat.members) { [weak self] result in
                 guard self != nil else { return }
                 switch result {
@@ -195,7 +197,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                     completion(.failure(failure))
                 }
             }
-        case .group, .groupSecret:
+        case .group, .secretGroup:
             if case .group(let groupInfo) = chat.info {
                 let info = ChatsModels.GeneralChatModel.ChatInfo(chatName: groupInfo.name, chatPhotoURL: groupInfo.groupPhoto)
                 completion(.success(info))
@@ -238,7 +240,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     
     func routeToChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         switch chatData.type {
-        case .personal, .personalSecret:
+        case .personal, .secretPersonal:
             getUserDataByID(chatData.members) { [weak self] result in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
@@ -252,7 +254,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                     }
                 }
             }
-        case .group, .groupSecret:
+        case .group, .secretGroup:
             self.onRouteToGroupChat?(chatData)
             break
         }
@@ -274,7 +276,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
             type: type,
             members: members,
             createdAt: createdAt,
-            info: info
+            info: info,
+            updatePreview: nil
         )
     }
 }

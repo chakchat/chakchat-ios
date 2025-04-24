@@ -33,7 +33,7 @@ class CustomAudioMessageCell: AudioMessageCell {
         updateStatus(message)
         guard case .audio(let audioData) = message.kind else { return }
         guard let audioData = audioData as? AudioMediaItem else { return }
-        FileCacheManager.shared.saveFile(audioData.url) { _ in }
+        //FileCacheManager.shared.saveFile(audioData.url) { _ in }
     }
     
     private func configureCell() {

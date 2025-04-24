@@ -160,7 +160,8 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
                 type: type,
                 members: members,
                 createdAt: createdAt,
-                info: info
+                info: info,
+                updatePreview: nil
             )
             mappedChats.append(mappedChat)
         }

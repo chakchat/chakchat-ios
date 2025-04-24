@@ -21,6 +21,7 @@ enum Fonts {
     static let rammettoOneR100: UIFont = UIFont.loadCustomFont(name: "RammettoOne-Regular", size: 100)
     // Used: Tap label text in StartVC
     static let montserratB25: UIFont = UIFont.loadCustomFont(name: "Montserrat-Bold", size: 25)
+    static let specialGothic: UIFont = UIFont.loadCustomFont(name: "SpecialGothicExpandedOne-Regular", size: 18)
     // Used: ChatsVc, SettingsVC, NotificationsVC ...... as a header
     static let systemB24: UIFont = UIFont.systemFont(ofSize: 24, weight: .bold)
     // Used: ProfileSettingsVC as a header

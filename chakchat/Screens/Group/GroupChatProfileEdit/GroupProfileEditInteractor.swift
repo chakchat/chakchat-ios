@@ -40,7 +40,7 @@ final class GroupProfileEditInteractor: GroupProfileEditBusinessLogic {
     
     func updateChat(_ name: String, _ description: String?) {
         DispatchQueue.global(qos: .userInteractive).async {
-            self.worker.updateChat(self.chatData.chatID, name, description) { result in
+            self.worker.updateChat(self.chatData.chatID, name, description, self.chatData.chatType) { result in
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     switch result {
@@ -65,7 +65,7 @@ final class GroupProfileEditInteractor: GroupProfileEditBusinessLogic {
             switch result {
             case .success(let data):
                 os_log("Upload group (%@) photo to file storage", log: logger, type: .default, chatData.chatID as CVarArg)
-                worker.updateGroupPhoto(chatData.chatID, data.fileId) { result in
+                worker.updateGroupPhoto(chatData.chatID, data.fileId, chatData.chatType) { result in
                     switch result {
                     case .success(_):
                         os_log("Upload group (%@) photo", log: self.logger, type: .default, self.chatData.chatID as CVarArg)

@@ -14,6 +14,7 @@ enum GroupChatAssembly {
         let userService = UserService()
         let groupUpdateService = GroupUpdateService()
         let fileService = FileStorageService()
+        let secretGroupUpdateService = SecretGroupUpdateService()
         let worker = GroupChatWorker(
             keychainManager: context.keychainManager,
             coreDataManager: context.coreDataManager,
@@ -21,7 +22,8 @@ enum GroupChatAssembly {
             userService: userService,
             updateService: updateService,
             fileService: fileService,
-            groupUpdateService: groupUpdateService
+            groupUpdateService: groupUpdateService,
+            secretGroupUpdateService: secretGroupUpdateService
         )
         let interactor = GroupChatInteractor(
             presenter: presenter,

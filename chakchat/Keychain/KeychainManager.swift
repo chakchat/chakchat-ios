@@ -25,6 +25,16 @@ final class KeychainManager: KeychainManagerBusinessLogic {
         return save(key: key, value: value.uuidString)
     }
     
+    func saveSecretKey(_ secret: String, _ chatID: UUID) -> Bool {
+        let key = keyForSecret(chatID: chatID)
+        return save(key: key, value: secret)
+    }
+    
+    func getSecretKey(_ chatID: UUID) -> String? {
+        let key = keyForSecret(chatID: chatID)
+        return getString(key: key)
+    }
+    
     // for phone and other data with string type
     @discardableResult
     func save(key: String, value: String) -> Bool {
@@ -40,7 +50,7 @@ final class KeychainManager: KeychainManagerBusinessLogic {
         
         // Delete any existing item
         SecItemDelete(query as CFDictionary)
-        
+        print(value)
         // Add new item
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess
@@ -82,6 +92,10 @@ final class KeychainManager: KeychainManagerBusinessLogic {
     
     func deleteTokens() -> Bool {
         return (delete(key: KeychainManager.keyForSaveAccessToken) && delete(key: KeychainManager.keyForSaveRefreshToken))
+    }
+    
+    private func keyForSecret(chatID: UUID) -> String {
+        return "secretKey_\(chatID.uuidString)"
     }
 }
 

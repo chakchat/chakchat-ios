@@ -11,8 +11,10 @@ import Foundation
 protocol KeychainManagerBusinessLogic {
     func save(key: String, value: UUID) -> Bool
     func save(key: String, value: String) -> Bool
+    func saveSecretKey(_ secret: String, _ chatID: UUID) -> Bool
     func getUUID(key: String) -> UUID?
     func getString(key: String) -> String?
+    func getSecretKey(_ chatID: UUID) -> String? 
     func delete(key: String) -> Bool
     func deleteTokens() -> Bool
 }

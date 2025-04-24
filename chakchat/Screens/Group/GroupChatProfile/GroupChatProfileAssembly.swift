@@ -12,10 +12,12 @@ enum GroupChatProfileAssembly {
         let presenter = GroupChatProfilePresenter()
         let groupService = GroupChatService()
         let userService = UserService()
+        let secretGroupService = SecretGroupChatService()
         let worker = GroupChatProfileWorker(
             keychainManager: context.keychainManager, 
             userDefaultsManager: context.userDefaultsManager,
             groupService: groupService,
+            secretGroupService: secretGroupService,
             userService: userService,
             coreDataManager: context.coreDataManager
         )
@@ -41,6 +43,9 @@ enum GroupChatProfileAssembly {
         }
         interactor.onRouteToMyProfile = {
             AppCoordinator.shared.showUserSettingsScreen()
+        }
+        interactor.onRouteToSecretChat = { chatData in
+            AppCoordinator.shared.showGroupChatScreen(chatData)
         }
         let view = GroupChatProfileViewController(interactor: interactor)
         presenter.view = view

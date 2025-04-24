@@ -87,7 +87,8 @@ final class NewMessageInteractor: NewMessageBusinessLogic {
             type: type,
             members: members,
             createdAt: createdAt,
-            info: info
+            info: info,
+            updatePreview: nil
         )
     }
 }

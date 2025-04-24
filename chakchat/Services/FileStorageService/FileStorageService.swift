@@ -158,15 +158,13 @@ final class FileStorageService: FileStorageServiceProtocol {
     
     func sendGetFileRequest(_ fileID: UUID, _ accessToken: String, completion: @escaping (Result<SuccessResponse<SuccessModels.UploadResponse>, any Error>) -> Void) {
         let endpoint = "\(FileStorageEndpoints.getFileMetadata.rawValue)\(fileID)"
-        //let idempotencyKey = UUID().uuidString
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",
-            //"Idempotency-Key": idempotencyKey,
             "Content-Type": "application/json"
         ]
         
-        Sender.send(endpoint: endpoint, method: .post, headers: headers, completion: completion)
+        Sender.send(endpoint: endpoint, method: .get, headers: headers, completion: completion)
     }
 }
 

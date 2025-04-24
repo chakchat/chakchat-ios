@@ -25,11 +25,13 @@ protocol GroupProfileEditWorkerLogic {
         _ chatID: UUID,
         _ name: String,
         _ description: String?,
+        _ chatType: ChatType,
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
     func updateGroupPhoto(
         _ chatID: UUID,
         _ photoID: UUID,
+        _ chatType: ChatType,
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
     func uploadFile(_ fileData: Data,
