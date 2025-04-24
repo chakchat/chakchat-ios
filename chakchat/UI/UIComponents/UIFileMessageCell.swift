@@ -37,6 +37,20 @@ class FileMessageCell: TextMessageCell {
         addGesture()
         addLongPressMenu()
         
+        if let message = message as? GroupMessageStatusProtocol {
+            messageStatus.text = message.status.rawValue
+            if message.status == .sending {
+                startSendingAnimation(in: self)
+            } else {
+                if message.status == .read {
+                    messageStatus.textColor = .chakChat
+                } else if message.status == .error {
+                    messageStatus.text = MessageStatus.error.rawValue
+                }
+                messageStatus.layer.removeAllAnimations()
+            }
+        }
+        
         fileImageView.setWidth(40)
         fileImageView.setHeight(40)
         messageLabel.pinCenterY(messageContainerView.centerYAnchor)
@@ -89,6 +103,15 @@ class FileMessageCell: TextMessageCell {
         fileImageView.setHeight(50)
         fileImageView.pinLeft(messageContainerView.leadingAnchor, 5)
         fileImageView.pinCenterY(messageContainerView)
+    }
+    
+    private func startSendingAnimation(in cell: FileMessageCell) {
+        let rotation = CABasicAnimation(keyPath: "transform.rotation.z")
+        rotation.toValue = NSNumber(value: Double.pi * 2)
+        rotation.duration = 1
+        rotation.isCumulative = true
+        rotation.repeatCount = .infinity
+        cell.messageStatus.layer.add(rotation, forKey: "rotationAnimation")
     }
     
     private func addGesture() {

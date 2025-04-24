@@ -231,6 +231,54 @@ final class UserProfileViewController: UIViewController {
         self.present(disclaimer, animated: true)
     }
     
+    func showSecretChatExists(_ user: String) {
+        let messageView = UIView()
+        messageView.backgroundColor = UIColor.systemGray.withAlphaComponent(0.9)
+        messageView.layer.cornerRadius = 12
+        messageView.clipsToBounds = true
+        messageView.alpha = 0
+        
+        let label = UILabel()
+        label.text = "Chat with \(user) already exists!"
+        label.textColor = .red
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        
+        let image = UIImageView()
+        image.contentMode = .scaleAspectFit
+        image.clipsToBounds = true
+        
+        messageView.addSubview(label)
+        messageView.addSubview(image)
+        
+        label.pinTop(messageView.topAnchor, 16)
+        label.pinHorizontal(messageView)
+        
+        image.pinCenterX(messageView.centerXAnchor)
+        image.pinCenterY(messageView.centerYAnchor)
+        image.setHeight(150)
+        image.setWidth(150)
+        image.image = UIImage(systemName: "xmark.seal.fill")
+        image.tintColor = .red
+        
+        view.addSubview(messageView)
+        
+        messageView.pinCenterX(view.centerXAnchor)
+        messageView.pinCenterY(view.centerYAnchor)
+        messageView.setHeight(200)
+        messageView.setHeight(200)
+        
+        UIView.animate(withDuration: 0.3) {
+            messageView.alpha = 1
+        } completion: { _ in
+            UIView.animate(withDuration: 0.3, delay: 1.0) {
+                messageView.alpha = 0
+            } completion: { _ in
+                messageView.removeFromSuperview()
+            }
+        }
+    }
+    
     // MARK: - UI Configuration
     private func configureUI() {
         view.backgroundColor = Colors.backgroundSettings

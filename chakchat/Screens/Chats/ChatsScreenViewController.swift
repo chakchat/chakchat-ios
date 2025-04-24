@@ -263,12 +263,12 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                         formatter.timeZone = TimeZone.current
                         if let updatePreview = item.updatePreview {
                             if !updatePreview.isEmpty {
-                                cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, self.getPreview(updatePreview[0]), 1, self.getDate(updatePreview[0]))
+                                cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getPreview(updatePreview[0]), 1, self.getDate(updatePreview[0]))
                             } else {
-                                cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
+                                cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
                             }
                         } else {
-                            cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
+                            cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
                         }
   
                         cell.backgroundColor = .clear
@@ -280,6 +280,15 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
             }
         }
         return cell
+    }
+    
+    private func getChatName(_ chatInfo: ChatsModels.GeneralChatModel.ChatInfo, _ chatType: ChatType) -> String {
+        switch chatType {
+        case .personal: return chatInfo.chatName
+        case .group: return chatInfo.chatName
+        case .secretPersonal: return "🔒 \(chatInfo.chatName)"
+        case .secretGroup: return "🔒 \(chatInfo.chatName)"
+        }
     }
     
     private func getPreview(_ updatePreview: ChatsModels.GeneralChatModel.Preview) -> String {

@@ -23,17 +23,7 @@ final class ChatCell: UITableViewCell {
     // MARK: - Properties
     private let nicknameLabel: UILabel = UILabel()
     private let iconImageView: UIImageView = UIImageView()
-    private let shimmerLayer: ShimmerView =  {
-        let shimmer = ShimmerView(
-            frame: CGRect(
-            x: Constants.picX,
-            y: Constants.picY,
-            width: Constants.size,
-            height: Constants.size
-        ))
-        shimmer.layer.cornerRadius = Constants.radius
-        return shimmer
-    }()
+    private let shimmerLayer: ShimmerView = ShimmerView()
 
     private let messageLabel: UILabel = UILabel()
     private let uncheckCircleView: UIView = UIView()
@@ -44,6 +34,16 @@ final class ChatCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configureCell()
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        DispatchQueue.main.async {
+            self.shimmerLayer.frame = self.iconImageView.bounds
+            self.shimmerLayer.layer.masksToBounds = true
+            self.shimmerLayer.layer.cornerRadius = 25
+            self.shimmerLayer.startAnimating()
+        }
     }
     
     required init?(coder: NSCoder) {

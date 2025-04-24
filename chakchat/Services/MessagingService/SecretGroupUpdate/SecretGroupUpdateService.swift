@@ -9,7 +9,7 @@ import Foundation
 
 final class SecretGroupUpdateService: SecretGroupUpdateServiceProtocol {
     
-    private let baseAPI: String = "/api/messaging/v1.0/chat/group/secret"
+    private let baseAPI: String = "/api/messaging/v1.0/chat/group/secret/"
     
     func sendSecretMessage(
         _ request: ChatsModels.SecretUpdateModels.SendMessageRequest,

@@ -106,6 +106,9 @@ final class GroupChatProfileViewController: UIViewController {
             }
             groupNameLabel.text = secretGroupInfo.name
             buttonStackView.subviews[1].isHidden = true
+            let secretKeyButton = createButton("key.card", "Secret key")
+            secretKeyButton.addTarget(self, action: #selector(secretKeyButtonPressed), for: .touchUpInside)
+            buttonStackView.addArrangedSubview(secretKeyButton)
             buttonStackView.removeArrangedSubview(buttonStackView.subviews[1])
         }
         
@@ -128,6 +131,31 @@ final class GroupChatProfileViewController: UIViewController {
                 self?.userDataTable.reloadData()
             }
         }
+    }
+    
+    public func showInputSecretKeyAlert() {
+        let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.saveSecretKey(key)
+                } else {
+                    self?.showInputSecretKeyAlert()
+                }
+            }
+        }
+        alert.addAction(ok)
+        present(alert, animated: true)
+    }
+    
+    public func showFailDisclaimer() {
+        let alert = UIAlertController(title: "Failed to save secret key", message: "Try again please", preferredStyle: .alert)
+        present(alert, animated: true)
     }
     
     func updateGroupInfo(_ name: String, _ description: String?) {
@@ -327,6 +355,10 @@ final class GroupChatProfileViewController: UIViewController {
     
     @objc private func secretChatButtonPressed() {
         interactor.createSecretGroup()
+    }
+    
+    @objc private func secretKeyButtonPressed() {
+        showInputSecretKeyAlert()
     }
     
     @objc private func editButtonPressed() {

@@ -70,11 +70,24 @@ enum ChatsModels {
             let expiration: String?
             
             enum CodingKeys: String, CodingKey {
-                case admin = "admin"
+                case admin = "admin_id"
                 case name = "name"
                 case description = "description"
                 case groupPhoto = "group_photo"
                 case expiration = "expiration"
+            }
+            
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                admin = try container.decode(UUID.self, forKey: .admin)
+                name = try container.decode(String.self, forKey: .name)
+                description = try container.decodeIfPresent(String.self, forKey: .description)
+                expiration = try container.decodeIfPresent(String.self, forKey: .expiration)
+                if let groupPhotoString = try container.decodeIfPresent(String.self, forKey: .groupPhoto), !groupPhotoString.isEmpty {
+                    groupPhoto = URL(string: groupPhotoString)
+                } else {
+                    groupPhoto = nil
+                }
             }
         }
         

@@ -51,6 +51,10 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
             let isAdmin = myID == groupInfo.admin
             presenter.passChatData(chatData, isAdmin)
         }
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let isAdmin = myID == secretGroupInfo.admin
+            presenter.passChatData(chatData, isAdmin)
+        }
     }
     
     func createSecretGroup() {
@@ -80,7 +84,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     }
     
     func deleteGroup() {
-        worker.deleteGroup(chatData.chatID) { [weak self] result in
+        worker.deleteGroup(chatData.chatID, chatData.type) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
@@ -100,7 +104,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     }
     
     func addMember(_ memberID: UUID) {
-        worker.addMember(chatData.chatID, memberID) { [weak self] result in
+        worker.addMember(chatData.chatID, memberID, chatData.type) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(_):
@@ -116,7 +120,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     }
     
     func deleteMember(_ memberID: UUID) {
-        worker.deleteMember(chatData.chatID, memberID) { [weak self] result in
+        worker.deleteMember(chatData.chatID, memberID, chatData.type) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(_):
@@ -138,6 +142,16 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     
     func updateGroupPhoto(_ image: UIImage?) {
         presenter.updateGroupPhoto(image)
+    }
+    
+    func saveSecretKey(_ key: String) {
+        if worker.changeSecretKey(key, chatData.chatID) {
+            onSecretKeyChanged()
+            os_log("Changed secret key", log: logger, type: .default)
+        } else {
+            os_log("Failed to change secret key", log: logger, type: .fault)
+            presenter.showFailDisclaimer()
+        }
     }
     
     func handleUpdatedGroupInfoEvent(_ event: UpdatedGroupInfoEvent) {
@@ -190,9 +204,20 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
         if case .group(let groupInfo) = chatData.info {
             let dataToEdit = GroupProfileEditModels.ProfileData(
                 chatID: chatData.chatID,
+                chatType: chatData.type,
                 name: groupInfo.name,
                 description: groupInfo.description,
                 photoURL: groupInfo.groupPhoto
+            )
+            onRouteToEdit?(dataToEdit)
+        }
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let dataToEdit = GroupProfileEditModels.ProfileData(
+                chatID: chatData.chatID,
+                chatType: chatData.type,
+                name: secretGroupInfo.name,
+                description: secretGroupInfo.description,
+                photoURL: secretGroupInfo.groupPhoto
             )
             onRouteToEdit?(dataToEdit)
         }
@@ -223,5 +248,9 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     private func getMyID() -> UUID {
         let myID = worker.getMyID()
         return myID
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

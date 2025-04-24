@@ -40,11 +40,7 @@ final class ChatViewController: MessagesViewController {
     private let blockInputBar: UIView = UIView()
     
     private var curUser = SenderPerson(senderId: "", displayName: "")
-    private var messages: [MessageType] = [] {
-        didSet {
-            messagesCollectionView.reloadData()
-        }
-    }
+    private var messages: [MessageType] = []
     
     private var deleteForAll: [GroupMessageDelete] = []
     private var deleteForSender: [GroupMessageDelete] = []
@@ -141,6 +137,7 @@ final class ChatViewController: MessagesViewController {
                 switch result {
                 case .success(let messages):
                     self.handleMessages(messages)
+                    self.messagesCollectionView.scrollToLastItem(animated: true)
                 case .failure(_):
                     break
                 }

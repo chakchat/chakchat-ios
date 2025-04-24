@@ -37,6 +37,7 @@ protocol UserProfilePresentationLogic {
     func passUnblocked()
     func updateBlockStatus(isBlock: Bool)
     func showFailDisclaimer()
+    func showSecretChatExists(_ user: String)
 }
 
 protocol UserProfileWorkerLogic {

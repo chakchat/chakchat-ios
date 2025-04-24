@@ -12,6 +12,8 @@ protocol GroupChatProfileBusinessLogic: SearchInteractor {
     
     func createSecretGroup()
     
+    func saveSecretKey(_ key: String)
+    
     func deleteGroup()
     func addMember(_ memberID: UUID)
     func deleteMember(_ memberID: UUID)
@@ -34,6 +36,8 @@ protocol GroupChatProfilePresentationLogic {
     func passChatData(_ chatData: ChatsModels.GeneralChatModel.ChatData, _ isAdmin: Bool)
     func updateGroupInfo(_ name: String, _ description: String?)
     func updateGroupPhoto(_ image: UIImage?)
+    
+    func showFailDisclaimer()
 }
 
 protocol GroupChatProfileWorkerLogic {
@@ -41,16 +45,19 @@ protocol GroupChatProfileWorkerLogic {
     
     func deleteGroup(
         _ chatID: UUID,
+        _ chatType: ChatType,
         completion: @escaping (Result<EmptyResponse, Error>) -> Void
     )
     func addMember(
         _ chatID: UUID,
         _ memberID: UUID,
+        _ chatType: ChatType,
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
     func deleteMember(
         _ chatID: UUID,
         _ memberID: UUID,
+        _ chatType: ChatType,
         completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void
     )
     func fetchUsers(
@@ -64,4 +71,6 @@ protocol GroupChatProfileWorkerLogic {
     func getUserDataByID(_ users: [UUID], completion: @escaping ([ProfileSettingsModels.ProfileUserData]?) -> Void)
     
     func getMyID() -> UUID
+    
+    func changeSecretKey(_ key: String, _ chatID: UUID) -> Bool
 }

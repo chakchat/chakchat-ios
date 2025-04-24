@@ -21,4 +21,8 @@ final class GroupChatProfilePresenter: GroupChatProfilePresentationLogic {
     func updateGroupPhoto(_ image: UIImage?) {
         view?.updateGroupPhoto(image)
     }
+    
+    func showFailDisclaimer() {
+        view?.showFailDisclaimer()
+    }
 }
