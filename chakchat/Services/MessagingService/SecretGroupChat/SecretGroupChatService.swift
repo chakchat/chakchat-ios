@@ -33,7 +33,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.GroupChat.UpdateRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
         let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)"
         
@@ -98,7 +98,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ request: ChatsModels.GroupChat.PhotoUpdateRequest,
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
         let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/photo"
         
@@ -115,7 +115,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
     func sendDeletePhotoRequest(
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
         let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/photo"
         

@@ -24,16 +24,6 @@ final class FileCacheManager: FileCacheProtocol {
         let finalFileName = "\(baseName).\(mimeType)"
         let localURL = cacheDirectory.appendingPathComponent(finalFileName)
         
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            do {
-                try FileManager.default.removeItem(at: localURL)
-            } catch {
-                debugPrint("Failed to remove existing file: \(error)")
-                completion(nil)
-                return
-            }
-        }
-        
         URLSession.shared.downloadTask(with: url) { tempURL, _, error in
             guard let tempURL = tempURL, error == nil else {
                 completion(nil)
@@ -41,11 +31,20 @@ final class FileCacheManager: FileCacheProtocol {
             }
             
             do {
+                if FileManager.default.fileExists(atPath: localURL.path) {
+                    try FileManager.default.removeItem(at: localURL)
+                }
+                
                 try FileManager.default.moveItem(at: tempURL, to: localURL)
                 completion(localURL)
             } catch {
-                debugPrint("Failed to save file: \(error)")
-                completion(nil)
+                do {
+                    try FileManager.default.copyItem(at: tempURL, to: localURL)
+                    completion(localURL)
+                } catch {
+                    debugPrint("Failed to save file: \(error)")
+                    completion(nil)
+                }
             }
         }.resume()
     }

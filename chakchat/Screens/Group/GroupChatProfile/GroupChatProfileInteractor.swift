@@ -203,9 +203,20 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
         if case .group(let groupInfo) = chatData.info {
             let dataToEdit = GroupProfileEditModels.ProfileData(
                 chatID: chatData.chatID,
+                chatType: chatData.type,
                 name: groupInfo.name,
                 description: groupInfo.description,
                 photoURL: groupInfo.groupPhoto
+            )
+            onRouteToEdit?(dataToEdit)
+        }
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let dataToEdit = GroupProfileEditModels.ProfileData(
+                chatID: chatData.chatID,
+                chatType: chatData.type,
+                name: secretGroupInfo.name,
+                description: secretGroupInfo.description,
+                photoURL: secretGroupInfo.groupPhoto
             )
             onRouteToEdit?(dataToEdit)
         }
