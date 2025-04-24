@@ -23,14 +23,18 @@ final class ChatCell: UITableViewCell {
     // MARK: - Properties
     private let nicknameLabel: UILabel = UILabel()
     private let iconImageView: UIImageView = UIImageView()
-    private let shimmerLayer: ShimmerView = ShimmerView(
-        frame: CGRect(
+    private let shimmerLayer: ShimmerView =  {
+        let shimmer = ShimmerView(
+            frame: CGRect(
             x: Constants.picX,
             y: Constants.picY,
             width: Constants.size,
             height: Constants.size
-        )
-    )
+        ))
+        shimmer.layer.cornerRadius = Constants.radius
+        return shimmer
+    }()
+
     private let messageLabel: UILabel = UILabel()
     private let uncheckCircleView: UIView = UIView()
     private let messageAmountLabel: UILabel = UILabel()
