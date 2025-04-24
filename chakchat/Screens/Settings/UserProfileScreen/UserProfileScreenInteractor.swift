@@ -96,7 +96,6 @@ final class UserProfileScreenInteractor: UserProfileScreenBusinessLogic {
             switch result {
             case .success(_):
                 os_log("Signout from account, data deleted", log: logger, type: .info)
-                // TODO: send delete device token request
                 backToRegistration()
             case .failure(let failure):
                 _ = self.errorHandler.handleError(failure)

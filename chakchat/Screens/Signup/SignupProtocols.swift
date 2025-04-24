@@ -24,6 +24,7 @@ protocol SignupWorkerLogic {
     
     func getSignupCode() -> UUID?
     func checkUsernameAvailability(_ username: String, completion: @escaping (Result<SignupModels.UserExistsResponse, Error>) -> Void)
+    func getDeviceToken() -> String?
 }
 
 

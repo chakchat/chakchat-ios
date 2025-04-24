@@ -14,11 +14,13 @@ enum SignupModels {
         let signupKey: UUID
         let name: String
         let username: String
+        let device: Device?
         
         enum CodingKeys: String, CodingKey {
             case signupKey = "signup_key"
             case name = "name"
             case username = "username"
+            case device = "device"
         }
     }
     
@@ -27,6 +29,16 @@ enum SignupModels {
         
         enum CodingKeys: String, CodingKey {
             case userExists = "user_exists"
+        }
+    }
+    
+    struct Device: Codable {
+        let type: String
+        let deviceToken: String
+        
+        enum CodingKeys: String, CodingKey {
+            case type = "type"
+            case deviceToken = "device_token"
         }
     }
 }

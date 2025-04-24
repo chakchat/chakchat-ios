@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import UserNotifications
 
 // MARK: - SignupInteractor
 final class SignupInteractor: SignupBusinessLogic {
@@ -42,15 +43,39 @@ final class SignupInteractor: SignupBusinessLogic {
             return
         }
         
-        worker.sendRequest(SignupModels.SignupRequest(signupKey: signupKey, name: name, username: username)) { [weak self] result in
-            guard let self = self else {return}
-            switch result {
-            case .success(let state):
-                os_log("User registered, saved data", log: logger, type: .info)
-                self.successTransition(state)
-            case .failure(let error):
-                let errorId = self.errorHandler.handleError(error)
-                self.presenter.showError(errorId)
+        checkNotificationPermission { [weak self] isNotificationsAllowed in
+            guard let self = self else { return }
+            
+            let request: SignupModels.SignupRequest
+            if isNotificationsAllowed, let deviceToken = self.worker.getDeviceToken() {
+                request = SignupModels.SignupRequest(
+                    signupKey: signupKey,
+                    name: name,
+                    username: username,
+                    device: SignupModels.Device(
+                        type: "ios",
+                        deviceToken: deviceToken
+                    )
+                )
+            } else {
+                request = SignupModels.SignupRequest(
+                    signupKey: signupKey,
+                    name: name,
+                    username: username,
+                    device: nil
+                )
+            }
+            
+            self.worker.sendRequest(request) { [weak self] result in
+                guard let self = self else {return}
+                switch result {
+                case .success(let state):
+                    os_log("User registered, saved data", log: logger, type: .info)
+                    self.successTransition(state)
+                case .failure(let error):
+                    let errorId = self.errorHandler.handleError(error)
+                    self.presenter.showError(errorId)
+                }
             }
         }
     }
@@ -71,10 +96,28 @@ final class SignupInteractor: SignupBusinessLogic {
         }
     }
     
+    private func checkNotificationPermission(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                switch settings.authorizationStatus {
+                case .authorized, .provisional:
+                    completion(true)
+                case .denied:
+                    completion(false)
+                case .notDetermined:
+                    completion(false)
+                case .ephemeral:
+                    completion(false)
+                @unknown default:
+                    completion(false)
+                }
+            }
+        }
+    }
+    
     // MARK: - Routing
     func successTransition(_ state: SignupState) {
         os_log("Routed to chat menu screen", log: logger, type: .default)
-        // TODO: send device token from keychain
         onRouteToChatScreen?(state)
     }
 }

@@ -46,4 +46,6 @@ protocol VerifyWorkerLogic {
     
     func resendUpRequest(_ request: VerifyModels.ResendCodeRequest,
                      completion: @escaping (Result<SignupState, Error>) -> Void)
+    
+    func getDeviceToken() -> String?
 }

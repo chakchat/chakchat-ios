@@ -185,4 +185,8 @@ final class VerifyWorker: VerifyWorkerLogic {
             }
         }
     }
+    
+    func getDeviceToken() -> String? {
+        return keychainManager.getString(key: KeychainManager.keyForDeviceToken)
+    }
 }
