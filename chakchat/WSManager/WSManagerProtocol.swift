@@ -11,4 +11,5 @@ protocol WSManagerProtocol {
     func connectToWS()
     func receiveData()
     func disconnect()
+    var onMessage: ((Message) -> Void)? { get set }
 }

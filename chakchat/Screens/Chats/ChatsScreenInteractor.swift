@@ -68,7 +68,6 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                 }
             }
         }
-        wsManager.connectToWS()
     }
     
     func loadMeRestrictions() {
@@ -132,9 +131,27 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         eventSubscriber.subscribe(DeletedChatEvent.self) { [weak self] event in
             self?.handleDeletedChatEvent(event)
         }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSUpdateEvent.self) { [weak self] event in
+            self?.handleWSUpdateEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatCreatedEvent.self) { [weak self] event in
+            self?.handleWsChatCreatedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatDeletedEvent.self) { [weak self] event in
+            self?.handleWSChatDeletedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSGroupInfoUpdatedEvent.self) { [weak self] event in
+            self?.handleWSGroupInfoUpdatedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSGroupMembersAddedEvent.self) { [weak self] event in
+            self?.handleWSGroupMembersAddedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSGroupMembersRemovedEvent.self) { [weak self] event in
+            self?.handleWSGroupMembersRemovedEvent(event)
+        }.store(in: &cancellables)
     }
     
-    func handleCreatedChatEvent(_ event: CreatedChatEvent) {
+    private func handleCreatedChatEvent(_ event: CreatedChatEvent) {
         let newChat = ChatsModels.GeneralChatModel.ChatData(
             chatID: event.chatID,
             type: event.type,
@@ -148,11 +165,35 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         }
     }
     
-    func handleDeletedChatEvent(_ event: DeletedChatEvent) {
+    private func handleDeletedChatEvent(_ event: DeletedChatEvent) {
         let chatToDelete = event.chatID
         DispatchQueue.main.async {
             self.deleteChat(chatToDelete)
         }
+    }
+    
+    private func handleWSUpdateEvent(_ event: WSUpdateEvent) {
+        
+    }
+    
+    private func handleWsChatCreatedEvent(_ event: WSChatCreatedEvent) {
+        
+    }
+    
+    private func handleWSChatDeletedEvent(_ event: WSChatDeletedEvent) {
+        
+    }
+    
+    private func handleWSGroupInfoUpdatedEvent(_ event: WSGroupInfoUpdatedEvent) {
+        
+    }
+    
+    private func handleWSGroupMembersAddedEvent(_ event: WSGroupMembersAddedEvent) {
+        
+    }
+    
+    private func handleWSGroupMembersRemovedEvent(_ event: WSGroupMembersRemovedEvent) {
+        
     }
     
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {

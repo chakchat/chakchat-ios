@@ -22,9 +22,6 @@ protocol ChatsScreenBusinessLogic: SearchInteractor {
     func routeToSettingsScreen()
     func routeToNewMessageScreen()
     func routeToChat(_ chatData: ChatsModels.GeneralChatModel.ChatData)
-    
-    func handleCreatedChatEvent(_ event: CreatedChatEvent)
-    func handleDeletedChatEvent(_ event: DeletedChatEvent)
 
     func getChatInfo(
         _ chat: ChatsModels.GeneralChatModel.ChatData,
