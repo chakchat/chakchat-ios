@@ -40,7 +40,11 @@ final class ChatViewController: MessagesViewController {
     private let blockInputBar: UIView = UIView()
     
     private var curUser = SenderPerson(senderId: "", displayName: "")
-    private var messages: [MessageType] = []
+    private var messages: [MessageType] = [] {
+        didSet {
+            messagesCollectionView.reloadData()
+        }
+    }
     
     private var deleteForAll: [GroupMessageDelete] = []
     private var deleteForSender: [GroupMessageDelete] = []
