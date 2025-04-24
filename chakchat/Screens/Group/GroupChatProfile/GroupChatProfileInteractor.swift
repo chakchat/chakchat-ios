@@ -146,6 +146,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     
     func saveSecretKey(_ key: String) {
         if worker.changeSecretKey(key, chatData.chatID) {
+            onSecretKeyChanged()
             os_log("Changed secret key", log: logger, type: .default)
         } else {
             os_log("Failed to change secret key", log: logger, type: .fault)
@@ -247,5 +248,9 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
     private func getMyID() -> UUID {
         let myID = worker.getMyID()
         return myID
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

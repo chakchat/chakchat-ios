@@ -296,6 +296,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func saveSecretKey(_ key: String) {
         guard let cd = chatData else { return }
         if worker.saveSecretKey(key, cd.chatID) {
+            onSecretKeyChanged()
             os_log("Secret key saved", log: logger, type: .default)
         } else {
             os_log("Failed to save secret key", log: logger, type: .fault)
@@ -601,5 +602,9 @@ final class ChatInteractor: ChatBusinessLogic {
             return UIImage(systemName: "play.circle.fill")!
             
         }
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

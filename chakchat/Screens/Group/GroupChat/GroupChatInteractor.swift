@@ -269,6 +269,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     func saveSecretKey(_ key: String) {
         let s = worker.saveSecretKey(key, chatData.chatID)
         if s {
+            onSecretKeyChanged()
             os_log("Saved secret key(%@)", log: logger, type: .default, key as CVarArg)
         } else {
             os_log("Failed to save secret key(%@)", log: logger, type: .fault, key as CVarArg)
@@ -506,57 +507,55 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
     private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
         guard case .secretContent(let sc) = update.content else { return nil }
         guard let dectyptedData = worker.openMessage(chatData.chatID, sc.payload, sc.initializationVector, sc.keyHash) else { return nil}
-        if let data = try? JSONEncoder().encode(dectyptedData) {    
-            if let textContent = try? JSONDecoder().decode(TextContent.self, from: data) {
-                return UpdateData(
-                    update.chatID,
-                    update.updateID,
-                    .textMessage,
-                    update.senderID,
-                    update.createdAt,
-                    .textContent(textContent)
-                )
-            }
-            if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: data) {
-                return UpdateData(
-                    update.chatID,
-                    update.updateID,
-                    .textEdited,
-                    update.senderID,
-                    update.createdAt,
-                    .editedContent(editedContent)
-                )
-            }
-            if let fileContent = try? JSONDecoder().decode(FileContent.self, from: data) {
-                return UpdateData(
-                    update.chatID,
-                    update.updateID,
-                    .file,
-                    update.senderID,
-                    update.createdAt,
-                    .fileContent(fileContent)
-                )
-            }
-            if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: data) {
-                return UpdateData(
-                    update.chatID,
-                    update.updateID,
-                    .reaction,
-                    update.senderID,
-                    update.createdAt,
-                    .reactionContent(reactionContent)
-                )
-            }
-            if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: data) {
-                return UpdateData(
-                    update.chatID,
-                    update.updateID,
-                    .delete,
-                    update.senderID,
-                    update.createdAt,
-                    .deletedContent(deletedContent)
-                )
-            }
+        if let textContent = try? JSONDecoder().decode(TextContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .textMessage,
+                update.senderID,
+                update.createdAt,
+                .textContent(textContent)
+            )
+        }
+        if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .textEdited,
+                update.senderID,
+                update.createdAt,
+                .editedContent(editedContent)
+            )
+        }
+        if let fileContent = try? JSONDecoder().decode(FileContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .file,
+                update.senderID,
+                update.createdAt,
+                .fileContent(fileContent)
+            )
+        }
+        if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .reaction,
+                update.senderID,
+                update.createdAt,
+                .reactionContent(reactionContent)
+            )
+        }
+        if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .delete,
+                update.senderID,
+                update.createdAt,
+                .deletedContent(deletedContent)
+            )
         }
         return nil
     }
@@ -598,5 +597,9 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
 
         try data.write(to: localURL)
         return localURL
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

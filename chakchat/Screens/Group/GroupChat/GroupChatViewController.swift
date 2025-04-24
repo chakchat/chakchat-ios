@@ -106,10 +106,20 @@ final class GroupChatViewController: MessagesViewController {
         messagesCollectionView.register(CustomMediaMessageCell.self)
         messagesCollectionView.register(FileMessageCell.self)
         messagesCollectionView.register(EncryptedCell.self)
+        addSecretKeyObserver()
         loadUsers()
         loadFirstMessages()
         configureUI()
         interactor.passChatData()
+    }
+    
+    private func addSecretKeyObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleSecretKeyUpdate),
+            name: .secretKeyUpdated,
+            object: nil
+        )
     }
     
     private func loadUsers() {
@@ -955,6 +965,28 @@ final class GroupChatViewController: MessagesViewController {
     
     @objc private func dismissKeyboard() {
         view.endEditing(true)
+    }
+    
+    @objc func handleSecretKeyUpdate() {
+        DispatchQueue.main.async {
+            self.messages = []
+            self.messagesCollectionView.reloadData()
+            self.interactor.loadFirstMessages { [weak self] result in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let messages):
+                        self.handleMessages(messages)
+                    case .failure(_):
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 

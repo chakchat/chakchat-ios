@@ -70,7 +70,12 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
                     self.routeToChat(data)
                 case .failure(let failure):
                     _ = self.errorHandler.handleError(failure)
-                    os_log("Failed to cread secret chat with %@", log: self.logger, type: .fault, self.userData.id as CVarArg)
+                    if let failure = failure as? APIErrorResponse {
+                        if failure.errorType == "chat_already_exists" {
+                            self.presenter.showSecretChatExists(self.userData.name)
+                        }
+                    }
+                    os_log("Failed to creat secret chat with %@", log: self.logger, type: .fault, self.userData.id as CVarArg)
                     print(failure)
                 }
             }

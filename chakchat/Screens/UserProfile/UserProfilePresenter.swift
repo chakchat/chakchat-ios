@@ -35,4 +35,8 @@ final class UserProfilePresenter: UserProfilePresentationLogic {
     func updateBlockStatus(isBlock: Bool) {
         view?.updateBlockStatus(isBlock: isBlock)
     }
+    
+    func showSecretChatExists(_ user: String) {
+        view?.showSecretChatExists(user)
+    }
 }

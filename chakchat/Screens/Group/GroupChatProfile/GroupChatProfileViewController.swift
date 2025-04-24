@@ -108,6 +108,7 @@ final class GroupChatProfileViewController: UIViewController {
             buttonStackView.subviews[1].isHidden = true
             let secretKeyButton = createButton("key.card", "Secret key")
             secretKeyButton.addTarget(self, action: #selector(secretKeyButtonPressed), for: .touchUpInside)
+            buttonStackView.addArrangedSubview(secretKeyButton)
             buttonStackView.removeArrangedSubview(buttonStackView.subviews[1])
         }
         
