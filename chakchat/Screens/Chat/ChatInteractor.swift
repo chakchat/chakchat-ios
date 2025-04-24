@@ -79,6 +79,22 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
+    func pollNewMessages(_ from: Int64, completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
+        guard let cd = chatData else { return }
+        
+        worker.loadFirstMessages(cd.chatID, from, 200) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
+                let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
+                completion(.success(mappedSortedUpdates))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
     func loadMoreMessages() {
         worker.loadMoreMessages()
     }

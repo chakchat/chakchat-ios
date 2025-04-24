@@ -21,6 +21,7 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     /// update methods
     /// using completions to incicate, what kind of response server sent(true=200, false = else)
     func loadFirstMessages(completion: @escaping (Result<[MessageType], Error>) -> Void)
+    func pollNewMessages(_ from: Int64, completion: @escaping (Result<[any MessageType], any Error>) -> Void)
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)

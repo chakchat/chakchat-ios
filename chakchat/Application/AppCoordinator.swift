@@ -43,7 +43,8 @@ final class AppCoordinator {
                                              eventManager: EventManager(),
                                              coreDataManager: CoreDataManager(),
                                              state: AppState._default,
-                                             logger: signupContext.logger)
+                                             logger: signupContext.logger,
+                                             wsManager: WSManager(keychainManager: signupContext.keychainManager))
     }
 
     // MARK: - Public Methods

@@ -51,6 +51,9 @@ final class ChatViewController: MessagesViewController {
     private var editingMessageID: String?
     private var editingMessage: String?
     
+    private var pollingTimer: Timer?
+    private var lastReceivedMessageID: Int64 = 0
+    
     private let formatter: DateFormatter = {
       let formatter = DateFormatter()
       formatter.dateStyle = .medium
@@ -138,8 +141,30 @@ final class ChatViewController: MessagesViewController {
                 case .success(let messages):
                     self.handleMessages(messages)
                     self.messagesCollectionView.scrollToLastItem(animated: true)
+                    if let maxId = messages.compactMap({ Int64($0.messageId) }).max() {
+                        self.lastReceivedMessageID = maxId
+                    }
+                    self.startPolling()
                 case .failure(_):
                     break
+                }
+            }
+        }
+    }
+    
+    private func pollNewMessages() {
+        interactor.pollNewMessages(lastReceivedMessageID + 1) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let newMessages):
+                    guard !newMessages.isEmpty else { return }
+                    if let maxId = newMessages.compactMap({ Int64($0.messageId) }).max() {
+                        self.lastReceivedMessageID = maxId
+                    }
+                    self.handleMessages(newMessages)
+                case .failure(let error):
+                    print("Polling error: \(error)")
                 }
             }
         }
@@ -519,7 +544,7 @@ final class ChatViewController: MessagesViewController {
             replyTo: nil,
             status: .sending
         )
-        
+        lastReceivedMessageID += 1
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
         messagesCollectionView.insertSections([messages.count - 1])
@@ -558,7 +583,7 @@ final class ChatViewController: MessagesViewController {
                 messages[index] = message
                 self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                 inputBar.inputTextView.text = ""
-                
+                lastReceivedMessageID += 1
                 removeReplyPreview(.edit)
                 
                 interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
@@ -601,6 +626,7 @@ final class ChatViewController: MessagesViewController {
             replyTo: repliedMessage,
             status: .sending
         )
+        lastReceivedMessageID += 1
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
         messagesCollectionView.insertSections([messages.count - 1])
@@ -662,6 +688,7 @@ final class ChatViewController: MessagesViewController {
                 cell.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
             }
         }
+        lastReceivedMessageID += 1
         self.interactor.deleteMessage(Int64(deletedMessage.messageId) ?? 0, mode) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self,
@@ -693,7 +720,7 @@ final class ChatViewController: MessagesViewController {
                 messages[messageIndex] = message
                 messagesCollectionView.reloadData()
             }
-            
+            lastReceivedMessageID += 1
             let emoji = mapEmoji(emoji)
             interactor.sendReaction(emoji, onMessage) { result in
                 DispatchQueue.main.async {
@@ -708,6 +735,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     func deleteReaction(_ reactionID: Int64) {
+        lastReceivedMessageID += 1
         messages.forEach { message in
             if var newMessage = message as? GroupMessageWithReactions {
                 newMessage.reactions?.removeValue(forKey: reactionID)
@@ -784,6 +812,7 @@ final class ChatViewController: MessagesViewController {
     }
     //MARK: - File sendings
     private func sendPhoto(_ photo: UIImage) {
+        lastReceivedMessageID += 1
         var photoMessage = mapPhoto(photo)
         insertPhoto(photoMessage)
         interactor.uploadImage(photo) { [weak self] result in
@@ -810,6 +839,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     private func sendVideo(_ videoURL: URL) {
+        lastReceivedMessageID += 1
         let thumbnail = generateThumbnail(for: videoURL)
         var videoMessage = mapVideo(videoURL, thumbnail.size)
         messages.append(videoMessage)
@@ -837,6 +867,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     func sendFile(_ url: URL, _ mimeType: String?) {
+        lastReceivedMessageID += 1
         var fileMessage = mapFile(url)
         messages.append(fileMessage)
         messagesCollectionView.reloadData()
@@ -934,6 +965,14 @@ final class ChatViewController: MessagesViewController {
         return messages[indexPath.section].sender.senderId == messages[indexPath.section + 1].sender.senderId
     }
     
+    private func startPolling() {
+        pollingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.pollNewMessages()
+        }
+        pollingTimer?.tolerance = 1
+        pollingTimer?.fire()
+    }
+    
     
     @objc private func handleTitleTap() {
         interactor.routeToProfile()
@@ -978,21 +1017,21 @@ final class ChatViewController: MessagesViewController {
     }
     
     @objc func handleSecretKeyUpdate() {
-        DispatchQueue.main.async {
-            self.messages = []
-            self.messagesCollectionView.reloadData()
-            self.interactor.loadFirstMessages { [weak self] result in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let messages):
-                        self.handleMessages(messages)
-                    case .failure(_):
-                        break
-                    }
-                }
-            }
-        }
+//        DispatchQueue.main.async {
+//            self.messages = []
+//            self.messagesCollectionView.reloadData()
+//            self.interactor.loadFirstMessages { [weak self] result in
+//                guard let self = self else { return }
+//                DispatchQueue.main.async {
+//                    switch result {
+//                    case .success(let messages):
+//                        self.handleMessages(messages)
+//                    case .failure(_):
+//                        break
+//                    }
+//                }
+//            }
+//        }
     }
 
     deinit {

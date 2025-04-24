@@ -19,6 +19,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     private let errorHandler: ErrorHandlerLogic
     private let eventSubscriber: EventSubscriberProtocol
     private let keychainManager: KeychainManagerBusinessLogic
+    private let wsManager: WSManagerProtocol
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -33,7 +34,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
          logger: OSLog,
          errorHandler: ErrorHandlerLogic,
          eventSubscriber: EventSubscriberProtocol,
-         keychainManager: KeychainManagerBusinessLogic
+         keychainManager: KeychainManagerBusinessLogic,
+         wsManager: WSManagerProtocol
     ) {
         self.presenter = presenter
         self.worker = worker
@@ -41,6 +43,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         self.errorHandler = errorHandler
         self.eventSubscriber = eventSubscriber
         self.keychainManager = keychainManager
+        self.wsManager = wsManager
         
         subscribeToEvents()
     }
@@ -65,6 +68,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                 }
             }
         }
+        wsManager.connectToWS()
     }
     
     func loadMeRestrictions() {
