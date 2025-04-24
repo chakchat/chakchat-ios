@@ -52,6 +52,9 @@ final class ChatsScreenViewController: UIViewController {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .languageDidChange, object: nil)
         configureUI()
+        let kc = KeychainManager()
+        print("Device token: ")
+        print(kc.getString(key: KeychainManager.keyForDeviceToken) ?? "")
     }
     
     override func viewWillLayoutSubviews() {

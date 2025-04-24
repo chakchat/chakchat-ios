@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import UserNotifications
  
 // MARK: - VerifyInteractor
 final class VerifyInteractor: VerifyBusinessLogic {
@@ -56,21 +57,47 @@ final class VerifyInteractor: VerifyBusinessLogic {
     func sendVerificationRequest(_ code: String) {
         os_log("Sent code to server", log: logger, type: .info)
         
-        if (state == SignupState.signin) {
+        if state == SignupState.signin {
             guard let key = worker.getVerifyCode(KeychainManager.keyForSaveSigninCode) else {
                 os_log("Can't find verify key in keychain storage", log: logger, type: .fault)
                 return
             }
 
-            worker.sendVerificationRequest(VerifyModels.VerifySigninRequest(signinKey: key, code: code),                 IdentityServiceEndpoints.signinEndpoint.rawValue, SuccessModels.Tokens.self) { [weak self] result in
-                guard let self = self else {return}
-                switch result {
-                case .success(let state):
-                    os_log("Code verified", log: logger, type: .info)
-                    self.routeToChatScreen(state)
-                case .failure(let error):
-                    let errorId = self.errorHandler.handleError(error)
-                    self.presenter.showError(errorId)
+            checkNotificationPermission { [weak self] isNotificationsAllowed in
+                guard let self = self else { return }
+                
+                let request: VerifyModels.VerifySigninRequest
+                if isNotificationsAllowed, let deviceToken = self.worker.getDeviceToken() {
+                    request = VerifyModels.VerifySigninRequest(
+                        signinKey: key,
+                        code: code,
+                        device: VerifyModels.Device(
+                            type: "ios",
+                            deviceToken: deviceToken
+                        )
+                    )
+                } else {
+                    request = VerifyModels.VerifySigninRequest(
+                        signinKey: key,
+                        code: code,
+                        device: nil
+                    )
+                }
+                
+                self.worker.sendVerificationRequest(
+                    request,
+                    IdentityServiceEndpoints.signinEndpoint.rawValue,
+                    SuccessModels.Tokens.self
+                ) { [weak self] result in
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let state):
+                        os_log("Code verified", log: self.logger, type: .info)
+                        self.routeToChatScreen(state)
+                    case .failure(let error):
+                        let errorId = self.errorHandler.handleError(error)
+                        self.presenter.showError(errorId)
+                    }
                 }
             }
         } else if (state == SignupState.signupVerifyCode) {
@@ -144,5 +171,24 @@ final class VerifyInteractor: VerifyBusinessLogic {
     
     func successTransition() {
         presenter.hideResendButton()
+    }
+    
+    private func checkNotificationPermission(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                switch settings.authorizationStatus {
+                case .authorized, .provisional:
+                    completion(true)
+                case .denied:
+                    completion(false)
+                case .notDetermined:
+                    completion(false)
+                case .ephemeral:
+                    completion(false)
+                @unknown default:
+                    completion(false)
+                }
+            }
+        }
     }
 }

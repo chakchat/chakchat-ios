@@ -84,4 +84,8 @@ final class SignupWorker: SignupWorkerLogic {
         }
         return savedSignupKey
     }
+    
+    func getDeviceToken() -> String? {
+        return keychainManager.getString(key: KeychainManager.keyForDeviceToken)
+    }
 }
