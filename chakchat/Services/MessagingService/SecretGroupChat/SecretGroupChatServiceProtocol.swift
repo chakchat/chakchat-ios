@@ -19,7 +19,7 @@ protocol SecretGroupChatServiceProtocol {
         _ chatID: UUID,
         _ request: ChatsModels.GroupChat.UpdateRequest,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, Error>) -> Void
     )
     
     func sendDeleteChatRequest(
@@ -32,26 +32,26 @@ protocol SecretGroupChatServiceProtocol {
         _ chatID: UUID,
         _ memberID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, Error>) -> Void
     )
     
     func sendDeleteMemberRequest(
         _ chatID: UUID,
         _ memberID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, Error>) -> Void
     )
     
     func sendUpdatePhotoRequest(
         _ request: ChatsModels.GroupChat.PhotoUpdateRequest,
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, Error>) -> Void
     )
     
     func sendDeletePhotoRequest(
         _ chatID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, Error>) -> Void
     )
 }

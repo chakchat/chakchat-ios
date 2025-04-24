@@ -48,45 +48,98 @@ final class GroupChatProfileWorker: GroupChatProfileWorkerLogic {
         }
     }
     
-    func deleteGroup(_ chatID: UUID, completion: @escaping (Result<EmptyResponse, any Error>) -> Void) {
+    func deleteGroup(_ chatID: UUID, _ chatType: ChatType, completion: @escaping (Result<EmptyResponse, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        groupService.sendDeleteChatRequest(chatID, accessToken) { [weak self] result in
-            guard self != nil else { return }
-            switch result {
-            case .success(let response):
-                completion(.success(response.data))
-            case .failure(let failure):
-                completion(.failure(failure))
+        if chatType == .group {
+            groupService.sendDeleteChatRequest(chatID, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.deleteChat(chatID)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
+            }
+        } else if chatType == .secretGroup {
+            secretGroupService.sendDeleteChatRequest(chatID, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.deleteChat(chatID)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
             }
         }
     }
     
-    func addMember(_ chatID: UUID, _ memberID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
+    func addMember(_ chatID: UUID, _ memberID: UUID, _ chatType: ChatType, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        groupService.sendAddMemberRequest(chatID, memberID, accessToken) { [weak self] result in
-            guard self != nil else { return }
-            switch result {
-            case .success(let response):
-                // сохраняем в coreData
-                completion(.success(response.data))
-            case .failure(let failure):
-                completion(.failure(failure))
+        if chatType == .group {
+            groupService.sendAddMemberRequest(chatID, memberID, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.updateChat(response.data)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
+            }
+        } else if chatType == .secretGroup {
+            secretGroupService.sendAddMemberRequest(chatID, memberID, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.updateChat(response.data)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
             }
         }
     }
     
-    func deleteMember(_ chatID: UUID, _ memberID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
+    func deleteMember(_ chatID: UUID, _ memberID: UUID, _ chatType: ChatType, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
-        groupService.sendDeleteMemberRequest(chatID, memberID, accessToken) { [weak self] result in
-            guard self != nil else { return }
-            switch result {
-            case .success(let response):
-                // сохраняем в coreData
-                completion(.success(response.data))
-            case .failure(let failure):
-                completion(.failure(failure))
+        if chatType == .group {
+            groupService.sendDeleteMemberRequest(chatID, memberID, accessToken) { [weak self] result in
+                guard self != nil else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self?.coreDataManager.updateChat(response.data)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
+            }
+        } else if chatType == .secretGroup {
+            secretGroupService.sendDeleteMemberRequest(chatID, memberID, accessToken) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        self.coreDataManager.updateChat(response.data)
+                    }
+                    completion(.success(response.data))
+                case .failure(let failure):
+                    completion(.failure(failure))
+                }
             }
         }
+
     }
     
     func fetchUsers(_ name: String?, _ username: String?, _ page: Int, _ limit: Int, completion: @escaping (Result<ProfileSettingsModels.Users, any Error>) -> Void) {
@@ -131,5 +184,10 @@ final class GroupChatProfileWorker: GroupChatProfileWorkerLogic {
     func getMyID() -> UUID {
         let myID = userDefaultsManager.loadID()
         return myID
+    }
+    
+    func changeSecretKey(_ key: String, _ chatID: UUID) -> Bool {
+        let s = keychainManager.saveSecretKey(key, chatID)
+        return s
     }
 }

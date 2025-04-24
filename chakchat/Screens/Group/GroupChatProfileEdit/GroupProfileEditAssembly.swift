@@ -12,9 +12,11 @@ enum GroupProfileEditAssembly {
         let presenter = GroupProfileEditPresenter()
         let fileStorageService = FileStorageService()
         let groupService = GroupChatService()
+        let secretGroupService = SecretGroupChatService()
         let worker = GroupProfileEditWorker(
             keychainManager: context.keychainManager,
             groupService: groupService,
+            secretGroupService: secretGroupService,
             fileStorageService: fileStorageService,
             coreDataManager: context.coreDataManager
         )

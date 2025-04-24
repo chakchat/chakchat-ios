@@ -66,7 +66,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ chatID: UUID,
         _ memberID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
         let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/member/\(memberID)"
         
@@ -82,7 +82,7 @@ final class SecretGroupChatService: SecretGroupChatServiceProtocol {
         _ chatID: UUID,
         _ memberID: UUID,
         _ accessToken: String,
-        completion: @escaping (Result<SuccessResponse<ChatsModels.SecretGroupChat.Response>, any Error>) -> Void
+        completion: @escaping (Result<SuccessResponse<ChatsModels.GeneralChatModel.ChatData>, any Error>) -> Void
     ) {
         let endpoint = "\(MessagingServiceEndpoints.SecretGroupChatEndpoints.secretGroupChat.rawValue)/\(chatID)/member/\(memberID)"
         
