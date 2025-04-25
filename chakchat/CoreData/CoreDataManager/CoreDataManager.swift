@@ -197,57 +197,233 @@ final class CoreDataManager: CoreDataManagerProtocol {
     }
     
     // MARK: - Updates CRUD
-    
-    func createUpdate(_ updateData: UpdateData) {
+    @discardableResult
+    func createTextMessageUpdate(_ updateData: UpdateData) -> TextUpdate {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
-//        let updateEntity: Update
-//        switch updateData.content {
-//        case .textContent(let textContent):
-//            let textUpdate = TextMessageUpdate(context: context)
-//            textUpdate.text = textContent.text
-//            if let replyToID = textContent.replyTo {
-//                textUpdate.replyTo = fetchUpdate(by: replyToID)
-//            }
-//            updateEntity = textUpdate
-//        case .fileContent(let fileContent):
-//            let fileUpdate = FileMessageUpdate(context: context)
-//            fileUpdate.fileID = fileContent.fileID
-//            fileUpdate.fileName = fileContent.fileName
-//            fileUpdate.fileSize = fileContent.fileSize
-//            fileUpdate.fileURL = fileContent.fileURL.absoluteString
-//            fileUpdate.mimeType = fileContent.mimeType
-//            fileUpdate.fileCreatedAt = updateData.createdAt
-//            
-//            updateEntity = fileUpdate
-//            
-//        case .reactionContent(let reactionContent):
-//            let reactionUpdate = ReactionUpdate(context: context)
-//            reactionUpdate.reaction = reactionContent.reaction
-//            reactionUpdate.message = fetchUpdate(by: reactionContent.messageID)
-//            
-//            updateEntity = reactionUpdate
-//            
-//        case .editedContent(let editedContent):
-//            let editUpdate = TextMessageEditedUpdate(context: context)
-//            editUpdate.newText = editedContent.newText
-//            editUpdate.message = fetchUpdate(by: editedContent.messageID)
-//            
-//            updateEntity = editUpdate
-//            
-//        case .deletedContent(let deletedContent):
-//            let deleteUpdate = DeletedUpdate(context: context)
-//            deleteUpdate.mode = deletedContent.deletedMode.rawValue
-//            deleteUpdate.deletedUpdate = fetchUpdate(by: deletedContent.deletedID)
-//            
-//            updateEntity = deleteUpdate
-//        }
-//        
-//        updateEntity.chatID = updateData.chatID
-//        updateEntity.senderID = updateData.senderID
-//        updateEntity.createdAt = updateData.createdAt
-//        updateEntity.updateID = updateData.updateID
-//        updateEntity.type = updateData.type.rawValue
+        let textMessageUpdate = TextUpdate(context: context)
+        if case .textContent(let tc) = updateData.content {
+            textMessageUpdate.chatID = updateData.chatID
+            textMessageUpdate.updateID = updateData.updateID
+            textMessageUpdate.type = updateData.type.rawValue
+            textMessageUpdate.senderID = updateData.senderID
+            textMessageUpdate.createdAt = updateData.createdAt
+            textMessageUpdate.text = tc.text
+            textMessageUpdate.replyTo = tc.replyTo ?? -1
+            textMessageUpdate.forwarded = tc.forwarded ?? false
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
         
-        CoreDataStack.shared.saveContext(for: Models.user.rawValue)
+        if case .textContent(let tc) = updateData.content, tc.edited != nil {
+            textMessageUpdate.edited = createTextEditedUpdate(updateData)
+            CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+        }
+        
+        if case .textContent(let tc) = updateData.content, tc.reactions != nil {
+            if let reactions = tc.reactions {
+                reactions.forEach { reaction in
+                    textMessageUpdate.addToReactions(createReactionUpdate(reaction))
+                    CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+                }
+            }
+        }
+        return textMessageUpdate
+    }
+    
+    @discardableResult
+    func createTextEditedUpdate(_ updateData: UpdateData) -> EditUpdate? {
+        if case .textContent(let tc) = updateData.content {
+            if tc.edited == nil {
+                return nil
+            }
+        }
+        
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let textEditedUpdate = EditUpdate(context: context)
+        textEditedUpdate.chatID = updateData.chatID
+        textEditedUpdate.updateID = updateData.updateID
+        textEditedUpdate.type = updateData.type.rawValue
+        textEditedUpdate.senderID = updateData.senderID
+        textEditedUpdate.createdAt = updateData.createdAt
+        if case .editedContent(let ec) = updateData.content {
+            textEditedUpdate.newText = ec.newText
+            textEditedUpdate.messageID = ec.messageID
+            textEditedUpdate.originalMessage = fetchTextMessageUpdate(ec.messageID)
+        }
+        if case .textContent(let tc) = updateData.content {
+            guard let edited = tc.edited else { return nil }
+            textEditedUpdate.newText = edited.content.newText
+            textEditedUpdate.messageID = edited.content.messageID
+            textEditedUpdate.originalMessage = fetchTextMessageUpdate(edited.content.messageID)
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+        return textEditedUpdate
+    }
+    
+    @discardableResult
+    func createFileMessageUpdate(_ updateData: UpdateData) -> FileUpdate {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let fileMessageUpdate = FileUpdate(context: context)
+        fileMessageUpdate.chatID = updateData.chatID
+        fileMessageUpdate.senderID = updateData.senderID
+        fileMessageUpdate.updateID = updateData.updateID
+        fileMessageUpdate.type = updateData.type.rawValue
+        fileMessageUpdate.createdAt = updateData.createdAt
+        if case .fileContent(let fc) = updateData.content {
+            fileMessageUpdate.fileName = fc.file.fileName
+            fileMessageUpdate.fileSize = Double(fc.file.fileSize)
+            fileMessageUpdate.mimeType = fc.file.mimeType
+            fileMessageUpdate.fileID = fc.file.fileID
+            fileMessageUpdate.fileCreatedAt = fc.file.createdAt
+            fileMessageUpdate.replyTo = fc.replyTo ?? -1
+            fileMessageUpdate.forwarded = fc.forwarded ?? false
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+        
+        if case .fileContent(let fc) = updateData.content, fc.reactions != nil {
+            if let reactions = fc.reactions {
+                reactions.forEach { reaction in
+                    fileMessageUpdate.addToReactions(createReactionUpdate(reaction))
+                    CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+                }
+            }
+        }
+        return fileMessageUpdate
+    }
+    
+    @discardableResult
+    func createReactionUpdate(_ reactionInfo: ReactionInfo) -> ReactionUpdate {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let reactionUpdate = ReactionUpdate(context: context)
+        reactionUpdate.chatID = reactionInfo.chatID
+        reactionUpdate.updateID = reactionInfo.updateID
+        reactionUpdate.type = reactionInfo.type.rawValue
+        reactionUpdate.senderID = reactionInfo.senderID
+        reactionUpdate.createdAt = reactionInfo.createdAt
+        reactionUpdate.reaction = reactionInfo.content.reaction
+        reactionUpdate.messageID = reactionInfo.content.messageID
+        if let textUpdate = fetchTextMessageUpdate(reactionInfo.content.messageID) {
+            reactionUpdate.message = textUpdate
+            reactionUpdate.fileMessage = nil
+        }
+        if let fileUpdate = fetchFileMessageUpdate(reactionInfo.content.messageID) {
+            reactionUpdate.fileMessage = fileUpdate
+            reactionUpdate.message = nil
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+        return reactionUpdate
+    }
+    
+    @discardableResult
+    func createDeletedUpdate(_ updateData: UpdateData) -> DeleteUpdate {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let deletedUpdate = DeleteUpdate(context: context)
+        deletedUpdate.chatID = updateData.chatID
+        deletedUpdate.updateID = updateData.updateID
+        deletedUpdate.type = updateData.type.rawValue
+        deletedUpdate.senderID = updateData.senderID
+        deletedUpdate.createdAt = updateData.createdAt
+        if case .deletedContent(let dc) = updateData.content {
+            deletedUpdate.deletedID = dc.deletedID
+            deletedUpdate.deletedMode = dc.deletedMode.rawValue
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+        return deletedUpdate
+    }
+    
+    func fetchTextMessageUpdate(_ updateID: Int64) -> TextUpdate? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<TextUpdate> = TextUpdate.fetchRequest()
+        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        request.predicate = predicate
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
+    
+    func fetchTextEditedUpdate(_ updateID: Int64) -> EditUpdate? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<EditUpdate> = EditUpdate.fetchRequest()
+        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        request.predicate = predicate
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
+    
+    func fetchFileMessageUpdate(_ updateID: Int64) -> FileUpdate? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<FileUpdate> = FileUpdate.fetchRequest()
+        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        request.predicate = predicate
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
+    
+    func fetchReactionUpdate(_ updateID: Int64) -> ReactionUpdate? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<ReactionUpdate> = ReactionUpdate.fetchRequest()
+        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        request.predicate = predicate
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
+    
+    func fetchDeletedUpdate(_ updateID: Int64) -> DeleteUpdate? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let request: NSFetchRequest<DeleteUpdate> = DeleteUpdate.fetchRequest()
+        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        request.predicate = predicate
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
+    
+    func updateTextMessageUpdate(_ updateData: UpdateData) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        if let textUpdate = fetchTextMessageUpdate(updateData.updateID) {
+            if case .textContent(let tc) = updateData.content {
+                textUpdate.replyTo = tc.replyTo ?? -1
+                textUpdate.edited = createTextEditedUpdate(updateData)
+                if let reactions = tc.reactions {
+                    if let textUpdateR = textUpdate.reactions {
+                        textUpdate.removeFromReactions(textUpdateR)
+                    }
+                    reactions.forEach { reaction in
+                        textUpdate.addToReactions(createReactionUpdate(reaction))
+                    }
+                }
+            }
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+    }
+    
+    func updateFileMessageUpdate(_ updateData: UpdateData) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        if let fileUpdate = fetchFileMessageUpdate(updateData.updateID) {
+            if case .fileContent(let fc) = updateData.content {
+                if let reactions = fc.reactions {
+                    if let fileUpdateR = fileUpdate.reactions {
+                        fileUpdate.removeFromReactions(fileUpdateR)
+                    }
+                    reactions.forEach { reaction in
+                        fileUpdate.addToReactions(createReactionUpdate(reaction))
+                    }
+                }
+            }
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+    }
+    
+    func deleteTextMessageUpdate(_ updateID: Int64) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        if let textUpdate = fetchTextMessageUpdate(updateID) {
+            context.delete(textUpdate)
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+    }
+    
+    func deleteFileMessageUpdate(_ updateID: Int64) {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        if let fileUpdate = fetchFileMessageUpdate(updateID) {
+            context.delete(fileUpdate)
+        }
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
     }
 }

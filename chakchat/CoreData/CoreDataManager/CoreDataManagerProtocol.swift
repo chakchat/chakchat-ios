@@ -28,5 +28,26 @@ protocol CoreDataManagerProtocol {
     func deleteUser(_ user: User)
     func deleteAllUsers()
     
-    func createUpdate(_ updateData: UpdateData)
+    @discardableResult
+    func createTextMessageUpdate(_ updateData: UpdateData) -> TextUpdate
+    @discardableResult
+    func createTextEditedUpdate(_ updateData: UpdateData) -> EditUpdate?
+    @discardableResult
+    func createFileMessageUpdate(_ updateData: UpdateData) -> FileUpdate
+    @discardableResult
+    func createReactionUpdate(_ reactionInfo: ReactionInfo) -> ReactionUpdate
+    @discardableResult
+    func createDeletedUpdate(_ updateData: UpdateData) -> DeleteUpdate
+    
+    func fetchTextMessageUpdate(_ updateID: Int64) -> TextUpdate?
+    func fetchTextEditedUpdate(_ updateID: Int64) -> EditUpdate?
+    func fetchFileMessageUpdate(_ updateID: Int64) -> FileUpdate?
+    func fetchReactionUpdate(_ updateID: Int64) -> ReactionUpdate?
+    func fetchDeletedUpdate(_ updateID: Int64) -> DeleteUpdate?
+    
+    func updateTextMessageUpdate(_ updateData: UpdateData)
+    func updateFileMessageUpdate(_ updateData: UpdateData)
+    
+    func deleteTextMessageUpdate(_ updateID: Int64)
+    func deleteFileMessageUpdate(_ updateID: Int64)
 }
