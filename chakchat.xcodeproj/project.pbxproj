@@ -637,8 +637,8 @@
 		E14CFF3E2DA12E5300B3A971 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E14CFF402DA1395000B3A971 /* ChatBackgroundGradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatBackgroundGradientView.swift; sourceTree = "<group>"; };
 		E16CE04A2DB7FF2D00EC523C /* chakchat.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = chakchat.entitlements; sourceTree = "<group>"; };
-		E19609B52D608E8F008E27C0 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
-		E19609B82D608E98008E27C0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E16CE04B2DBBB9C000EC523C /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E16CE04C2DBBB9C000EC523C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E19609BB2D608EA0008E27C0 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E19609D02D60E879008E27C0 /* LanguageAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageAssembly.swift; sourceTree = "<group>"; };
 		E19609D42D60E8C6008E27C0 /* LanguageInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageInteractor.swift; sourceTree = "<group>"; };
@@ -1862,7 +1862,7 @@
 			};
 			buildConfigurationList = AA9B61FF2D2D47CB0064CB23 /* Build configuration list for PBXProject "chakchat" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = ru;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -2265,7 +2265,7 @@
 		E19609B62D608E8F008E27C0 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				E19609B52D608E8F008E27C0 /* ru */,
+				E16CE04C2DBBB9C000EC523C /* en */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -2273,7 +2273,7 @@
 		E19609B92D608E98008E27C0 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				E19609B82D608E98008E27C0 /* en */,
+				E16CE04B2DBBB9C000EC523C /* ru */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
