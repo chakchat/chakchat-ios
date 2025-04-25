@@ -50,6 +50,9 @@ final class GroupChatViewController: MessagesViewController {
     private var editingMessageID: String?
     private var editingMessage: String?
     
+    private var pollingTimer: Timer?
+    private var lastReceivedMessageID: Int64 = 0
+    
     // MARK: - Initialization
     init(interactor: GroupChatBusinessLogic) {
         self.interactor = interactor
@@ -143,8 +146,31 @@ final class GroupChatViewController: MessagesViewController {
                 switch result {
                 case .success(let messages):
                     self.handleMessages(messages)
+                    self.messagesCollectionView.scrollToLastItem(animated: true)
+                    if let maxId = messages.compactMap({ Int64($0.messageId) }).max() {
+                        self.lastReceivedMessageID = maxId
+                    }
+                    self.startPolling()
                 case .failure(_):
                     break
+                }
+            }
+        }
+    }
+    
+    private func pollNewMessages() {
+        interactor.pollNewMessages(lastReceivedMessageID + 1) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let newMessages):
+                    guard !newMessages.isEmpty else { return }
+                    if let maxId = newMessages.compactMap({ Int64($0.messageId) }).max() {
+                        self.lastReceivedMessageID = maxId
+                    }
+                    self.handleMessages(newMessages)
+                case .failure(let error):
+                    print("Polling error: \(error)")
                 }
             }
         }
@@ -495,7 +521,7 @@ final class GroupChatViewController: MessagesViewController {
             replyTo: nil,
             status: .sending
         )
-        
+        lastReceivedMessageID += 1
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
         messagesCollectionView.insertSections([messages.count - 1])
@@ -525,6 +551,7 @@ final class GroupChatViewController: MessagesViewController {
         guard let index = messages.firstIndex(where: { $0.messageId == editingMessageID}),
               let editingMessageID = editingMessageID
                 else { return }
+        lastReceivedMessageID += 1
         if var message = messages[index] as? GroupTextMessage {
             if text == message.text {
                 messagesCollectionView.reloadData()
@@ -577,6 +604,7 @@ final class GroupChatViewController: MessagesViewController {
             replyTo: repliedMessage,
             status: .sending
         )
+        lastReceivedMessageID += 1
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
         messagesCollectionView.insertSections([messages.count - 1])
@@ -627,6 +655,7 @@ final class GroupChatViewController: MessagesViewController {
     
     private func deleteMessage(_ messageIndexPath: IndexPath, mode: DeleteMode) {
         let deletedMessage = messages[messageIndexPath.section]
+        lastReceivedMessageID += 1
         self.messages.remove(at: messageIndexPath.section)
         self.messagesCollectionView.performBatchUpdates({
             self.messagesCollectionView.deleteSections(IndexSet(integer: messageIndexPath.section))
@@ -658,6 +687,7 @@ final class GroupChatViewController: MessagesViewController {
     func sendReaction(_ emoji: String, _ onMessage: Int64) {
         if let messageIndex = messages.firstIndex(where: {$0.messageId == String(onMessage)}) {
             guard var message = messages[messageIndex] as? GroupMessageWithReactions else { return }
+            lastReceivedMessageID += 1
             let newKey = (message.reactions?.keys.max() ?? 0) + 1 // чтобы ключ гарантированно был новый
             let emoji = mapEmoji(emoji)
             if message.reactions == nil {
@@ -695,6 +725,7 @@ final class GroupChatViewController: MessagesViewController {
     }
     
     func deleteReaction(_ reactionID: Int64) {
+        lastReceivedMessageID += 1
         messages.forEach { message in
             if var newMessage = message as? GroupMessageWithReactions {
                 newMessage.reactions?.removeValue(forKey: reactionID)
@@ -765,6 +796,7 @@ final class GroupChatViewController: MessagesViewController {
     //MARK: - File sendings
     private func sendPhoto(_ photo: UIImage) {
         var photoMessage = mapPhoto(photo)
+        lastReceivedMessageID += 1
         insertPhoto(photoMessage)
         interactor.uploadImage(photo) { [weak self] result in
             DispatchQueue.main.async {
@@ -790,6 +822,7 @@ final class GroupChatViewController: MessagesViewController {
     }
     
     private func sendVideo(_ videoURL: URL) {
+        lastReceivedMessageID += 1
         let thumbnail = generateThumbnail(for: videoURL)
         var videoMessage = mapVideo(videoURL, thumbnail.size)
         messages.append(videoMessage)
@@ -817,6 +850,7 @@ final class GroupChatViewController: MessagesViewController {
     }
     
     func sendAudio(_ audioURL: URL) {
+        lastReceivedMessageID += 1
         guard var audioMessage = mapAudio(audioURL) else { return }
         messages.append(audioMessage)
         messagesCollectionView.reloadData()
@@ -846,6 +880,7 @@ final class GroupChatViewController: MessagesViewController {
     }
     
     func sendFile(_ url: URL, _ mimeType: String?) {
+        lastReceivedMessageID += 1
         var fileMessage = mapFile(url)
         messages.append(fileMessage)
         messagesCollectionView.reloadData()
@@ -954,6 +989,14 @@ final class GroupChatViewController: MessagesViewController {
         })
     }
     
+    private func startPolling() {
+        pollingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.pollNewMessages()
+        }
+        pollingTimer?.tolerance = 1
+        pollingTimer?.fire()
+    }
+    
     @objc private func handleTitleTap() {
         interactor.routeToChatProfile()
     }
@@ -968,21 +1011,21 @@ final class GroupChatViewController: MessagesViewController {
     }
     
     @objc func handleSecretKeyUpdate() {
-        DispatchQueue.main.async {
-            self.messages = []
-            self.messagesCollectionView.reloadData()
-            self.interactor.loadFirstMessages { [weak self] result in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let messages):
-                        self.handleMessages(messages)
-                    case .failure(_):
-                        break
-                    }
-                }
-            }
-        }
+//        DispatchQueue.main.async {
+//            self.messages = []
+//            self.messagesCollectionView.reloadData()
+//            self.interactor.loadFirstMessages { [weak self] result in
+//                guard let self = self else { return }
+//                DispatchQueue.main.async {
+//                    switch result {
+//                    case .success(let messages):
+//                        self.handleMessages(messages)
+//                    case .failure(_):
+//                        break
+//                    }
+//                }
+//            }
+//        }
     }
 
     deinit {

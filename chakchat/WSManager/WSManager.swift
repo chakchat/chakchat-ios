@@ -13,17 +13,22 @@ final class WSManager: WSManagerProtocol {
     enum Keys {
         static let baseURL = "SERVER_BASE_URL"
     }
-    private let keychainManager: KeychainManager
+    private let keychainManager: KeychainManagerBusinessLogic
     private var webSocketTask: URLSessionWebSocketTask?
     private var pingTimer: Timer?
     var onMessage: ((Message) -> Void)?
     
-    init(keychainManager: KeychainManager) {
+    private var reconnectAttempts = 0
+    private let maxReconnectAttempts = 5
+    private let initialReconnectDelay: TimeInterval = 1.0
+    private let maxReconnectDelay: TimeInterval = 30.0
+    
+    init(keychainManager: KeychainManagerBusinessLogic) {
         self.keychainManager = keychainManager
     }
     
     func connectToWS() {
-        guard let url = URL(string: "wss://mywebsocket/ws") else { return }
+        guard let url = URL(string: "http://test.chakchat.ru/ws") else { return }
         
         var request = URLRequest(url: url)
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
@@ -45,6 +50,8 @@ final class WSManager: WSManagerProtocol {
                     guard let data = text.data(using: .utf8) else { return }
                     do {
                         let message = try JSONDecoder().decode(Message.self, from: data)
+                        let jsonString = String(data: data, encoding: .utf8)
+                        print(jsonString as Any)
                         self.onMessage?(message)
                     } catch {
                         print("JSON parsing error: \(error)")
@@ -57,7 +64,8 @@ final class WSManager: WSManagerProtocol {
                     break
                 }
             case .failure(let failure):
-                print(failure)
+                self.handleConnectionFailure(error: failure)
+                return
             }
             
             self.receiveData()
@@ -93,5 +101,23 @@ final class WSManager: WSManagerProtocol {
     private func stopPinging() {
         pingTimer?.invalidate()
         pingTimer = nil
+    }
+    
+    private func handleConnectionFailure(error: Error) {
+        debugPrint("WebSocket connection failed: \(error)")
+        disconnect()
+        
+        guard reconnectAttempts < maxReconnectAttempts else {
+            print("Max reconnect attempts reached. Stopping.")
+            return
+        }
+        
+        let delay = min(initialReconnectDelay * pow(2, Double(reconnectAttempts)), maxReconnectDelay)
+        reconnectAttempts += 1
+        
+        print("Reconnecting in \(delay) seconds...")
+        DispatchQueue.global().asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.connectToWS()
+        }
     }
 }

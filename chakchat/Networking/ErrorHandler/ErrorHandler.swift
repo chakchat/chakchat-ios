@@ -154,7 +154,7 @@ final class ErrorHandler: ErrorHandlerLogic {
             
         case ApiErrorType.refreshTokenInvalidated.rawValue:
             print("Error: Session invalidated. Please log in again.")
-            handleRefreshTokenError()
+            //handleRefreshTokenError()
             return ErrorId(message: serverErrorMessage, type: ErrorOutput.Alert)
             
         case ApiErrorType.invalidToken.rawValue:

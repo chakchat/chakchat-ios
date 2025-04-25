@@ -17,6 +17,7 @@ protocol GroupChatBusinessLogic: SendingMessagesProtocol {
     func handleDeletedMemberEvent(_ event: DeletedMemberEvent)
     
     func loadFirstMessages(completion: @escaping (Result<[MessageType], Error>) -> Void)
+    func pollNewMessages(_ from: Int64, completion: @escaping (Result<[any MessageType], any Error>) -> Void)
     func loadUsers(completion: @escaping (Result<[ProfileSettingsModels.ProfileUserData], Error>) -> Void)
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)

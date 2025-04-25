@@ -29,7 +29,8 @@ enum ChatsAssembly {
             logger: context.logger,
             errorHandler: context.errorHandler,
             eventSubscriber: context.eventManager,
-            keychainManager: context.keychainManager
+            keychainManager: context.keychainManager,
+            wsManager: context.wsManager
         )
         interactor.onRouteToChat = { userData, chatData in
             AppCoordinator.shared.showChatScreen(userData, chatData)

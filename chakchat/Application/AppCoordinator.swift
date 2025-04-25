@@ -43,7 +43,8 @@ final class AppCoordinator {
                                              eventManager: EventManager(),
                                              coreDataManager: CoreDataManager(),
                                              state: AppState._default,
-                                             logger: signupContext.logger)
+                                             logger: signupContext.logger,
+                                             wsManager: WSManager(keychainManager: signupContext.keychainManager))
     }
 
     // MARK: - Public Methods
@@ -123,6 +124,12 @@ final class AppCoordinator {
     func setChatsScreen() {
         let mainVC = CreateChatsScreen()
         mainChatVC = mainVC
+        
+        mainAppContext.wsManager.connectToWS()
+        mainAppContext.wsManager.onMessage = { [weak self] message in
+            self?.handleMessageFromWS(message)
+        }
+        
         navigationController.setViewControllers([mainVC], animated: true)
     }
     
@@ -275,5 +282,55 @@ final class AppCoordinator {
             chatType
         )
         navigationController.present(forwardVC, animated: true)
+    }
+    
+    private func handleMessageFromWS(_ message: Message) {
+        switch message.type {
+        case .update: // ChatsScreen, ChatInteractor, GroupChatInteractor
+            if case .update(let updateData) = message.data {
+                let updateEvent = WSUpdateEvent(updateData: updateData)
+                mainAppContext.eventManager.publish(event: updateEvent)
+            }
+        case .chatCreated: // ChatsScreen
+            if case .chatCreated(let chatCreatedData) = message.data {
+                let chatCreatedEvent = WSChatCreatedEvent(chatCreadetData: chatCreatedData)
+                mainAppContext.eventManager.publish(event: chatCreatedEvent)
+            }
+        case .chatDeleted: // ChatsScreen, ChatScreen, GroupChatScreen
+            if case .delete(let chatDeletedEvent) = message.data {
+                let chatDeletedEvent = WSChatDeletedEvent(chatDeletedData: chatDeletedEvent)
+                mainAppContext.eventManager.publish(event: chatDeletedEvent)
+            }
+        case .chatBlocked: // ChatScreen, GroupChatScreen
+            if case .delete(let chatBlockedData) = message.data {
+                let chatBlockedEvent = WSChatBlockedEvent(chatBlockedData: chatBlockedData)
+                mainAppContext.eventManager.publish(event: chatBlockedEvent)
+            }
+        case .chatUnblocked: // ChatScreen, GroupChatScreen
+            if case .delete(let chatUnblockedEvent) = message.data {
+                let chatUnblockedEvent = WSChatUnblockedEvent(chatUnblockedData: chatUnblockedEvent)
+                mainAppContext.eventManager.publish(event: chatUnblockedEvent)
+            }
+        case .chatExpirationSet: // GroupChatScreen, GroupProfileScreen
+            if case .expiration(let expirationData) = message.data {
+                let expirationEvent = WSChatExpirationSetEvent(chatExpirationSetData: expirationData)
+                mainAppContext.eventManager.publish(event: expirationEvent)
+            }
+        case .groupInfoUpdated: // ChatsScreen, GroupChatScreen, GroupProfileScreen, GroupProfileEditScreen
+            if case .updateGroupInfo(let updateGroupInfoData) = message.data {
+                let updateGroupInfoEvent = WSGroupInfoUpdatedEvent(groupInfoUpdatedData: updateGroupInfoData)
+                mainAppContext.eventManager.publish(event: updateGroupInfoEvent)
+            }
+        case .groupMembersAdded: // ChatsScreen, GroupChatScreen, GroupProfileScreen
+            if case .updateGroupMembers(let groupMembersAddedData) = message.data {
+                let groupMembersAddedEvent = WSGroupMembersAddedEvent(groupMembersAddedData: groupMembersAddedData)
+                mainAppContext.eventManager.publish(event: groupMembersAddedEvent)
+            }
+        case .groupMembersRemoved: // ChatsScreen, GroupChatScreen, GroupProfileScreen
+            if case .updateGroupMembers(let groupMembersRemovedData) = message.data {
+                let groupMembersRemovedEvent = WSGroupMembersRemovedEvent(groupMembersRemovedData: groupMembersRemovedData)
+                mainAppContext.eventManager.publish(event: groupMembersRemovedEvent)
+            }
+        }
     }
 }

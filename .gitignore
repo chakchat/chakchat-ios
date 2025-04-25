@@ -27,7 +27,6 @@ go.work.sum
 keys/
 ssl/
 
-*.xcconfig
 
 # Xcode
 .DS_Store

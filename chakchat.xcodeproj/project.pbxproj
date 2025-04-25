@@ -83,6 +83,7 @@
 		AA61643B2DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */; };
 		AA61643C2DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */; };
 		AA61643D2DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */; };
+		AA64CFEA2DBAC1D200551DD7 /* WSEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA64CFE92DBAC1D200551DD7 /* WSEvents.swift */; };
 		AA7140BA2D921043007F5C23 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = AA7140B92D921043007F5C23 /* Kingfisher */; };
 		AA716F8D2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */; };
 		AA75DCB92D81C4CD00775199 /* AddedMemberEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */; };
@@ -432,6 +433,7 @@
 		AA6164312DB56975007ADFD6 /* ReactionUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReactionUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AA6164322DB56975007ADFD6 /* TextUpdate+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextUpdate+CoreDataClass.swift"; sourceTree = "<group>"; };
 		AA6164332DB56975007ADFD6 /* TextUpdate+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextUpdate+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		AA64CFE92DBAC1D200551DD7 /* WSEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSEvents.swift; sourceTree = "<group>"; };
 		AA716F8C2DAA76ED00E80004 /* UIHiddenMessageCellSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHiddenMessageCellSizeCalculator.swift; sourceTree = "<group>"; };
 		AA75DCB82D81C4CD00775199 /* AddedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddedMemberEvent.swift; sourceTree = "<group>"; };
 		AA75DCBA2D81C71E00775199 /* DeletedMemberEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedMemberEvent.swift; sourceTree = "<group>"; };
@@ -737,6 +739,7 @@
 		AA1C0E312D43A055008E47D8 /* Events */ = {
 			isa = PBXGroup;
 			children = (
+				AA64CFEC2DBAC28200551DD7 /* WSEvents */,
 				AA1C0E322D43A081008E47D8 /* Event.swift */,
 				AA84F0622D4E307000678ABA /* ProfileEvent */,
 				AA84F0602D4E304300678ABA /* ConfidentialityEvent */,
@@ -850,6 +853,14 @@
 				AA57589E2DAD2E8800CC3331 /* UpdateServiceProtocol.swift */,
 			);
 			path = Updates;
+			sourceTree = "<group>";
+		};
+		AA64CFEC2DBAC28200551DD7 /* WSEvents */ = {
+			isa = PBXGroup;
+			children = (
+				AA64CFE92DBAC1D200551DD7 /* WSEvents.swift */,
+			);
+			path = WSEvents;
 			sourceTree = "<group>";
 		};
 		AA7BADDF2D3F9E2F0030AC82 /* Chats */ = {
@@ -1210,11 +1221,11 @@
 				AA92EC6A2D393250007DEC76 /* IntegrationTests */,
 				AA92EC642D392CD7007DEC76 /* Mocks */,
 				AA9B62812D302EFF0064CB23 /* Application */,
+				AA9B625C2D2FC5410064CB23 /* Common */,
 				AA9B627E2D3018B00064CB23 /* Contexts */,
 				AA1C0E342D43A0C0008E47D8 /* EventManager */,
 				AAEF16852D9FD2BF0022B30F /* WSManager */,
 				AA1C0E312D43A055008E47D8 /* Events */,
-				AA9B625C2D2FC5410064CB23 /* Common */,
 				AA9B62542D2EDF700064CB23 /* Networking */,
 				AA9B62372D2D75050064CB23 /* Services */,
 				AA9B623F2D2EC0010064CB23 /* Keychain */,
@@ -2127,6 +2138,7 @@
 				AA7BADE52D3F9F220030AC82 /* ChatsScreenProtocols.swift in Sources */,
 				AAA839E22D62522F00C870A4 /* FileStorageEndpoints.swift in Sources */,
 				AA9B627B2D3004850064CB23 /* SignupWorker.swift in Sources */,
+				AA64CFEA2DBAC1D200551DD7 /* WSEvents.swift in Sources */,
 				AA9B62592D2EDF9F0064CB23 /* ErrorModels.swift in Sources */,
 				AA2781662D7DA16C0049ACAF /* GroupChatViewController.swift in Sources */,
 				AA27817B2D7DE1BE0049ACAF /* GroupProfileEditInteractor.swift in Sources */,

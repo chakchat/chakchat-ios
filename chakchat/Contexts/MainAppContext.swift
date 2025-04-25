@@ -18,6 +18,7 @@ final class MainAppContext: MainAppContextProtocol {
     let coreDataManager: CoreDataManagerProtocol
     var state: AppState
     let logger: OSLog
+    var wsManager: WSManagerProtocol
     
     init(
         keychainManager: KeychainManagerBusinessLogic,
@@ -26,7 +27,8 @@ final class MainAppContext: MainAppContextProtocol {
         eventManager: EventPublisherProtocol & EventSubscriberProtocol,
         coreDataManager: CoreDataManagerProtocol,
         state: AppState,
-        logger: OSLog
+        logger: OSLog,
+        wsManager: WSManagerProtocol
     ) {
         self.keychainManager = keychainManager
         self.errorHandler = errorHandler
@@ -35,5 +37,6 @@ final class MainAppContext: MainAppContextProtocol {
         self.coreDataManager = coreDataManager
         self.state = state
         self.logger = logger
+        self.wsManager = wsManager
     }
 }

@@ -1,0 +1,10 @@
+//
+//  config.xcconfig
+//  chakchat
+//
+//  Created by Кирилл Исаев on 06.02.2025.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+SERVER_BASE_URL = http:/$()/test.chakchat.ru
