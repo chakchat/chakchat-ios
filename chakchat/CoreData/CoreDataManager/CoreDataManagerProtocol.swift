@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 protocol CoreDataManagerProtocol {
     
@@ -35,7 +36,7 @@ protocol CoreDataManagerProtocol {
     @discardableResult
     func createFileMessageUpdate(_ updateData: UpdateData) -> FileUpdate
     @discardableResult
-    func createReactionUpdate(_ reactionInfo: ReactionInfo) -> ReactionUpdate
+    func createReactionUpdate(_ updateData: UpdateData) -> ReactionUpdate
     @discardableResult
     func createDeletedUpdate(_ updateData: UpdateData) -> DeleteUpdate
     
@@ -50,4 +51,8 @@ protocol CoreDataManagerProtocol {
     
     func deleteTextMessageUpdate(_ updateID: Int64)
     func deleteFileMessageUpdate(_ updateID: Int64)
+    
+    func getLastUpdateID(_ chatID: UUID) -> Int64?
+    
+    func fetchAllUpdates(_ chatID: UUID) -> [NSManagedObject]
 }

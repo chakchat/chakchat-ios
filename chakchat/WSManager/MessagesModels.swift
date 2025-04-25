@@ -26,12 +26,12 @@ enum MessageData: Codable {
 }
 
 struct UpdateData: Codable {
-    let chatID: UUID
-    let content: UpdateContent
-    let createdAt: Date
-    let senderID: UUID
-    let type: UpdateDataType
-    let updateID: Int64
+    var chatID: UUID
+    var content: UpdateContent
+    var createdAt: Date
+    var senderID: UUID
+    var type: UpdateDataType
+    var updateID: Int64
     
     init(
         _ chatID: UUID,
@@ -47,6 +47,15 @@ struct UpdateData: Codable {
         self.senderID = senderID
         self.createdAt = createdAt
         self.content = content
+    }
+    
+    init() {
+        chatID = UUID()
+        content = .textContent(TextContent(nil, "", nil, nil, nil))
+        createdAt = Date()
+        senderID = UUID()
+        type = .textMessage
+        updateID = 0
     }
     
     enum CodingKeys: String, CodingKey {

@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import OSLog
 
 // MARK: - CoreDataManager
 final class CoreDataManager: CoreDataManagerProtocol {
@@ -221,7 +222,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
         if case .textContent(let tc) = updateData.content, tc.reactions != nil {
             if let reactions = tc.reactions {
                 reactions.forEach { reaction in
-                    textMessageUpdate.addToReactions(createReactionUpdate(reaction))
+                    textMessageUpdate.addToReactions(createReactionUpdateFromInfo(reaction))
                     CoreDataStack.shared.saveContext(for: Models.update.rawValue)
                 }
             }
@@ -262,6 +263,12 @@ final class CoreDataManager: CoreDataManagerProtocol {
     @discardableResult
     func createFileMessageUpdate(_ updateData: UpdateData) -> FileUpdate {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        
+        if let existingUpdate = fetchFileMessageUpdate(updateData.updateID) {
+            print("⚠️ FileUpdate с updateID \(updateData.updateID) уже существует!")
+            return existingUpdate
+        }
+        
         let fileMessageUpdate = FileUpdate(context: context)
         fileMessageUpdate.chatID = updateData.chatID
         fileMessageUpdate.senderID = updateData.senderID
@@ -273,6 +280,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
             fileMessageUpdate.fileSize = Double(fc.file.fileSize)
             fileMessageUpdate.mimeType = fc.file.mimeType
             fileMessageUpdate.fileID = fc.file.fileID
+            fileMessageUpdate.fileURL = fc.file.fileURL
             fileMessageUpdate.fileCreatedAt = fc.file.createdAt
             fileMessageUpdate.replyTo = fc.replyTo ?? -1
             fileMessageUpdate.forwarded = fc.forwarded ?? false
@@ -282,7 +290,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
         if case .fileContent(let fc) = updateData.content, fc.reactions != nil {
             if let reactions = fc.reactions {
                 reactions.forEach { reaction in
-                    fileMessageUpdate.addToReactions(createReactionUpdate(reaction))
+                    fileMessageUpdate.addToReactions(createReactionUpdateFromInfo(reaction))
                     CoreDataStack.shared.saveContext(for: Models.update.rawValue)
                 }
             }
@@ -291,24 +299,28 @@ final class CoreDataManager: CoreDataManagerProtocol {
     }
     
     @discardableResult
-    func createReactionUpdate(_ reactionInfo: ReactionInfo) -> ReactionUpdate {
+    func createReactionUpdate(_ updateData: UpdateData) -> ReactionUpdate {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         let reactionUpdate = ReactionUpdate(context: context)
-        reactionUpdate.chatID = reactionInfo.chatID
-        reactionUpdate.updateID = reactionInfo.updateID
-        reactionUpdate.type = reactionInfo.type.rawValue
-        reactionUpdate.senderID = reactionInfo.senderID
-        reactionUpdate.createdAt = reactionInfo.createdAt
-        reactionUpdate.reaction = reactionInfo.content.reaction
-        reactionUpdate.messageID = reactionInfo.content.messageID
-        if let textUpdate = fetchTextMessageUpdate(reactionInfo.content.messageID) {
-            reactionUpdate.message = textUpdate
-            reactionUpdate.fileMessage = nil
+        reactionUpdate.chatID = updateData.chatID
+        reactionUpdate.updateID = updateData.updateID
+        reactionUpdate.type = updateData.type.rawValue
+        reactionUpdate.senderID = updateData.senderID
+        reactionUpdate.createdAt = updateData.createdAt
+        if case .reactionContent(let rc) = updateData.content {
+            reactionUpdate.reaction = rc.reaction
+            reactionUpdate.messageID = rc.messageID
+            
+            if let textUpdate = fetchTextMessageUpdate(rc.messageID) {
+                reactionUpdate.message = textUpdate
+                reactionUpdate.fileMessage = nil
+            }
+            if let fileUpdate = fetchFileMessageUpdate(rc.messageID) {
+                reactionUpdate.fileMessage = fileUpdate
+                reactionUpdate.message = nil
+            }
         }
-        if let fileUpdate = fetchFileMessageUpdate(reactionInfo.content.messageID) {
-            reactionUpdate.fileMessage = fileUpdate
-            reactionUpdate.message = nil
-        }
+
         CoreDataStack.shared.saveContext(for: Models.update.rawValue)
         return reactionUpdate
     }
@@ -333,7 +345,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
     func fetchTextMessageUpdate(_ updateID: Int64) -> TextUpdate? {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         let request: NSFetchRequest<TextUpdate> = TextUpdate.fetchRequest()
-        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        let predicate = NSPredicate(format: "updateID == %lld", updateID)
         request.predicate = predicate
         request.fetchLimit = 1
         return try? context.fetch(request).first
@@ -342,7 +354,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
     func fetchTextEditedUpdate(_ updateID: Int64) -> EditUpdate? {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         let request: NSFetchRequest<EditUpdate> = EditUpdate.fetchRequest()
-        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        let predicate = NSPredicate(format: "updateID == %lld", updateID)
         request.predicate = predicate
         request.fetchLimit = 1
         return try? context.fetch(request).first
@@ -351,7 +363,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
     func fetchFileMessageUpdate(_ updateID: Int64) -> FileUpdate? {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         let request: NSFetchRequest<FileUpdate> = FileUpdate.fetchRequest()
-        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        let predicate = NSPredicate(format: "updateID == %lld", updateID)
         request.predicate = predicate
         request.fetchLimit = 1
         return try? context.fetch(request).first
@@ -360,7 +372,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
     func fetchReactionUpdate(_ updateID: Int64) -> ReactionUpdate? {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         let request: NSFetchRequest<ReactionUpdate> = ReactionUpdate.fetchRequest()
-        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        let predicate = NSPredicate(format: "updateID == %lld", updateID)
         request.predicate = predicate
         request.fetchLimit = 1
         return try? context.fetch(request).first
@@ -369,7 +381,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
     func fetchDeletedUpdate(_ updateID: Int64) -> DeleteUpdate? {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         let request: NSFetchRequest<DeleteUpdate> = DeleteUpdate.fetchRequest()
-        let predicate = NSPredicate(format: "updateID == %@", updateID)
+        let predicate = NSPredicate(format: "updateID == %lld", updateID)
         request.predicate = predicate
         request.fetchLimit = 1
         return try? context.fetch(request).first
@@ -378,7 +390,11 @@ final class CoreDataManager: CoreDataManagerProtocol {
     func updateTextMessageUpdate(_ updateData: UpdateData) {
         let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         if let textUpdate = fetchTextMessageUpdate(updateData.updateID) {
+            if let existingEdit = textUpdate.edited {
+                context.delete(existingEdit)
+            }
             if case .textContent(let tc) = updateData.content {
+                textUpdate.text = tc.text
                 textUpdate.replyTo = tc.replyTo ?? -1
                 textUpdate.edited = createTextEditedUpdate(updateData)
                 if let reactions = tc.reactions {
@@ -386,7 +402,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
                         textUpdate.removeFromReactions(textUpdateR)
                     }
                     reactions.forEach { reaction in
-                        textUpdate.addToReactions(createReactionUpdate(reaction))
+                        textUpdate.addToReactions(createReactionUpdateFromInfo(reaction))
                     }
                 }
             }
@@ -395,7 +411,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
     }
     
     func updateFileMessageUpdate(_ updateData: UpdateData) {
-        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        _ = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
         if let fileUpdate = fetchFileMessageUpdate(updateData.updateID) {
             if case .fileContent(let fc) = updateData.content {
                 if let reactions = fc.reactions {
@@ -403,7 +419,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
                         fileUpdate.removeFromReactions(fileUpdateR)
                     }
                     reactions.forEach { reaction in
-                        fileUpdate.addToReactions(createReactionUpdate(reaction))
+                        fileUpdate.addToReactions(createReactionUpdateFromInfo(reaction))
                     }
                 }
             }
@@ -425,5 +441,87 @@ final class CoreDataManager: CoreDataManagerProtocol {
             context.delete(fileUpdate)
         }
         CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+    }
+    
+    func fetchAllUpdates(_ chatID: UUID) -> [NSManagedObject] {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        var allUpdates: [NSManagedObject] = []
+
+        let entityTypes: [NSFetchRequest<NSFetchRequestResult>] = [
+            TextUpdate.fetchRequest(),
+            FileUpdate.fetchRequest(),
+            ReactionUpdate.fetchRequest(),
+        ]
+
+        for request in entityTypes {
+            request.predicate = NSPredicate(format: "chatID == %@", chatID as CVarArg)
+
+            do {
+                let results = try context.fetch(request)
+                if let updates = results as? [NSManagedObject] {
+                    allUpdates.append(contentsOf: updates)
+                }
+            } catch {
+                print("Error fetching updates for \(request.entityName ?? "Unknown"): \(error)")
+            }
+        }
+        return allUpdates
+    }
+    
+    private func createReactionUpdateFromInfo(_ reactionInfo: ReactionInfo) -> ReactionUpdate {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        let reactionUpdate = ReactionUpdate(context: context)
+        reactionUpdate.chatID = reactionInfo.chatID
+        reactionUpdate.updateID = reactionInfo.updateID
+        reactionUpdate.type = reactionInfo.type.rawValue
+        reactionUpdate.senderID = reactionInfo.senderID
+        reactionUpdate.createdAt = reactionInfo.createdAt
+        reactionUpdate.reaction = reactionInfo.content.reaction
+        reactionUpdate.messageID = reactionInfo.content.messageID
+        
+        if let textUpdate = fetchTextMessageUpdate(reactionInfo.content.messageID) {
+            reactionUpdate.message = textUpdate
+            reactionUpdate.fileMessage = nil
+        }
+        if let fileUpdate = fetchFileMessageUpdate(reactionInfo.content.messageID) {
+            reactionUpdate.fileMessage = fileUpdate
+            reactionUpdate.message = nil
+        }
+
+        CoreDataStack.shared.saveContext(for: Models.update.rawValue)
+        return reactionUpdate
+    }
+    
+    func getLastUpdateID(_ chatID: UUID) -> Int64? {
+        let context = CoreDataStack.shared.viewContext(for: Models.update.rawValue)
+        var maxUpdateID: Int64? = nil
+
+        let entities: [NSFetchRequest<NSFetchRequestResult>] = [
+            TextUpdate.fetchRequest(),
+            FileUpdate.fetchRequest(),
+            EditUpdate.fetchRequest(),
+            ReactionUpdate.fetchRequest(),
+            DeleteUpdate.fetchRequest()
+        ]
+
+        for request in entities {
+            request.predicate = NSPredicate(format: "chatID == %@", chatID as CVarArg)
+            request.fetchLimit = 1
+            request.sortDescriptors = [NSSortDescriptor(key: "updateID", ascending: false)]
+
+            do {
+                if let result = try context.fetch(request).first as? NSManagedObject,
+                   let updateID = result.value(forKey: "updateID") as? Int64 {
+                    if let currentMax = maxUpdateID {
+                        maxUpdateID = max(currentMax, updateID)
+                    } else {
+                        maxUpdateID = updateID
+                    }
+                }
+            } catch {
+                print("Error fetching from \(request.entityName ?? "Unknown"): \(error.localizedDescription)")
+            }
+        }
+        return maxUpdateID
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MessageKit
 
 // MARK: - ChatPresenter
 final class ChatPresenter: ChatPresentationLogic {

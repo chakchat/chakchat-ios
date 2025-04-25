@@ -62,9 +62,23 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
+    func loadSavedMessages() -> [MessageType] {
+        if let cd = chatData {
+            let updates = worker.loadChatMessages(cd.chatID)
+            let sortedUpdates = updates.sorted { $0.updateID < $1.updateID }
+            let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
+            return mappedSortedUpdates
+        }
+        return []
+    }
+    
     func loadFirstMessages(completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
         if let cd = chatData {
-            worker.loadFirstMessages(cd.chatID, 1, 200) { [weak self] result in
+            var lastUpdateID = Int64(1)
+            if let last = worker.getLastUpdateID(cd.chatID) {
+                lastUpdateID = last + 1
+            }
+            worker.loadFirstMessages(cd.chatID, lastUpdateID, 200) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let data):
@@ -77,6 +91,13 @@ final class ChatInteractor: ChatBusinessLogic {
                 }
             }
         }
+    }
+    
+    func getLastUpdateID() -> Int64? {
+        if let cd = chatData {
+            return worker.getLastUpdateID(cd.chatID)
+        }
+        return nil
     }
     
     func pollNewMessages(_ from: Int64, completion: @escaping (Result<[any MessageType], any Error>) -> Void) {

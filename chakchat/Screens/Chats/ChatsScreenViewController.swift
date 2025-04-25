@@ -91,21 +91,12 @@ final class ChatsScreenViewController: UIViewController {
     func addNewChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         chatsData?.insert(chatData, at: 0)
         chatsTableView.reloadData()
-        
-        chatsTableView.performBatchUpdates({
-            chatsTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-        }, completion: { [weak self] _ in
-            self?.chatsTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
-        })
     }
     
     func deleteChat(_ chatID: UUID) {
         guard let index = chatsData?.firstIndex(where: { $0.chatID == chatID }) else { return }
-        
-        chatsTableView.performBatchUpdates({
-            chatsData?.remove(at: index)
-            chatsTableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-        }, completion: nil)
+        chatsData?.remove(at: index)
+        chatsTableView.reloadData()
     }
     
     func changeChatPreview(_ event: WSUpdateEvent) {

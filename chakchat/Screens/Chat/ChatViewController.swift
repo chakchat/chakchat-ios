@@ -118,6 +118,7 @@ final class ChatViewController: MessagesViewController {
         messagesCollectionView.register(CustomMediaMessageCell.self)
         messagesCollectionView.register(FileMessageCell.self)
         messagesCollectionView.register(EncryptedCell.self)
+        //loadSavedMessages()
         addSecretKeyObserver()
         loadFirstMessages()
         configureUI()
@@ -131,6 +132,14 @@ final class ChatViewController: MessagesViewController {
             name: .secretKeyUpdated,
             object: nil
         )
+    }
+    
+    private func loadSavedMessages() {
+        let loadedMessages = interactor.loadSavedMessages()
+        handleMessages(loadedMessages)
+        if let lastUpdateID = interactor.getLastUpdateID() {
+            self.lastReceivedMessageID = lastUpdateID
+        }
     }
     
     private func loadFirstMessages() {

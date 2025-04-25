@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import CoreData
 
 // MARK: - ChatWorker
 final class ChatWorker: ChatWorkerLogic {
@@ -89,10 +90,14 @@ final class ChatWorker: ChatWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         if chatType == .personal {
             let request = ChatsModels.UpdateModels.SendMessageRequest(text: message, replyTo: replyTo)
-            personalUpdateService.sendTextMessage(request, chatID, accessToken) { result in
+            personalUpdateService.sendTextMessage(request, chatID, accessToken) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
                     let data = response.data
+                    DispatchQueue.main.async {
+                        self.coreDataManager.createTextMessageUpdate(data)
+                    }
                     completion(.success(data))
                 case .failure(let failure):
                     completion(.failure(failure))
@@ -119,6 +124,7 @@ final class ChatWorker: ChatWorkerLogic {
                                     data.createdAt,
                                     .textContent(content)
                                 )
+                                self.coreDataManager.createTextMessageUpdate(update)
                                 completion(.success(update))
                             }
                         case .failure(let failure):
@@ -133,12 +139,15 @@ final class ChatWorker: ChatWorkerLogic {
     func deleteMessage(_ chatID: UUID, _ updateID: Int64, _ deleteMode: DeleteMode, _ chatType: ChatType, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         if chatType == .personal {
-            personalUpdateService.deleteMessage(chatID, updateID, deleteMode, accessToken) { result in
+            personalUpdateService.deleteMessage(chatID, updateID, deleteMode, accessToken) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
                     let data = response.data
+                    DispatchQueue.main.async {
+                        self.coreDataManager.createDeletedUpdate(data)
+                    }
                     completion(.success(data))
-                    // сохраняем в coredata
                 case .failure(let failure):
                     completion(.failure(failure))
                 }
@@ -164,6 +173,7 @@ final class ChatWorker: ChatWorkerLogic {
                                     data.createdAt,
                                     .deletedContent(content)
                                 )
+                                self.coreDataManager.createDeletedUpdate(update)
                                 completion(.success(update))
                             }
                         case .failure(let failure):
@@ -179,12 +189,15 @@ final class ChatWorker: ChatWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         if chatType == .personal {
             let request = ChatsModels.UpdateModels.EditMessageRequest(text: text)
-            personalUpdateService.editTextMessage(chatID, updateID, request, accessToken) { result in
+            personalUpdateService.editTextMessage(chatID, updateID, request, accessToken) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
                     let data = response.data
+                    DispatchQueue.main.async {
+                        self.coreDataManager.updateTextMessageUpdate(data)
+                    }
                     completion(.success(data))
-                    // сохраняем в coredata
                 case .failure(let failure):
                     completion(.failure(failure))
                 }
@@ -210,6 +223,7 @@ final class ChatWorker: ChatWorkerLogic {
                                     data.createdAt,
                                     .editedContent(content)
                                 )
+                                self.coreDataManager.createTextEditedUpdate(update)
                                 completion(.success(update))
                             }
                         case .failure(let failure):
@@ -225,12 +239,15 @@ final class ChatWorker: ChatWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         if chatType == .personal {
             let request = ChatsModels.UpdateModels.FileMessageRequest(fileID: fileID, replyTo: replyTo)
-            personalUpdateService.sendFileMessage(chatID, request, accessToken) { result in
+            personalUpdateService.sendFileMessage(chatID, request, accessToken) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
                     let data = response.data
+                    DispatchQueue.main.async {
+                        self.coreDataManager.createFileMessageUpdate(data)
+                    }
                     completion(.success(data))
-                    // сохраняем в coredata
                 case .failure(let failure):
                     completion(.failure(failure))
                 }
@@ -272,6 +289,7 @@ final class ChatWorker: ChatWorkerLogic {
                                             data.createdAt,
                                             .fileContent(content)
                                         )
+                                        self.coreDataManager.createFileMessageUpdate(update)
                                         completion(.success(update))
                                     }
                                 case .failure(let failure):
@@ -291,12 +309,15 @@ final class ChatWorker: ChatWorkerLogic {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         if chatType == .personal {
             let request = ChatsModels.UpdateModels.ReactionRequest(reaction: reaction, messageID: messageID)
-            personalUpdateService.sendReaction(chatID, request, accessToken) { result in
+            personalUpdateService.sendReaction(chatID, request, accessToken) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
                     let data = response.data
+                    DispatchQueue.main.async {
+                        self.coreDataManager.createReactionUpdate(data)
+                    }
                     completion(.success(data))
-                    // сохраняем в coredata
                 case .failure(let failure):
                     completion(.failure(failure))
                 }
@@ -321,6 +342,7 @@ final class ChatWorker: ChatWorkerLogic {
                                     data.createdAt,
                                     .reactionContent(content)
                                 )
+                                self.coreDataManager.createReactionUpdate(update)
                                 completion(.success(update))
                             }
                         case .failure(let failure):
@@ -335,12 +357,14 @@ final class ChatWorker: ChatWorkerLogic {
     func deleteReaction(_ chatID: UUID, _ updateID: Int64, _ chatType: ChatType, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }
         if chatType == .personal {
-            personalUpdateService.deleteReaction(chatID, updateID, accessToken) { result in
+            personalUpdateService.deleteReaction(chatID, updateID, accessToken) { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let response):
                     let data = response.data
+                    self.coreDataManager.updateTextMessageUpdate(data)
+                    self.coreDataManager.updateFileMessageUpdate(data)
                     completion(.success(data))
-                    // сохраняем в coredata
                 case .failure(let failure):
                     completion(.failure(failure))
                 }
@@ -366,6 +390,8 @@ final class ChatWorker: ChatWorkerLogic {
                                     data.createdAt,
                                     .deletedContent(content)
                                 )
+                                self.coreDataManager.updateTextMessageUpdate(update)
+                                self.coreDataManager.updateFileMessageUpdate(update)
                                 completion(.success(update))
                             }
                         case .failure(let failure):
@@ -416,6 +442,159 @@ final class ChatWorker: ChatWorkerLogic {
     func saveSecretKey(_ key: String, _ chatID: UUID) -> Bool {
         let s = keychainManager.saveSecretKey(key, chatID)
         return s
+    }
+    
+    func saveTextUpdate(_ update: UpdateData) {
+        DispatchQueue.main.async {
+            self.coreDataManager.createTextMessageUpdate(update)
+        }
+    }
+    
+    func saveEditUpdate(_ update: UpdateData) {
+        DispatchQueue.main.async {
+            self.coreDataManager.createTextEditedUpdate(update)
+        }
+    }
+    
+    func saveFileUpdate(_ update: UpdateData) {
+        DispatchQueue.main.async {
+            self.coreDataManager.createFileMessageUpdate(update)
+        }
+    }
+    
+    func saveReactionUpdate(_ update: UpdateData) {
+        DispatchQueue.main.async {
+            self.coreDataManager.createReactionUpdate(update)
+        }
+    }
+    
+    func saveDeleteUpdate(_ update: UpdateData) {
+        DispatchQueue.main.async {
+            self.coreDataManager.createDeletedUpdate(update)
+        }
+    }
+    
+    func getLastUpdateID(_ chatID: UUID) -> Int64? {
+        let lastUpdateID = coreDataManager.getLastUpdateID(chatID)
+        return lastUpdateID
+    }
+    
+    func loadChatMessages(_ chatID: UUID) -> [UpdateData] {
+        var updateArray: [UpdateData] = []
+        let updates = coreDataManager.fetchAllUpdates(chatID)
+        for update in updates {
+            if let update = mapFromCoreData(update) {
+                updateArray.append(update)
+            }
+        }
+        return updateArray
+    }
+    
+    private func mapFromCoreData(_ update: NSManagedObject) -> UpdateData? {
+        if let update = update as? TextUpdate {
+            var updateData = UpdateData()
+            guard let chatID = update.chatID,
+                  let createdAt = update.createdAt,
+                  let senderID = update.senderID,
+                  let text = update.text else { return nil }
+            let replyTo = update.replyTo == -1 ? nil : update.replyTo
+            
+            updateData.chatID = chatID
+            updateData.updateID = update.updateID
+            updateData.senderID = senderID
+            updateData.type = .textMessage
+            updateData.createdAt = createdAt
+            var editedInfo: EditedInfo? = nil
+            if let edited = update.edited {
+                editedInfo = EditedInfo(
+                    chatID: chatID,
+                    updateID: edited.updateID,
+                    type: .textEdited,
+                    senderID: senderID,
+                    createdAt: edited.createdAt ?? Date(),
+                    content: EditedContent(newText: edited.newText ?? "", messageID: edited.messageID)
+                )
+            }
+            var reactionInfo: [ReactionInfo]? = nil
+            if let reactions = update.reactions {
+                reactionInfo = createReactions(reactions)
+            }
+            updateData.content = .textContent(TextContent(replyTo, text, update.forwarded, editedInfo, reactionInfo))
+            
+            return updateData
+        }
+        if let update = update as? FileUpdate {
+            var updateData = UpdateData()
+            guard let chatID = update.chatID,
+                  let createdAt = update.createdAt,
+                  let senderID = update.senderID,
+                  let fileURL = update.fileURL
+            else { return nil }
+            let replyTo = update.replyTo == -1 ? nil : update.replyTo
+            updateData.chatID = chatID
+            updateData.updateID = update.updateID
+            updateData.senderID = senderID
+            updateData.type = .file
+            updateData.createdAt = createdAt
+            var reactionInfo: [ReactionInfo]? = nil
+            if let reactions = update.reactions {
+                reactionInfo = createReactions(reactions)
+            }
+            updateData.content =
+                .fileContent(
+                    FileContent(
+                        file: FileInfo(
+                            fileID: update.fileID ?? UUID(),
+                            fileName: update.fileName ?? "",
+                            mimeType: update.mimeType ?? "",
+                            fileSize: Int64(update.fileSize),
+                            fileURL: fileURL,
+                            createdAt: update.fileCreatedAt ?? Date()
+                        ),
+                        replyTo: replyTo,
+                        forwarded: update.forwarded,
+                        reactions: reactionInfo
+                    )
+                )
+            return updateData
+        }
+        if let update = update as? ReactionUpdate {
+            guard let chatID = update.chatID,
+                  let createdAt = update.createdAt,
+                  let senderID = update.senderID else { return nil }
+            return UpdateData(
+                chatID,
+                update.updateID,
+                .reaction,
+                senderID,
+                createdAt,
+                .reactionContent(ReactionContent(reaction: update.reaction ?? "", messageID: update.messageID))
+            )
+        }
+        return nil
+    }
+    
+    private func createReactions(_ reactions: NSSet) -> [ReactionInfo] {
+        var reactionInfo: [ReactionInfo] = []
+        reactions.forEach { reaction in
+            if let reaction = reaction as? ReactionUpdate {
+                reactionInfo
+                    .append(
+                        ReactionInfo(
+                            chatID: reaction.chatID ?? UUID(),
+                            updateID: reaction.updateID,
+                            type: .reaction,
+                            senderID: reaction.senderID ?? UUID(),
+                            createdAt: reaction.createdAt ?? Date(),
+                            content: ReactionContent(
+                                reaction: reaction.reaction ?? "",
+                                messageID: reaction.messageID
+                            )
+                        )
+                    )
+            }
+        }
+        return reactionInfo
     }
     
     private func sealMessage(_ chatID: UUID, _ json: Data) -> ChatsModels.SecretUpdateModels.SendMessageRequest? {

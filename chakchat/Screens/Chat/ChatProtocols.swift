@@ -23,6 +23,9 @@ protocol ChatBusinessLogic: SendingMessagesProtocol {
     func loadFirstMessages(completion: @escaping (Result<[MessageType], Error>) -> Void)
     func pollNewMessages(_ from: Int64, completion: @escaping (Result<[any MessageType], any Error>) -> Void)
     
+    func loadSavedMessages() -> [MessageType]
+    func getLastUpdateID() -> Int64?
+    
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void)
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, Error>) -> Void)
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void)
@@ -87,6 +90,16 @@ protocol ChatWorkerLogic {
     func getMyID() -> UUID
     
     func getSecretKey(_ chatID: UUID) -> String?
+    
+    func saveTextUpdate(_ update: UpdateData)
+    func saveEditUpdate(_ update: UpdateData)
+    func saveFileUpdate(_ update: UpdateData)
+    func saveReactionUpdate(_ update: UpdateData)
+    func saveDeleteUpdate(_ update: UpdateData)
+    
+    func getLastUpdateID(_ chatID: UUID) -> Int64?
+    
+    func loadChatMessages(_ chatID: UUID) -> [UpdateData]
 }
 
 protocol SendingMessagesProtocol: AnyObject {
