@@ -23,4 +23,34 @@ final class ChatsScreenPresenter: ChatsScreenPresentationLogic {
     func deleteChat(_ chatID: UUID) {
         view?.deleteChat(chatID)
     }
+    
+    func changeChatPreview(_ event: WSUpdateEvent) {
+        if event.updateData.type == .textMessage || event.updateData.type == .file {
+            view?.changeChatPreview(event)
+        }
+    }
+    
+    func showNewChat(_ event: WSChatCreatedEvent) {
+        let chatData = ChatsModels.GeneralChatModel.ChatData(
+            chatID: event.chatCreatedData.chat.chatID,
+            type: event.chatCreatedData.chat.type,
+            members: event.chatCreatedData.chat.members,
+            createdAt: event.chatCreatedData.chat.createdAt,
+            info: event.chatCreatedData.chat.info,
+            updatePreview: nil
+        )
+        view?.addNewChat(chatData)
+    }
+    
+    func changeGroupInfo(_ event: WSGroupInfoUpdatedEvent) {
+        view?.changeGroupInfo(event)
+    }
+    
+    func addMember(_ event: WSGroupMembersAddedEvent) {
+        view?.addMember(event)
+    }
+    
+    func removeMember(_ event: WSGroupMembersRemovedEvent) {
+        view?.removeMember(event)
+    }
 }
