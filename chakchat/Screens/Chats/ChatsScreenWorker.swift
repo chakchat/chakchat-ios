@@ -125,6 +125,180 @@ final class ChatsScreenWorker: ChatsScreenWorkerLogic {
         }
     }
     
+    func createChat(_ event: WSChatCreatedEvent) {
+        let chatData = ChatsModels.GeneralChatModel.ChatData(
+            chatID: event.chatCreatedData.chat.chatID,
+            type: event.chatCreatedData.chat.type,
+            members: event.chatCreatedData.chat.members,
+            createdAt: event.chatCreatedData.chat.createdAt,
+            info: event.chatCreatedData.chat.info,
+            updatePreview: nil
+        )
+        coreDataManager.createChat(chatData)
+    }
+    
+    func deleteChat(_ event: WSChatDeletedEvent) {
+        coreDataManager.deleteChat(event.chatDeletedData.chatID)
+    }
+    
+    func blockChat(_ event: WSChatBlockedEvent) {
+        if let chat = coreDataManager.fetchChatByID(event.chatBlockedData.chatID) {
+            if let mappedChat = mapFromCoreData([chat]) {
+                if case .personal(var pi) = mappedChat[0].info {
+                    pi.blockedBy?.append(event.chatBlockedData.senderID)
+                    let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                        chatID: mappedChat[0].chatID,
+                        type: mappedChat[0].type,
+                        members: mappedChat[0].members,
+                        createdAt: mappedChat[0].createdAt,
+                        info: .personal(ChatsModels.GeneralChatModel.PersonalInfo(blockedBy: pi.blockedBy)),
+                        updatePreview: nil
+                    )
+                    coreDataManager.updateChat(newChatData)
+                }
+            }
+        }
+    }
+    
+    func unblockChat(_ event: WSChatUnblockedEvent) {
+        if let chat = coreDataManager.fetchChatByID(event.chatUnblockedData.chatID) {
+            if let mappedChat = mapFromCoreData([chat]) {
+                if case .personal(var pi) = mappedChat[0].info {
+                    pi.blockedBy?.removeAll(where: {$0 == event.chatUnblockedData.senderID})
+                    let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                        chatID: mappedChat[0].chatID,
+                        type: mappedChat[0].type,
+                        members: mappedChat[0].members,
+                        createdAt: mappedChat[0].createdAt,
+                        info: .personal(ChatsModels.GeneralChatModel.PersonalInfo(blockedBy: pi.blockedBy)),
+                        updatePreview: nil
+                    )
+                    coreDataManager.updateChat(newChatData)
+                }
+            }
+        }
+    }
+    
+    func setExpiration(_ event: WSChatExpirationSetEvent) {
+        if let chat = coreDataManager.fetchChatByID(event.chatExpirationSetData.chatID) {
+            if let mappedChat = mapFromCoreData([chat]) {
+                if case .secretPersonal(var spi) = mappedChat[0].info {
+                    spi.expiration = event.chatExpirationSetData.expiration
+                    let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                        chatID: event.chatExpirationSetData.chatID,
+                        type: mappedChat[0].type,
+                        members: mappedChat[0].members,
+                        createdAt: mappedChat[0].createdAt,
+                        info: .secretPersonal(ChatsModels.GeneralChatModel.SecretPersonalInfo(expiration: spi.expiration)),
+                        updatePreview: nil
+                    )
+                    coreDataManager.updateChat(newChatData)
+                }
+                if case .secretGroup(var sgi) = mappedChat[0].info {
+                    sgi.expiration = event.chatExpirationSetData.expiration
+                    let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                        chatID: event.chatExpirationSetData.chatID,
+                        type: mappedChat[0].type,
+                        members: mappedChat[0].members,
+                        createdAt: mappedChat[0].createdAt,
+                        info: .secretGroup(
+                            ChatsModels.GeneralChatModel.SecretGroupInfo(
+                                sgi.admin,
+                                sgi.name,
+                                sgi.description,
+                                sgi.groupPhoto,
+                                sgi.expiration
+                            )
+                        ),
+                        updatePreview: nil
+                    )
+                    coreDataManager.updateChat(newChatData)
+                }
+            }
+        }
+    }
+    
+    func changeGroupInfo(_ event: WSGroupInfoUpdatedEvent) {
+        if let chat = coreDataManager.fetchChatByID(event.groupInfoUpdatedData.chatID) {
+            if let mappedChat = mapFromCoreData([chat])?.first {
+                if case .group(let gi) = mappedChat.info {
+                    let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                        chatID: event.groupInfoUpdatedData.chatID,
+                        type: mappedChat.type,
+                        members: mappedChat.members,
+                        createdAt: mappedChat.createdAt,
+                        info: .group(
+                            ChatsModels.GeneralChatModel.GroupInfo(
+                                gi.admin,
+                                event.groupInfoUpdatedData.name,
+                                event.groupInfoUpdatedData.description,
+                                event.groupInfoUpdatedData.groupPhoto
+                            )
+                        ),
+                        updatePreview: nil
+                    )
+                    coreDataManager.updateChat(newChatData)
+                }
+                if case .secretGroup(let sgi) = mappedChat.info {
+                    let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                        chatID: event.groupInfoUpdatedData.chatID,
+                        type: mappedChat.type,
+                        members: mappedChat.members,
+                        createdAt: mappedChat.createdAt,
+                        info: .secretGroup(
+                            ChatsModels.GeneralChatModel.SecretGroupInfo(
+                                sgi.admin,
+                                event.groupInfoUpdatedData.name,
+                                event.groupInfoUpdatedData.description,
+                                event.groupInfoUpdatedData.groupPhoto,
+                                sgi.expiration
+                            )
+                        ),
+                        updatePreview: nil
+                    )
+                    coreDataManager.updateChat(newChatData)
+                }
+            }
+        }
+    }
+    
+    func addMember(_ event: WSGroupMembersAddedEvent) {
+        if let chat = coreDataManager.fetchChatByID(event.groupMembersAddedData.chatID) {
+            if var mappedChat = mapFromCoreData([chat])?.first {
+                event.groupMembersAddedData.members.forEach { member in
+                    mappedChat.members.append(member)
+                }
+                let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                    chatID: event.groupMembersAddedData.chatID,
+                    type: mappedChat.type,
+                    members: mappedChat.members,
+                    createdAt: mappedChat.createdAt,
+                    info: mappedChat.info,
+                    updatePreview: nil
+                )
+                coreDataManager.updateChat(newChatData)
+            }
+        }
+    }
+    
+    func removeMember(_ event: WSGroupMembersRemovedEvent) {
+        if let chat = coreDataManager.fetchChatByID(event.groupMembersRemovedData.chatID) {
+            if var mappedChat = mapFromCoreData([chat])?.first {
+                let set = Set(event.groupMembersRemovedData.members)
+                mappedChat.members = mappedChat.members.filter{!set.contains($0)}
+                let newChatData = ChatsModels.GeneralChatModel.ChatData(
+                    chatID: event.groupMembersRemovedData.chatID,
+                    type: mappedChat.type,
+                    members: mappedChat.members,
+                    createdAt: mappedChat.createdAt,
+                    info: mappedChat.info,
+                    updatePreview: nil
+                )
+                coreDataManager.updateChat(newChatData)
+            }
+        }
+    }
+    
     func deleteDBchats() {
         DispatchQueue.main.async {
             self.coreDataManager.deleteAllChats()

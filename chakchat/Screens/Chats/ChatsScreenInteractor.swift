@@ -140,6 +140,15 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         eventSubscriber.subscribe(WSChatDeletedEvent.self) { [weak self] event in
             self?.handleWSChatDeletedEvent(event)
         }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatBlockedEvent.self) { [weak self] event in
+            self?.handleWSChatBlockedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatUnblockedEvent.self) { [weak self] event in
+            self?.handleWSChatUnblockedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatExpirationSetEvent.self) { [weak self] event in
+            self?.handleWSChatExpiratioSetEvent(event)
+        }.store(in: &cancellables)
         eventSubscriber.subscribe(WSGroupInfoUpdatedEvent.self) { [weak self] event in
             self?.handleWSGroupInfoUpdatedEvent(event)
         }.store(in: &cancellables)
@@ -173,27 +182,65 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     }
     
     private func handleWSUpdateEvent(_ event: WSUpdateEvent) {
-        
+        DispatchQueue.main.async {
+            self.presenter.changeChatPreview(event)
+        }
     }
     
     private func handleWsChatCreatedEvent(_ event: WSChatCreatedEvent) {
-        
+        DispatchQueue.main.async {
+            self.worker.createChat(event)
+            self.presenter.showNewChat(event)
+        }
     }
     
     private func handleWSChatDeletedEvent(_ event: WSChatDeletedEvent) {
-        
+        let myID = worker.getMyID()
+        if event.chatDeletedData.senderID == myID {
+            DispatchQueue.main.async {
+                self.worker.deleteChat(event)
+                self.presenter.deleteChat(event.chatDeletedData.chatID)
+            }
+        }
+    }
+    
+    private func handleWSChatBlockedEvent(_ event: WSChatBlockedEvent) {
+        DispatchQueue.main.async {
+            self.worker.blockChat(event)
+        }
+    }
+    
+    private func handleWSChatUnblockedEvent(_ event: WSChatUnblockedEvent) {
+        DispatchQueue.main.async {
+            self.worker.unblockChat(event)
+        }
+    }
+    
+    private func handleWSChatExpiratioSetEvent(_ event: WSChatExpirationSetEvent) {
+        DispatchQueue.main.async {
+            self.worker.setExpiration(event)
+        }
     }
     
     private func handleWSGroupInfoUpdatedEvent(_ event: WSGroupInfoUpdatedEvent) {
-        
+        DispatchQueue.main.async {
+            self.worker.changeGroupInfo(event)
+            self.presenter.changeGroupInfo(event)
+        }
     }
     
     private func handleWSGroupMembersAddedEvent(_ event: WSGroupMembersAddedEvent) {
-        
+        DispatchQueue.main.async {
+            self.worker.addMember(event)
+            self.presenter.addMember(event)
+        }
     }
     
     private func handleWSGroupMembersRemovedEvent(_ event: WSGroupMembersRemovedEvent) {
-        
+        DispatchQueue.main.async {
+            self.worker.removeMember(event)
+            self.presenter.removeMember(event)
+        }
     }
     
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {

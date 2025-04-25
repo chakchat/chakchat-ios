@@ -33,6 +33,12 @@ protocol ChatsScreenPresentationLogic {
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData)
     func addNewChat(_ chatData: ChatsModels.GeneralChatModel.ChatData)
     func deleteChat(_ chatID: UUID)
+    
+    func changeChatPreview(_ event: WSUpdateEvent)
+    func showNewChat(_ event: WSChatCreatedEvent)
+    func changeGroupInfo(_ event: WSGroupInfoUpdatedEvent)
+    func addMember(_ event: WSGroupMembersAddedEvent)
+    func removeMember(_ event: WSGroupMembersRemovedEvent)
 }
 
 protocol ChatsScreenWorkerLogic {
@@ -50,6 +56,17 @@ protocol ChatsScreenWorkerLogic {
     
     func getUserDataByID(_ users: [UUID], completion: @escaping (Result<ProfileSettingsModels.ProfileUserData, Error>) -> Void)
     func getDBChats() -> [ChatsModels.GeneralChatModel.ChatData]?
+    
+    func createChat(_ event: WSChatCreatedEvent)
+    func deleteChat(_ event: WSChatDeletedEvent)
+    func blockChat(_ event: WSChatBlockedEvent)
+    func unblockChat(_ event: WSChatUnblockedEvent)
+    func setExpiration(_ event: WSChatExpirationSetEvent)
+    func changeGroupInfo(_ event: WSGroupInfoUpdatedEvent)
+    func addMember(_ event: WSGroupMembersAddedEvent)
+    func removeMember(_ event: WSGroupMembersRemovedEvent)
+    
+    func getMyID() -> UUID
     
     func refreshChats(_ chats: ChatsModels.GeneralChatModel.ChatsData)
     

@@ -22,7 +22,7 @@ enum ChatsModels {
         }
         
         struct PersonalInfo: Codable {
-            let blockedBy: [UUID]?
+            var blockedBy: [UUID]?
             
             enum CodingKeys: String, CodingKey {
                 case blockedBy = "blocked_by"
@@ -34,6 +34,13 @@ enum ChatsModels {
             var name: String
             var description: String?
             var groupPhoto: URL?
+            
+            init(_ admin: UUID, _ name: String, _ description: String?, _ groupPhoto: URL?) {
+                self.admin = admin
+                self.name = name
+                self.description = description
+                self.groupPhoto = groupPhoto
+            }
             
             enum CodingKeys: String, CodingKey {
                 case admin = "admin_id"
@@ -55,7 +62,7 @@ enum ChatsModels {
         }
 
         struct SecretPersonalInfo: Codable {
-            let expiration: String?
+            var expiration: String?
             
             enum CodingKeys: String, CodingKey {
                 case expiration = "expiration"
@@ -67,7 +74,15 @@ enum ChatsModels {
             let name: String
             let description: String?
             let groupPhoto: URL?
-            let expiration: String?
+            var expiration: String?
+            
+            init(_ admin: UUID, _ name: String, _ description: String?, _ groupPhoto: URL?, _ expiration: String?) {
+                self.admin = admin
+                self.name = name
+                self.description = description
+                self.groupPhoto = groupPhoto
+                self.expiration = expiration
+            }
             
             enum CodingKeys: String, CodingKey {
                 case admin = "admin_id"
@@ -185,6 +200,15 @@ enum ChatsModels {
                 case senderID = "sender_id"
                 case createdAt = "created_at"
                 case content = "content"
+            }
+            
+            init(_ updateID: Int64, _ type: UpdateDataType, _ chatID: UUID, _ senderID: UUID, _ createdAt: Date, _ content: UpdateContent) {
+                self.updateID = updateID
+                self.type = type
+                self.chatID = chatID
+                self.senderID = senderID
+                self.createdAt = createdAt
+                self.content = content
             }
             
             init(from decoder: Decoder) throws {
