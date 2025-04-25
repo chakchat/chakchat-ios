@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol SecretGroupUpdateProtocol {
+protocol SecretGroupUpdateServiceProtocol {
     func sendSecretMessage(
         _ request: ChatsModels.SecretUpdateModels.SendMessageRequest,
         _ chatID: UUID,

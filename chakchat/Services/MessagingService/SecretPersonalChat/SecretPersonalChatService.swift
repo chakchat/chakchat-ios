@@ -53,7 +53,7 @@ final class SecretPersonalChatService: SecretPersonalChatServiceProtocol {
         _ accessToken: String,
         completion: @escaping (Result<SuccessResponse<EmptyResponse>, any Error>) -> Void
     ) {
-        let endpoint = "\(MessagingServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue)/\(chatID)/delete/\(deleteMode)"
+        let endpoint = "\(MessagingServiceEndpoints.SecretPersonalChatEndpoints.secretPersonalChat.rawValue)/\(chatID)/\(deleteMode.rawValue)"
         
         let headers = [
             "Authorization": "Bearer \(accessToken)",

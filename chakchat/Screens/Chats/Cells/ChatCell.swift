@@ -23,14 +23,8 @@ final class ChatCell: UITableViewCell {
     // MARK: - Properties
     private let nicknameLabel: UILabel = UILabel()
     private let iconImageView: UIImageView = UIImageView()
-    private let shimmerLayer: ShimmerView = ShimmerView(
-        frame: CGRect(
-            x: Constants.picX,
-            y: Constants.picY,
-            width: Constants.size,
-            height: Constants.size
-        )
-    )
+    private let shimmerLayer: ShimmerView = ShimmerView()
+
     private let messageLabel: UILabel = UILabel()
     private let uncheckCircleView: UIView = UIView()
     private let messageAmountLabel: UILabel = UILabel()
@@ -42,12 +36,22 @@ final class ChatCell: UITableViewCell {
         configureCell()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        DispatchQueue.main.async {
+            self.shimmerLayer.frame = self.iconImageView.bounds
+            self.shimmerLayer.layer.masksToBounds = true
+            self.shimmerLayer.layer.cornerRadius = 25
+            self.shimmerLayer.startAnimating()
+        }
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Configuration
-    func configure(_ image: URL?, _ name: String, _ message: String, _ uncheckAmount: Int, _ date: Date) {
+    func configure(_ image: URL?, _ name: String, _ message: String, _ uncheckAmount: Int, _ date: String) {
         self.nicknameLabel.text = name
         update(message: message, messagesAmount: uncheckAmount, date: date)
         if let url = image {
@@ -76,9 +80,9 @@ final class ChatCell: UITableViewCell {
         configureDateLabel()
     }
     
-    func update(message: String, messagesAmount: Int, date: Date) {
+    func update(message: String, messagesAmount: Int, date: String) {
         messageLabel.text = message
-        dateLabel.text = formatDate(date)
+        dateLabel.text = date
         if messagesAmount < 1 {
             uncheckCircleView.isHidden = true
             messageAmountLabel.isHidden = true

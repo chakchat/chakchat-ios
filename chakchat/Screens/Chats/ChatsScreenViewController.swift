@@ -80,19 +80,111 @@ final class ChatsScreenViewController: UIViewController {
     
     // MARK: - Public Methods
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {
-        chatsData = allChatsData.chats
+        chatsData = allChatsData.chats.sorted { chat1, chat2 in
+            let date1 = chat1.updatePreview?.first?.createdAt ?? chat1.createdAt
+            let date2 = chat2.updatePreview?.first?.createdAt ?? chat2.createdAt
+            return date1 > date2
+        }
         chatsTableView.reloadData()
     }
     
     func addNewChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
-        chatsData?.append(chatData)
+        chatsData?.insert(chatData, at: 0)
         chatsTableView.reloadData()
+        
+        chatsTableView.performBatchUpdates({
+            chatsTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+        }, completion: { [weak self] _ in
+            self?.chatsTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+        })
     }
     
     func deleteChat(_ chatID: UUID) {
-        if let i = chatsData?.firstIndex(where: {$0.chatID == chatID}) {
-            chatsData?.remove(at: i)
-            chatsTableView.reloadData()
+        guard let index = chatsData?.firstIndex(where: { $0.chatID == chatID }) else { return }
+        
+        chatsTableView.performBatchUpdates({
+            chatsData?.remove(at: index)
+            chatsTableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+        }, completion: nil)
+    }
+    
+    func changeChatPreview(_ event: WSUpdateEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.updateData.chatID}),
+              let chat = chatsData?[index],
+              let cell = chatsTableView.cellForRow(at: IndexPath(row: index, section: 0)) as? ChatCell
+        else { return }
+        
+        interactor.getChatInfo(chat) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let chatInfo):
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "HH:mm"
+                    formatter.timeZone = TimeZone.current
+                    let preview = self.mapToPreview(event)
+                    cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, chat.type), self.getPreview(preview), 1, self.getDate(preview))
+                    
+                    if index != 0 {
+                        guard let chat = self.chatsData?.remove(at: index) else { return }
+                        self.chatsData?.insert(chat, at: 0)
+                        
+                        self.chatsTableView.performBatchUpdates({
+                            self.chatsTableView.moveRow(at: IndexPath(row: index, section: 0), to: IndexPath(row: 0, section: 0))
+                        })
+                    }
+                    
+                case .failure(let failure):
+                    debugPrint(failure)
+                }
+            }
+        }
+    }
+    
+    func changeGroupInfo(_ event: WSGroupInfoUpdatedEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.groupInfoUpdatedData.chatID}),
+              let chat = chatsData?[index],
+              let cell = chatsTableView.cellForRow(at: IndexPath(row: index, section: 0)) as? ChatCell
+        else { return }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.timeZone = TimeZone.current
+        if let preview = chat.updatePreview {
+            if !preview.isEmpty {
+                cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, getPreview(preview[0]), 1, getDate(preview[0]))
+            } else {
+                cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, "Group chat \(event.groupInfoUpdatedData.name) created!", 1, formatter.string(from: Date.now))
+            }
+        } else {
+            cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, "Group chat \(event.groupInfoUpdatedData.name) created!", 1, formatter.string(from: Date.now))
+        }
+    }
+    
+    func addMember(_ event: WSGroupMembersAddedEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.groupMembersAddedData.chatID}),
+              let chat = chatsData?[index],
+              let cell = chatsTableView.cellForRow(at: IndexPath(row: index, section: 0)) as? ChatCell
+        else { return }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.timeZone = TimeZone.current
+        let newMember = event.groupMembersAddedData.members.filter {!chat.members.contains($0)}
+        if case .group(let groupInfo) = chat.info {
+            cell.configure(groupInfo.groupPhoto, groupInfo.name, "Added new member", 1, formatter.string(from: Date.now))
+        }
+    }
+    
+    func removeMember(_ event: WSGroupMembersRemovedEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.groupMembersRemovedData.chatID}),
+              let chat = chatsData?[index],
+              let cell = chatsTableView.cellForRow(at: IndexPath(row: index, section: 0)) as? ChatCell
+        else { return }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.timeZone = TimeZone.current
+        let newMember = event.groupMembersRemovedData.members.filter {!chat.members.contains($0)}
+        if case .group(let groupInfo) = chat.info {
+            cell.configure(groupInfo.groupPhoto, groupInfo.name, "Removed member", 1, formatter.string(from: Date.now))
         }
     }
     
@@ -179,6 +271,18 @@ final class ChatsScreenViewController: UIViewController {
         }
     }
     
+    private func mapToPreview(_ event: WSUpdateEvent) -> ChatsModels.GeneralChatModel.Preview {
+        let preview = ChatsModels.GeneralChatModel.Preview(
+            event.updateData.updateID,
+            event.updateData.type,
+            event.updateData.chatID,
+            event.updateData.senderID,
+            event.updateData.createdAt,
+            event.updateData.content
+        )
+        return preview
+    }
+    
     // MARK: - Actions
     @objc
     private func settingButtonPressed() {
@@ -256,8 +360,19 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                     guard let self = self else { return }
                     switch result {
                     case .success(let chatInfo):
-                        // TODO: Add message, amount, date
-                        cell.configure(chatInfo.chatPhotoURL, chatInfo.chatName, "Hello world!", 1, Date.now)
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "HH:mm"
+                        formatter.timeZone = TimeZone.current
+                        if let updatePreview = item.updatePreview {
+                            if !updatePreview.isEmpty {
+                                cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getPreview(updatePreview[0]), 1, self.getDate(updatePreview[0]))
+                            } else {
+                                cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
+                            }
+                        } else {
+                            cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
+                        }
+  
                         cell.backgroundColor = .clear
                         cell.selectionStyle = .none
                     case .failure(let failure):
@@ -267,6 +382,70 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
             }
         }
         return cell
+    }
+    
+    private func getChatName(_ chatInfo: ChatsModels.GeneralChatModel.ChatInfo, _ chatType: ChatType) -> String {
+        switch chatType {
+        case .personal: return chatInfo.chatName
+        case .group: return chatInfo.chatName
+        case .secretPersonal: return "🔒 \(chatInfo.chatName)"
+        case .secretGroup: return "🔒 \(chatInfo.chatName)"
+        }
+    }
+    
+    private func getPreview(_ updatePreview: ChatsModels.GeneralChatModel.Preview) -> String {
+        if case .textContent(let tc) = updatePreview.content {
+            return tc.text
+        }
+        if case .fileContent(let fc) = updatePreview.content {
+            if fc.file.mimeType == "image/jpeg"{
+                return "Image 🌅"
+            } else if fc.file.mimeType == "video/mp4" {
+                return "Video 📹"
+            } else {
+                return "File 📄"
+            }
+        }
+        if case .secretContent(_) = updatePreview.content {
+            return "ENCRYPTED 🔐"
+        }
+        return "Hello World!"
+    }
+    
+    private func getCreatePreview(_ chatData: ChatsModels.GeneralChatModel.ChatData) -> String {
+        if case .personal(let pi) = chatData.info {
+            return "Personal chat created!"
+        }
+        if case .secretPersonal(let si) = chatData.info {
+            return "Secret chat created!"
+        }
+        if case .group(let gi) = chatData.info {
+            return "Group \"\(gi.name)\" created"
+        }
+        if case .secretGroup(let sgi) = chatData.info {
+            return "Secret group \"\(sgi.name)\" created"
+        }
+        return ""
+    }
+    
+    private func getDate(_ updatePreview: ChatsModels.GeneralChatModel.Preview) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.timeZone = TimeZone.current
+        if updatePreview.type == .textMessage {
+            let timeString = formatter.string(from: updatePreview.createdAt)
+            return timeString
+        }
+        if case .fileContent(let fc) = updatePreview.content {
+            let timeString = formatter.string(from: fc.file.createdAt)
+            return timeString
+        }
+        if updatePreview.type == .secret {
+ 
+            let timeString = formatter.string(from: updatePreview.createdAt)
+            return timeString
+        }
+        return "00:00"
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

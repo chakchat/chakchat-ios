@@ -37,6 +37,7 @@ protocol UserProfilePresentationLogic {
     func passUnblocked()
     func updateBlockStatus(isBlock: Bool)
     func showFailDisclaimer()
+    func showSecretChatExists(_ user: String)
 }
 
 protocol UserProfileWorkerLogic {
@@ -47,10 +48,10 @@ protocol UserProfileWorkerLogic {
     func blockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
     func unblockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
     
-    func deleteChat(_ chatID: UUID, _ deleteMode: DeleteMode, completion: @escaping (Result<EmptyResponse, Error>) -> Void)
+    func deleteChat(_ chatID: UUID, _ deleteMode: DeleteMode, _ chatType: ChatType, completion: @escaping (Result<EmptyResponse, Error>) -> Void)
     
     func searchForExistingChat(_ memberID: UUID) -> Chat?
     func getMyID() -> UUID
     
-    func changeSecretKey(_ key: String) -> Bool
+    func changeSecretKey(_ key: String, _ chatID: UUID) -> Bool
 }

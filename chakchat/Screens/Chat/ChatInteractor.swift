@@ -56,7 +56,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func passUserData() {
         let myID = worker.getMyID()
         if let chatD = chatData {
-            presenter.passUserData(chatD, userData, chatD.type.rawValue == "personal_secret", myID)
+            presenter.passUserData(chatD, userData, chatD.type == .secretPersonal, myID)
         } else {
             presenter.passUserData(nil, userData, false, myID)
         }
@@ -79,6 +79,22 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
+    func pollNewMessages(_ from: Int64, completion: @escaping (Result<[any MessageType], any Error>) -> Void) {
+        guard let cd = chatData else { return }
+        
+        worker.loadFirstMessages(cd.chatID, from, 200) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                let sortedUpdates = data.sorted { $0.updateID < $1.updateID }
+                let mappedSortedUpdates = self.mapToMessageType(sortedUpdates)
+                completion(.success(mappedSortedUpdates))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
     func loadMoreMessages() {
         worker.loadMoreMessages()
     }
@@ -95,7 +111,8 @@ final class ChatInteractor: ChatBusinessLogic {
                     type: data.type,
                     members: data.members,
                     createdAt: data.createdAt,
-                    info: data.info
+                    info: data.info,
+                    updatePreview: nil
                 )
                 let event = CreatedChatEvent(
                     chatID: data.chatID,
@@ -130,7 +147,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func deleteMessage(_ updateID: Int64, _ deleteMode: DeleteMode, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.deleteMessage(chatData.chatID, updateID, deleteMode) { result in
+        worker.deleteMessage(chatData.chatID, updateID, deleteMode, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -142,7 +159,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func editTextMessage(_ updateID: Int64, _ text: String, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.editTextMessage(chatData.chatID, updateID, text) { result in
+        worker.editTextMessage(chatData.chatID, updateID, text, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -154,7 +171,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func sendFileMessage(_ fileID: UUID, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.sendFileMessage(chatData.chatID, fileID, replyTo) { result in
+        worker.sendFileMessage(chatData.chatID, fileID, replyTo, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -167,7 +184,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func sendReaction(_ reaction: String, _ messageID: Int64, completion: @escaping (Result<UpdateData, Error>)-> Void) {
         guard let chatData = chatData else { return }
-        worker.sendReaction(chatData.chatID, reaction, messageID) { result in
+        worker.sendReaction(chatData.chatID, reaction, messageID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -179,7 +196,7 @@ final class ChatInteractor: ChatBusinessLogic {
     
     func deleteReaction(_ updateID: Int64, completion: @escaping (Result<UpdateData, Error>) -> Void) {
         guard let chatData = chatData else { return }
-        worker.deleteReaction(chatData.chatID, updateID) { result in
+        worker.deleteReaction(chatData.chatID, updateID, chatData.type) { result in
             switch result {
             case .success(let data):
                 completion(.success(data))
@@ -255,7 +272,7 @@ final class ChatInteractor: ChatBusinessLogic {
     func uploadFile(_ fileURL: URL, _ mimeType: String?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let data = try? Data(contentsOf: fileURL),
               let mimeType = mimeType else { return }
-        let fileName = "\(UUID().uuidString).mp4"
+        let fileName = fileURL.lastPathComponent
         worker.uploadImage(data, fileName, mimeType) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -293,7 +310,9 @@ final class ChatInteractor: ChatBusinessLogic {
     }
     
     func saveSecretKey(_ key: String) {
-        if worker.saveSecretKey(key) {
+        guard let cd = chatData else { return }
+        if worker.saveSecretKey(key, cd.chatID) {
+            onSecretKeyChanged()
             os_log("Secret key saved", log: logger, type: .default)
         } else {
             os_log("Failed to save secret key", log: logger, type: .fault)
@@ -301,9 +320,17 @@ final class ChatInteractor: ChatBusinessLogic {
         }
     }
     
+    func checkForSecretKey() {
+        guard let cd = chatData else { return }
+        let key = worker.getSecretKey(cd.chatID)
+        if key == nil {
+            presenter.showSecretKeyAlert()
+        }
+    }
+    
     private func send(_ message: String, _ replyTo: Int64?, completion: @escaping (Result<UpdateData, any Error>) -> Void) {
         guard let cd = chatData else { return }
-        worker.sendTextMessage(cd.chatID, message, replyTo) { [weak self] result in
+        worker.sendTextMessage(cd.chatID, message, replyTo, cd.type) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
@@ -326,7 +353,9 @@ final class ChatInteractor: ChatBusinessLogic {
     }
     
     func handleChatBlock(_ event: BlockedChatEvent) {
-        presenter.changeInputBar(event.blocked)
+        DispatchQueue.main.async {
+            self.presenter.changeInputBar(event.blocked)
+        }
     }
     
     // MARK: - Routing
@@ -336,7 +365,7 @@ final class ChatInteractor: ChatBusinessLogic {
     // чат не может быть секретным если даже обычный еще не был создан
     func routeToProfile() {
         if let chatD = chatData {
-            let profileConfiguration = ProfileConfiguration(isSecret: chatD.type.rawValue == "personal_secret", fromGroupChat: false)
+            let profileConfiguration = ProfileConfiguration(isSecret: chatD.type == .secretPersonal, fromGroupChat: false)
             onRouteToProfile?(userData, chatD, profileConfiguration)
         } else {
             let profileConfiguration = ProfileConfiguration(isSecret: false, fromGroupChat: false)
@@ -424,7 +453,7 @@ final class ChatInteractor: ChatBusinessLogic {
                         )
                     )
             } else {
-                mappedFileUpdate.kind = .text(fc.file.fileURL.absoluteString)
+                mappedFileUpdate.kind = .text("\(fc.file.fileURL.absoluteString)#\(fc.file.fileName)#\(fc.file.mimeType)")
             }
             if let reactions = fc.reactions {
                 var reactionsDict: [Int64: String] = [:]
@@ -477,9 +506,89 @@ final class ChatInteractor: ChatBusinessLogic {
                     mappedDeleteUpdate.status = .sent
                 }
                 mappedUpdates.append(mappedDeleteUpdate)
+            case .secret:
+                if let secretUpdate = resolveSecretType(update) {
+                    let sub = mapToMessageType(
+                        [UpdateData(
+                            secretUpdate.chatID,
+                            secretUpdate.updateID,
+                            secretUpdate.type,
+                            secretUpdate.senderID,
+                            secretUpdate.createdAt,
+                            secretUpdate.content
+                        )]
+                    )
+                    mappedUpdates.append(sub[0])
+                } else  {
+                    let encryptedUpdate = EncryptedMessage(
+                        sender: GroupSender(senderId: update.senderID.uuidString, displayName: getSenderName(update.senderID), avatar: nil),
+                        messageId: String(update.updateID),
+                        sentDate: update.createdAt,
+                        kind: .text("ENCRYPTED"),
+                        dummy: 52 // чтобы отличалась от любой другой ячейки реализующей протокол MessageType
+                    )
+                    mappedUpdates.append(encryptedUpdate)
+                }
             }
         }
         return mappedUpdates
+    }
+    
+    private func resolveSecretType(_ update: UpdateData) -> UpdateData? {
+        guard let chatData = chatData else { return nil }
+        guard case .secretContent(let sc) = update.content else { return nil }
+        guard let dectyptedData = worker.openMessage(chatData.chatID, sc.payload, sc.initializationVector, sc.keyHash) else { return nil}
+        if let textContent = try? JSONDecoder().decode(TextContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .textMessage,
+                update.senderID,
+                update.createdAt,
+                .textContent(textContent)
+            )
+        }
+        if let editedContent = try? JSONDecoder().decode(EditedContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .textEdited,
+                update.senderID,
+                update.createdAt,
+                .editedContent(editedContent)
+            )
+        }
+        if let fileContent = try? JSONDecoder().decode(FileContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .file,
+                update.senderID,
+                update.createdAt,
+                .fileContent(fileContent)
+            )
+        }
+        if let reactionContent = try? JSONDecoder().decode(ReactionContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .reaction,
+                update.senderID,
+                update.createdAt,
+                .reactionContent(reactionContent)
+            )
+        }
+        if let deletedContent = try? JSONDecoder().decode(DeletedContent.self, from: dectyptedData) {
+            return UpdateData(
+                update.chatID,
+                update.updateID,
+                .delete,
+                update.senderID,
+                update.createdAt,
+                .deletedContent(deletedContent)
+            )
+        }
+        return nil
     }
     
     private func getSenderName(_ senderID: UUID) -> String {
@@ -509,5 +618,9 @@ final class ChatInteractor: ChatBusinessLogic {
             return UIImage(systemName: "play.circle.fill")!
             
         }
+    }
+    
+    private func onSecretKeyChanged() {
+        NotificationCenter.default.post(name: .secretKeyUpdated, object: nil)
     }
 }

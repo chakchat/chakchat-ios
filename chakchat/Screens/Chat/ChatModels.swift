@@ -43,11 +43,18 @@ enum ChatMessageContent {
     case deleted(ChatDeletedUpdateContent)
 }
 
-struct ChatTextContent {
+struct ChatTextContent: Codable {
     let text: String
     var edited: ChatTextEditedContent?
     var replyTo: Int64?
     var reactions: [ChatReactionContent]?
+    
+    enum CodingKeys: String, CodingKey {
+        case text = "text"
+        case edited = "edited"
+        case replyTo = "reply_to"
+        case reactions = "reactions"
+    }
 }
 
 struct ChatFileContent {
@@ -59,14 +66,24 @@ struct ChatFileContent {
     let createdAt: Date
 }
 
-struct ChatReactionContent {
+struct ChatReactionContent: Codable {
     let reaction: String
     let messageID: Int64
+    
+    enum CodingKeys: String, CodingKey {
+        case reaction = "reaction"
+        case messageID = "message_id"
+    }
 }
 
-struct ChatTextEditedContent {
+struct ChatTextEditedContent: Codable {
     let newText: String
     let messageID: Int64
+    
+    enum CodingKeys: String, CodingKey {
+        case newText = "new_text"
+        case messageID = "message_id"
+    }
 }
 
 struct ChatDeletedUpdateContent {
@@ -168,4 +185,11 @@ struct ReplyMessage: MessageType, MessageStatusProtocol {
     let replyTo: MessageType
 }
 
-
+struct EncryptedMessage: MessageType {
+    var sender: SenderType
+    var messageId: String
+    var sentDate: Date
+    var kind: MessageKind
+    
+    var dummy: Float
+}

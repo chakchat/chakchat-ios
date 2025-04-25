@@ -117,12 +117,15 @@ final class ForwardMessageWorker: ForwardMessageWorkerLogic {
                   let info = try? JSONDecoder().decode(ChatsModels.GeneralChatModel.Info.self, from: infoData)
             else { return [] }
             
+            if type == "secret_personal" || type == "secret_group" { continue }
+            
             let mappedChat = ChatsModels.GeneralChatModel.ChatData(
                 chatID: chatID,
                 type: ChatType(rawValue: type) ?? .personal,
                 members: members,
                 createdAt: createdAt,
-                info: info
+                info: info,
+                updatePreview: nil
             )
             mappedChats.append(mappedChat)
         }

@@ -90,6 +90,28 @@ final class GroupChatProfileViewController: UIViewController {
             }
             groupNameLabel.text = groupInfo.name
         }
+    
+        if case .secretGroup(let secretGroupInfo) = chatData.info {
+            let color = UIColor.random()
+            let image = UIImage.imageWithText(
+                text: secretGroupInfo.name,
+                size: CGSize(width: Constants.configSize, height: Constants.configSize),
+                color: color,
+                borderWidth: Constants.borderWidth
+            )
+            iconImageView.image = image
+            if let photoURL = secretGroupInfo.groupPhoto {
+                iconImageView.image = ImageCacheManager.shared.getImage(for: photoURL as NSURL)
+                iconImageView.layer.cornerRadius = Constants.cornerRadius
+            }
+            groupNameLabel.text = secretGroupInfo.name
+            buttonStackView.subviews[1].isHidden = true
+            let secretKeyButton = createButton("key.card", "Secret key")
+            secretKeyButton.addTarget(self, action: #selector(secretKeyButtonPressed), for: .touchUpInside)
+            buttonStackView.addArrangedSubview(secretKeyButton)
+            buttonStackView.removeArrangedSubview(buttonStackView.subviews[1])
+        }
+        
         if isAdmin {
             configureEditButton()
             let optionsButton = createButton("ellipsis",
@@ -100,6 +122,8 @@ final class GroupChatProfileViewController: UIViewController {
             buttonStackView.setWidth(230)
         }
         
+        // MARK: - TODO
+        // TODO: - Здесь вместо return начинаем доставать пользователей из CoreData
         interactor.getUserDataByID(chatData.members) { [weak self] result in
             DispatchQueue.main.async {
                 guard let result else { return }
@@ -107,6 +131,31 @@ final class GroupChatProfileViewController: UIViewController {
                 self?.userDataTable.reloadData()
             }
         }
+    }
+    
+    public func showInputSecretKeyAlert() {
+        let alert = UIAlertController(title: "New encryption key", message: "Input new encryption key", preferredStyle: .alert)
+        
+        alert.addTextField {tf in
+            tf.placeholder = "Input key..."
+        }
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            if let key = alert.textFields?.first?.text {
+                if key != "" {
+                    self?.interactor.saveSecretKey(key)
+                } else {
+                    self?.showInputSecretKeyAlert()
+                }
+            }
+        }
+        alert.addAction(ok)
+        present(alert, animated: true)
+    }
+    
+    public func showFailDisclaimer() {
+        let alert = UIAlertController(title: "Failed to save secret key", message: "Try again please", preferredStyle: .alert)
+        present(alert, animated: true)
     }
     
     func updateGroupInfo(_ name: String, _ description: String?) {
@@ -187,6 +236,7 @@ final class GroupChatProfileViewController: UIViewController {
                                               LocalizationManager.shared.localizedString(for: "sound_l"))
         let secretChatButton = createButton("key.fill",
                                             LocalizationManager.shared.localizedString(for: "secret_chat_l"))
+        secretChatButton.addTarget(self, action: #selector(secretChatButtonPressed), for: .touchUpInside)
         let searchButton = createButton("magnifyingglass",
                                         LocalizationManager.shared.localizedString(for: "search_l"))
         
@@ -301,6 +351,14 @@ final class GroupChatProfileViewController: UIViewController {
     
     private func deleteGroup() {
         interactor.deleteGroup()
+    }
+    
+    @objc private func secretChatButtonPressed() {
+        interactor.createSecretGroup()
+    }
+    
+    @objc private func secretKeyButtonPressed() {
+        showInputSecretKeyAlert()
     }
     
     @objc private func editButtonPressed() {

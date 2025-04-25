@@ -72,9 +72,9 @@ final class ForwardMessageInteractor: ForwardMessageBusinessLogic {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
-                case .success(let data):
+                case .success(_):
                     self.presenter.showForwardStatus("Successfully forward message", true)
-                case .failure(let failure):
+                case .failure(_):
                     self.presenter.showForwardStatus("Failed to forward message", false)
                 }
             }

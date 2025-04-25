@@ -11,6 +11,7 @@ import AVFoundation
 
 class CustomMediaMessageCell: MediaMessageCell {
     
+    private let shimmerView: ShimmerView = ShimmerView(frame: CGRect(x: 50, y: 50, width: 200, height: 200))
     weak var cellDelegate: FileMessageEditMenuDelegate?
     private var messageStatus: UILabel = UILabel()
     
@@ -21,10 +22,19 @@ class CustomMediaMessageCell: MediaMessageCell {
     override func setupSubviews() {
         super.setupSubviews()
         configureMessageStatus()
+        messageContainerView.addSubview(shimmerView)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        DispatchQueue.main.async {
+            self.shimmerView.frame = self.messageContainerView.bounds
+            self.shimmerView.startAnimating()
+        }
     }
     
     override func prepareForReuse() {
-      super.prepareForReuse()
+        super.prepareForReuse()
     }
     
     override func configure(
@@ -53,6 +63,7 @@ class CustomMediaMessageCell: MediaMessageCell {
         case .photo(let mediaItem), .video(let mediaItem):
             if let image = mediaItem.image {
                 imageView.image = image
+                shimmerView.isHidden = true
             } else {
                 if let url = mediaItem.url {
                     DispatchQueue.global(qos: .userInteractive).async {
@@ -64,6 +75,7 @@ class CustomMediaMessageCell: MediaMessageCell {
                             ImageCacheManager.shared.saveImage(image, for: url as NSURL)
                             DispatchQueue.main.async {
                                 self.imageView.image = image
+                                self.shimmerView.isHidden = true
                             }
                         }.resume()
                     }
@@ -120,7 +132,22 @@ class CustomMediaMessageCell: MediaMessageCell {
     }
 }
 
-class PhotoMessageCellSizeCalculator: MediaMessageSizeCalculator {
+class CustomMediaMessageSizeCalculator: MediaMessageSizeCalculator {
+    
+    private let isGroupChat: Bool
+
+    init(layout: MessagesCollectionViewFlowLayout, isGroupChat: Bool) {
+        self.isGroupChat = isGroupChat
+        super.init(layout: layout)
+
+        if isGroupChat {
+            incomingAvatarSize = CGSize(width: 30, height: 30)
+            outgoingAvatarSize = .zero
+        } else {
+            incomingAvatarSize = .zero
+            outgoingAvatarSize = .zero
+        }
+    }
     
     override func messageContainerSize(for message: any MessageType, at indexPath: IndexPath) -> CGSize {
         let size = super.messageContainerSize(for: message, at: indexPath)

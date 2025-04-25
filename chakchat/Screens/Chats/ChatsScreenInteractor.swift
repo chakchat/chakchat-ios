@@ -19,6 +19,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     private let errorHandler: ErrorHandlerLogic
     private let eventSubscriber: EventSubscriberProtocol
     private let keychainManager: KeychainManagerBusinessLogic
+    private let wsManager: WSManagerProtocol
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -33,7 +34,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
          logger: OSLog,
          errorHandler: ErrorHandlerLogic,
          eventSubscriber: EventSubscriberProtocol,
-         keychainManager: KeychainManagerBusinessLogic
+         keychainManager: KeychainManagerBusinessLogic,
+         wsManager: WSManagerProtocol
     ) {
         self.presenter = presenter
         self.worker = worker
@@ -41,6 +43,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         self.errorHandler = errorHandler
         self.eventSubscriber = eventSubscriber
         self.keychainManager = keychainManager
+        self.wsManager = wsManager
         
         subscribeToEvents()
     }
@@ -88,6 +91,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     }
     
     func loadChats() {
+        self.showDBChats()
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             self?.worker.loadChats() { result in
                 DispatchQueue.main.async {
@@ -127,25 +131,115 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         eventSubscriber.subscribe(DeletedChatEvent.self) { [weak self] event in
             self?.handleDeletedChatEvent(event)
         }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSUpdateEvent.self) { [weak self] event in
+            self?.handleWSUpdateEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatCreatedEvent.self) { [weak self] event in
+            self?.handleWsChatCreatedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatDeletedEvent.self) { [weak self] event in
+            self?.handleWSChatDeletedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatBlockedEvent.self) { [weak self] event in
+            self?.handleWSChatBlockedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatUnblockedEvent.self) { [weak self] event in
+            self?.handleWSChatUnblockedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSChatExpirationSetEvent.self) { [weak self] event in
+            self?.handleWSChatExpiratioSetEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSGroupInfoUpdatedEvent.self) { [weak self] event in
+            self?.handleWSGroupInfoUpdatedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSGroupMembersAddedEvent.self) { [weak self] event in
+            self?.handleWSGroupMembersAddedEvent(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(WSGroupMembersRemovedEvent.self) { [weak self] event in
+            self?.handleWSGroupMembersRemovedEvent(event)
+        }.store(in: &cancellables)
     }
     
-    func handleCreatedChatEvent(_ event: CreatedChatEvent) {
+    private func handleCreatedChatEvent(_ event: CreatedChatEvent) {
         let newChat = ChatsModels.GeneralChatModel.ChatData(
             chatID: event.chatID,
             type: event.type,
             members: event.members,
             createdAt: event.createdAt,
-            info: event.info
+            info: event.info,
+            updatePreview: nil
         )
         DispatchQueue.main.async {
             self.addNewChat(newChat)
         }
     }
     
-    func handleDeletedChatEvent(_ event: DeletedChatEvent) {
+    private func handleDeletedChatEvent(_ event: DeletedChatEvent) {
         let chatToDelete = event.chatID
         DispatchQueue.main.async {
             self.deleteChat(chatToDelete)
+        }
+    }
+    
+    private func handleWSUpdateEvent(_ event: WSUpdateEvent) {
+        DispatchQueue.main.async {
+            self.presenter.changeChatPreview(event)
+        }
+    }
+    
+    private func handleWsChatCreatedEvent(_ event: WSChatCreatedEvent) {
+        DispatchQueue.main.async {
+            self.worker.createChat(event)
+            self.presenter.showNewChat(event)
+        }
+    }
+    
+    private func handleWSChatDeletedEvent(_ event: WSChatDeletedEvent) {
+        let myID = worker.getMyID()
+        if event.chatDeletedData.senderID == myID {
+            DispatchQueue.main.async {
+                self.worker.deleteChat(event)
+                self.presenter.deleteChat(event.chatDeletedData.chatID)
+            }
+        }
+    }
+    
+    private func handleWSChatBlockedEvent(_ event: WSChatBlockedEvent) {
+        DispatchQueue.main.async {
+            self.worker.blockChat(event)
+        }
+    }
+    
+    private func handleWSChatUnblockedEvent(_ event: WSChatUnblockedEvent) {
+        DispatchQueue.main.async {
+            self.worker.unblockChat(event)
+        }
+    }
+    
+    private func handleWSChatExpiratioSetEvent(_ event: WSChatExpirationSetEvent) {
+        DispatchQueue.main.async {
+            self.worker.setExpiration(event)
+        }
+    }
+    
+    private func handleWSGroupInfoUpdatedEvent(_ event: WSGroupInfoUpdatedEvent) {
+        DispatchQueue.main.async {
+            self.worker.changeGroupInfo(event)
+            self.presenter.changeGroupInfo(event)
+        }
+    }
+    
+    private func handleWSGroupMembersAddedEvent(_ event: WSGroupMembersAddedEvent) {
+        DispatchQueue.main.async {
+            self.worker.addMember(event)
+            self.presenter.addMember(event)
+        }
+    }
+    
+    private func handleWSGroupMembersRemovedEvent(_ event: WSGroupMembersRemovedEvent) {
+        DispatchQueue.main.async {
+            self.worker.removeMember(event)
+            self.presenter.removeMember(event)
         }
     }
     
@@ -184,7 +278,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     
     func getChatInfo(_ chat: ChatsModels.GeneralChatModel.ChatData, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatInfo, any Error>) -> Void) {
         switch chat.type {
-        case .personal, .personalSecret:
+        case .personal, .secretPersonal:
             getUserDataByID(chat.members) { [weak self] result in
                 guard self != nil else { return }
                 switch result {
@@ -195,7 +289,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                     completion(.failure(failure))
                 }
             }
-        case .group, .groupSecret:
+        case .group, .secretGroup:
             if case .group(let groupInfo) = chat.info {
                 let info = ChatsModels.GeneralChatModel.ChatInfo(chatName: groupInfo.name, chatPhotoURL: groupInfo.groupPhoto)
                 completion(.success(info))
@@ -238,7 +332,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     
     func routeToChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         switch chatData.type {
-        case .personal, .personalSecret:
+        case .personal, .secretPersonal:
             getUserDataByID(chatData.members) { [weak self] result in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
@@ -252,7 +346,7 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
                     }
                 }
             }
-        case .group, .groupSecret:
+        case .group, .secretGroup:
             self.onRouteToGroupChat?(chatData)
             break
         }
@@ -274,7 +368,8 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
             type: type,
             members: members,
             createdAt: createdAt,
-            info: info
+            info: info,
+            updatePreview: nil
         )
     }
 }
