@@ -109,7 +109,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
             switch result {
             case .success(_):
                 os_log("Member with id: %@ added in group(%@)", log: logger, type: .default, memberID as CVarArg, chatData.chatID as CVarArg)
-                let event = AddedMemberEvent(memberID: memberID)
+                let event = AddedMemberEvent(memberID: memberID, chatID: chatData.chatID)
                 eventManager.publish(event: event)
             case .failure(let failure):
                 _ = errorHandler.handleError(failure)
@@ -126,7 +126,7 @@ final class GroupChatProfileInteractor: GroupChatProfileBusinessLogic {
             case .success(_):
                 os_log("Member with id: %@ deleted from group(%@)", log: logger, type: .default,
                        memberID as CVarArg, chatData.chatID as CVarArg)
-                let event = DeletedMemberEvent(memberID: memberID)
+                let event = DeletedMemberEvent(memberID: memberID, chatID: chatData.chatID)
                 eventManager.publish(event: event)
             case .failure(let failure):
                 _ = errorHandler.handleError(failure)

@@ -176,7 +176,7 @@ extension CameraInputBarAccessoryView: UIImagePickerControllerDelegate, UINaviga
             let cgImage = try generator.copyCGImage(at: CMTime(seconds: 1, preferredTimescale: 60), actualTime: nil)
             return UIImage(cgImage: cgImage)
         } catch {
-            return UIImage(systemName: "play.circle.fill")!
+            return UIImage(systemName: "play.circle.fill") ?? UIImage()
         }
     }
     

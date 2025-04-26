@@ -71,9 +71,9 @@ enum ChatsModels {
         
         struct SecretGroupInfo: Codable {
             let admin: UUID
-            let name: String
-            let description: String?
-            let groupPhoto: URL?
+            var name: String
+            var description: String?
+            var groupPhoto: URL?
             var expiration: String?
             
             init(_ admin: UUID, _ name: String, _ description: String?, _ groupPhoto: URL?, _ expiration: String?) {

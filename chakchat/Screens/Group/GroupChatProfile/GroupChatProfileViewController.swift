@@ -328,6 +328,16 @@ final class GroupChatProfileViewController: UIViewController {
     
     private func handleSelectedUser(_ user: ProfileSettingsModels.ProfileUserData) {
         interactor.addMember(user.id)
+        interactor.getUserDataByID([user.id]) { [weak self] user in
+            DispatchQueue.main.async {
+                guard let user = user,
+                      let firstUser = user.first,
+                      let self = self else { return }
+                self.userTableViewData.append(firstUser)
+                self.userDataTable.reloadData()
+            }
+        }
+        
     }
     
     private func addMember() {

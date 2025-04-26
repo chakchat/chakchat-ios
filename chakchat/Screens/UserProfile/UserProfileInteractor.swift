@@ -83,6 +83,10 @@ final class UserProfileInteractor: UserProfileBusinessLogic {
         }
     }
     
+    func setExpiration(_ time: String) {
+        worker.setExpiration(time)
+    }
+    
     func blockChat() {
         guard let chatID = chatData?.chatID else { return }
         worker.blockChat(chatID) { [weak self] result in

@@ -46,7 +46,7 @@ final class GroupProfileEditInteractor: GroupProfileEditBusinessLogic {
                     switch result {
                     case .success(_):
                         os_log("Updated group (%@) data", log: logger, type: .default, chatData.chatID as CVarArg)
-                        let event = UpdatedGroupInfoEvent(name: name, description: description)
+                        let event = UpdatedGroupInfoEvent(name: name, description: description, chatID: chatData.chatID)
                         eventPublisher.publish(event: event)
                         self.routeBack()
                     case .failure(let failure):
@@ -69,7 +69,7 @@ final class GroupProfileEditInteractor: GroupProfileEditBusinessLogic {
                     switch result {
                     case .success(_):
                         os_log("Upload group (%@) photo", log: self.logger, type: .default, self.chatData.chatID as CVarArg)
-                        let event = UpdatedGroupPhotoEvent(photo: image)
+                        let event = UpdatedGroupPhotoEvent(photo: image, photoURL: data.fileURL, chatID: self.chatData.chatID )
                         self.eventPublisher.publish(event: event)
                     case .failure(let failure):
                         _ = self.errorHandler.handleError(failure)

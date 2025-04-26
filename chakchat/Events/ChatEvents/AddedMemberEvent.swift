@@ -9,8 +9,10 @@ import Foundation
 
 class AddedMemberEvent: Event {
     let memberID: UUID
+    let chatID: UUID
     
-    init(memberID: UUID) {
+    init(memberID: UUID, chatID: UUID) {
         self.memberID = memberID
+        self.chatID = chatID
     }
 }

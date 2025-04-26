@@ -20,8 +20,24 @@ final class ChatsScreenPresenter: ChatsScreenPresentationLogic {
         view?.addNewChat(chatData)
     }
     
+    func addMember(_ event: AddedMemberEvent) {
+        view?.addMember(event)
+    }
+    
+    func removeMember(_ event: DeletedMemberEvent) {
+        view?.removeMember(event)
+    }
+    
     func deleteChat(_ chatID: UUID) {
         view?.deleteChat(chatID)
+    }
+    
+    func updateGroupInfo(_ event: UpdatedGroupInfoEvent) {
+        view?.updateGroupInfo(event)
+    }
+    
+    func updateGroupPhoto(_ event: UpdatedGroupPhotoEvent) {
+        view?.updateGroupPhoto(event)
     }
     
     func changeChatPreview(_ event: WSUpdateEvent) {

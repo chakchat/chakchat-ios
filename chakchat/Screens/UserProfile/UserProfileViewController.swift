@@ -44,6 +44,20 @@ final class UserProfileViewController: UIViewController {
         (LocalizationManager.shared.localizedString(for: "date_of_birth"), "")
     ]
     
+    let pickerContainer = UIView()
+    private let pickerView = UIPickerView()
+    private let doneButton = UIButton(type: .system)
+    let seconds: [String] = {
+        var arr = (1...15).map { "\($0) секунд" }
+        arr.append("30 секунд")
+        arr.append("1 минута")
+        arr.append("5 минут")
+        arr.append("15 минут")
+        arr.append("1 час")
+        arr.append("1 день")
+        return arr
+    }()
+    
     // MARK: - Initialization
     init(interactor: UserProfileBusinessLogic) {
         self.interactor = interactor
@@ -282,12 +296,13 @@ final class UserProfileViewController: UIViewController {
     // MARK: - UI Configuration
     private func configureUI() {
         view.backgroundColor = Colors.backgroundSettings
-
+        
         configureBackButton()
         configureIconImageView()
         configureInitials()
         configureButtonStackView()
         configureUserDataTable()
+        configurePickerView()
     }
     
     private func configureBackButton() {
@@ -343,12 +358,23 @@ final class UserProfileViewController: UIViewController {
         setMenu(optionsMenu)
     }
     
+    private func configurePickerView() {
+        view.addSubview(pickerView)
+        pickerView.delegate = self
+        pickerView.dataSource = self
+        pickerView.isHidden = true
+        pickerView.backgroundColor = .white
+        pickerView.layer.cornerRadius = 15
+        pickerView.pinCenter(view)
+        pickerView.transform = CGAffineTransform(translationX: 0, y: view.bounds.height)
+    }
+    
     private func setMenu(_ menu: UIMenu) {
         let optionButton = buttonStackView.subviews[2] as? UIButton
         optionButton?.menu = menu
         optionButton?.showsMenuAsPrimaryAction = true
     }
-
+    
     private func createButton(_ systemName: String, _ title: String) -> UIButton {
         let button = UIUserProfileButton()
         button.configure(withSymbol: systemName, title: title)
@@ -361,7 +387,7 @@ final class UserProfileViewController: UIViewController {
     
     private func showBlockConfirmation() {
         let alert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "block_chat"), message: LocalizationManager.shared.localizedString(for: "are_you_sure_block"), preferredStyle: .alert)
-  
+        
         let blockAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "block_chat"), style: .destructive) { _ in
             self.blockChat()
         }
@@ -375,7 +401,7 @@ final class UserProfileViewController: UIViewController {
     
     private func showBlockDeletion() {
         let alert = UIAlertController(title: LocalizationManager.shared.localizedString(for: "delete_chat"), message: LocalizationManager.shared.localizedString(for: "for_whom"), preferredStyle: .alert)
-  
+        
         let onlyMeAction = UIAlertAction(title: LocalizationManager.shared.localizedString(for: "delete_for_me"), style: .default) { _ in
             self.deleteChatForMe()
         }
@@ -389,6 +415,13 @@ final class UserProfileViewController: UIViewController {
         alert.addAction(cancelAction)
         
         present(alert, animated: true, completion: nil)
+    }
+    
+    private func showPicker() {
+        pickerView.isHidden = false
+        UIView.animate(withDuration: 0.3) {
+            self.pickerView.transform = .identity
+        }
     }
     
     private func configureUserDataTable() {
@@ -449,6 +482,10 @@ final class UserProfileViewController: UIViewController {
         showBlockDeletion()
     }
     
+    @objc private func changeExpirationPressed() {
+        showPicker()
+    }
+    
     @objc private func chatButtonPressed() {
         interactor.searchForExistingChat()
     }
@@ -497,5 +534,33 @@ extension UserProfileViewController: UITableViewDelegate, UITableViewDataSource 
         }
         
         return cell
+    }
+}
+
+extension UserProfileViewController: UIPickerViewDelegate, UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return seconds.count
+    }
+    
+    // MARK: - UIPickerViewDelegate
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return "\(seconds[row])"
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if seconds.indices.contains(row) {
+            pickerView.isHidden = true
+        }
+        UIView.animate(withDuration: 0.3, animations: {
+            self.pickerView.transform = CGAffineTransform(translationX: 0, y: self.view.bounds.height)
+        }) { _ in
+            let selectedRow = self.pickerView.selectedRow(inComponent: 0)
+            let selectedValue = self.seconds[selectedRow]
+            print("Вы выбрали: \(selectedValue)")
+        }
     }
 }

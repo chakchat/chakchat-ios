@@ -10,9 +10,11 @@ import Foundation
 final class UpdatedGroupInfoEvent: Event {
     let name: String
     let description: String?
+    let chatID: UUID
     
-    init(name: String, description: String?) {
+    init(name: String, description: String?, chatID: UUID) {
         self.name = name
         self.description = description
+        self.chatID = chatID
     }
 }

@@ -431,7 +431,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
                         PhotoMediaItem(
                             url: fc.file.fileURL,
                             image: thumbnail,
-                            placeholderImage: UIImage(systemName: "play.circle.fill")!,
+                            placeholderImage: UIImage(systemName: "play.circle.fill") ?? UIImage(),
                             shimmer: nil,
                             size: thumbnail.size,
                             status: .sent
@@ -599,7 +599,7 @@ final class GroupChatInteractor: GroupChatBusinessLogic {
             return scaledImage
             
         } catch {
-            return UIImage(systemName: "play.circle.fill")!
+            return UIImage(systemName: "play.circle.fill") ?? UIImage()
         }
     }
     

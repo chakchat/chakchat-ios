@@ -13,6 +13,8 @@ protocol UserProfileBusinessLogic {
     func searchForExistingChat()
     func createSecretChat()
     
+    func setExpiration(_ time: String)
+    
     func blockChat()
     func unblockChat()
     
@@ -44,6 +46,8 @@ protocol UserProfileWorkerLogic {
     func searchMessages()
     func switchNotification()
     func createSecretChat(_ memberID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
+    
+    func setExpiration(_ time: String)
     
     func blockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)
     func unblockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, Error>) -> Void)

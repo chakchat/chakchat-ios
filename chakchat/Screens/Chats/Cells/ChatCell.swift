@@ -46,6 +46,20 @@ final class ChatCell: UITableViewCell {
         }
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        nicknameLabel.text = nil
+        messageLabel.text = nil
+        dateLabel.text = nil
+        messageAmountLabel.text = nil
+        shimmerLayer.isHidden = false
+        shimmerLayer.startAnimating()
+
+        uncheckCircleView.isHidden = true
+        messageAmountLabel.isHidden = true
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

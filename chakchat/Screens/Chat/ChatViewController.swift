@@ -54,6 +54,8 @@ final class ChatViewController: MessagesViewController {
     private var pollingTimer: Timer?
     private var lastReceivedMessageID: Int64 = 0
     
+    private var isSecret: Bool = false
+    
     private let formatter: DateFormatter = {
       let formatter = DateFormatter()
       formatter.dateStyle = .medium
@@ -188,6 +190,7 @@ final class ChatViewController: MessagesViewController {
                     message.isEdited = true
                     message.editedMessage = update.newText
                     message.text = update.newText
+                    message.kind = .text(update.newText)
                     messages[index] = message
                 }
             }
@@ -289,6 +292,7 @@ final class ChatViewController: MessagesViewController {
             }
         }
         if isSecret {
+            self.isSecret = true
             interactor.checkForSecretKey()
         }
     }
@@ -571,6 +575,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     private func sendEditRequest(_ inputBar: InputBarAccessoryView, _ text: String) {
+        removeReplyPreview(.edit)
         guard let index = messages.firstIndex(where: { $0.messageId == editingMessageID}),
               let editingMessageID = editingMessageID
         else { return }
@@ -579,12 +584,12 @@ final class ChatViewController: MessagesViewController {
                 messagesCollectionView.reloadData()
             } else {
                 message.text = text
+                message.kind = .text(text)
                 message.status = .sending
                 messages[index] = message
                 self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                 inputBar.inputTextView.text = ""
                 lastReceivedMessageID += 1
-                removeReplyPreview(.edit)
                 
                 interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
                     DispatchQueue.main.async {
@@ -615,6 +620,7 @@ final class ChatViewController: MessagesViewController {
     }
     
     private func sendReplyRequest(_ inputBar: InputBarAccessoryView, _ text: String) {
+        
         guard let _ = replyPreviewView,
               let repliedMessage = repliedMessage else { return }
         
@@ -626,6 +632,7 @@ final class ChatViewController: MessagesViewController {
             replyTo: repliedMessage,
             status: .sending
         )
+        removeReplyPreview(.reply)
         lastReceivedMessageID += 1
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
@@ -1127,8 +1134,10 @@ extension ChatViewController: MessagesLayoutDelegate, MessagesDisplayDelegate {
     }
     
     func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if shouldShowDateLabel(for: message, at: indexPath) {
-            return 18
+        if !isSecret {
+            if shouldShowDateLabel(for: message, at: indexPath) {
+                return 18
+            }
         }
         return 0
     }

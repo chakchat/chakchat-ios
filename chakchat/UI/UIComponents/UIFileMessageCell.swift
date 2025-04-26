@@ -236,7 +236,7 @@ extension FileMessageCell: UIContextMenuInteractionDelegate {
             
             let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
             
-            return UIMenu(title: "", children: [copy, reactions, reply, load, forward, deleteMenu])
+            return UIMenu(title: "", children: [reply, load, forward, deleteMenu])
         }
     }
     
