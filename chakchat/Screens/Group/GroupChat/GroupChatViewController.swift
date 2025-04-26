@@ -53,6 +53,8 @@ final class GroupChatViewController: MessagesViewController {
     private var pollingTimer: Timer?
     private var lastReceivedMessageID: Int64 = 0
     
+    private var isSecret: Bool = false
+    
     // MARK: - Initialization
     init(interactor: GroupChatBusinessLogic) {
         self.interactor = interactor
@@ -194,6 +196,7 @@ final class GroupChatViewController: MessagesViewController {
                     message.isEdited = true
                     message.editedMessage = update.newText
                     message.text = update.newText
+                    message.kind = .text(update.newText)
                     messages[index] = message
                 }
             }
@@ -296,7 +299,7 @@ final class GroupChatViewController: MessagesViewController {
             groupNameLabel.text = secretGroupInfo.name
             
             curUser = GroupSender(senderId: myID.uuidString, displayName: "", avatar: nil)
-            
+            isSecret = true
             interactor.checkForSecretKey()
         }
     }
@@ -548,6 +551,7 @@ final class GroupChatViewController: MessagesViewController {
     }
     
     private func sendEditRequest(_ inputBar: InputBarAccessoryView, _ text: String) {
+        removeReplyPreview(.edit)
         guard let index = messages.firstIndex(where: { $0.messageId == editingMessageID}),
               let editingMessageID = editingMessageID
                 else { return }
@@ -558,11 +562,10 @@ final class GroupChatViewController: MessagesViewController {
             } else {
                 message.text = text
                 message.status = .sending
+                message.kind = .text(text)
                 messages[index] = message
                 self.messagesCollectionView.reloadSections(IndexSet(integer: index))
                 inputBar.inputTextView.text = ""
-                
-                removeReplyPreview(.edit)
                 
                 interactor.editTextMessage(Int64(editingMessageID) ?? 0, text) { [weak self] result in
                     DispatchQueue.main.async {
@@ -604,6 +607,7 @@ final class GroupChatViewController: MessagesViewController {
             replyTo: repliedMessage,
             status: .sending
         )
+        removeReplyPreview(.reply)
         lastReceivedMessageID += 1
         messages.append(outgoingMessage)
         inputBar.inputTextView.text = ""
@@ -926,7 +930,7 @@ final class GroupChatViewController: MessagesViewController {
             return scaledImage
             
         } catch {
-            return UIImage(systemName: "play.circle.fill")!
+            return UIImage(systemName: "play.circle.fill") ?? UIImage()
         }
     }
     
@@ -945,7 +949,7 @@ final class GroupChatViewController: MessagesViewController {
             sender: curUser,
             messageId: UUID().uuidString,
             sentDate: Date(),
-            media: MockMediaItem(url: videoURL, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: size),
+            media: MockMediaItem(url: videoURL, image: nil, placeholderImage: UIImage(systemName: "photo") ?? UIImage(), size: size),
             status: .sending
         )
     }
@@ -1147,8 +1151,10 @@ extension GroupChatViewController: MessagesLayoutDelegate, MessagesDisplayDelega
     }
     
     func cellTopLabelHeight(for message : MessageType, at indexPath: IndexPath, in _: MessagesCollectionView) -> CGFloat {
-        if shouldShowDateLabel(for: message, at: indexPath) {
-            return 18
+        if !isSecret {
+            if shouldShowDateLabel(for: message, at: indexPath) {
+                return 18
+            }
         }
         return 0
     }
@@ -1864,7 +1870,7 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
 
             let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
             
-            return UIMenu(title: "", children: [copy, reactions, reply, edit, forward, deleteMenu])
+            return UIMenu(title: "", children: [copy, reply, edit, forward, deleteMenu])
         }
     }
     
@@ -1895,7 +1901,7 @@ extension ReactionTextMessageCell: UIContextMenuInteractionDelegate {
 
 class ReactionsPreviewViewController: UIViewController {
     private let emojis = ["❤️", "👍", "⚡️", "😭", "👎", "🐝"]
-    private var stackView: UIStackView!
+    private lazy var stackView: UIStackView = UIStackView()
     var reactionSelected: ((String) -> Void)?
     
     override func viewDidLoad() {

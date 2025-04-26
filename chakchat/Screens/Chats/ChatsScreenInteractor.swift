@@ -91,7 +91,6 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
     }
     
     func loadChats() {
-        self.showDBChats()
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             self?.worker.loadChats() { result in
                 DispatchQueue.main.async {
@@ -158,6 +157,42 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         eventSubscriber.subscribe(WSGroupMembersRemovedEvent.self) { [weak self] event in
             self?.handleWSGroupMembersRemovedEvent(event)
         }.store(in: &cancellables)
+        eventSubscriber.subscribe(AddedMemberEvent.self) { [weak self] event in
+            self?.handleAddMember(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(DeletedMemberEvent.self) { [weak self] event in
+            self?.handleMemberDeleted(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(UpdatedGroupInfoEvent.self) { [weak self] event in
+            self?.handleGroupInfoUpdated(event)
+        }.store(in: &cancellables)
+        eventSubscriber.subscribe(UpdatedGroupPhotoEvent.self) { [weak self] event in
+            self?.handleGroupPhotoUpdated(event)
+        }.store(in: &cancellables)
+    }
+    
+    private func handleAddMember(_ event: AddedMemberEvent) {
+        DispatchQueue.main.async {
+            self.presenter.addMember(event)
+        }
+    }
+    
+    private func handleMemberDeleted(_ event: DeletedMemberEvent) {
+        DispatchQueue.main.async {
+            self.presenter.removeMember(event)
+        }
+    }
+    
+    private func handleGroupInfoUpdated(_ event: UpdatedGroupInfoEvent) {
+        DispatchQueue.main.async {
+            self.presenter.updateGroupInfo(event)
+        }
+    }
+    
+    private func handleGroupPhotoUpdated(_ event: UpdatedGroupPhotoEvent) {
+        DispatchQueue.main.async {
+            self.presenter.updateGroupPhoto(event)
+        }
     }
     
     private func handleCreatedChatEvent(_ event: CreatedChatEvent) {

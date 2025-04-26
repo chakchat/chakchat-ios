@@ -38,7 +38,12 @@ protocol ChatsScreenPresentationLogic {
     func showNewChat(_ event: WSChatCreatedEvent)
     func changeGroupInfo(_ event: WSGroupInfoUpdatedEvent)
     func addMember(_ event: WSGroupMembersAddedEvent)
+    func addMember(_ event: AddedMemberEvent)
     func removeMember(_ event: WSGroupMembersRemovedEvent)
+    func removeMember(_ event: DeletedMemberEvent)
+    
+    func updateGroupInfo(_ event: UpdatedGroupInfoEvent)
+    func updateGroupPhoto(_ event: UpdatedGroupPhotoEvent)
 }
 
 protocol ChatsScreenWorkerLogic {

@@ -36,6 +36,16 @@ final class UISearchControllerCell: UITableViewCell {
         configureCell()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        DispatchQueue.main.async {
+            self.shimmerLayer.frame = self.userPhoto.bounds
+            self.shimmerLayer.layer.masksToBounds = true
+            self.shimmerLayer.layer.cornerRadius = 20
+            self.shimmerLayer.startAnimating()
+        }
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

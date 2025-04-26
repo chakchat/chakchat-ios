@@ -52,6 +52,10 @@ final class UserProfileWorker: UserProfileWorkerLogic {
             }
         }
     }
+    
+    func setExpiration(_ time: String) {
+        print(time)
+    }
 
     func blockChat(_ chatID: UUID, completion: @escaping (Result<ChatsModels.GeneralChatModel.ChatData, any Error>) -> Void) {
         guard let accessToken = keychainManager.getString(key: KeychainManager.keyForSaveAccessToken) else { return }

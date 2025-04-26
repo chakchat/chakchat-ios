@@ -94,7 +94,7 @@ final class NewGroupInteractor: NewGroupBusinessLogic {
                         case .success(let data):
                             ImageCacheManager.shared.saveImage(image, for: d.fileURL as NSURL)
                             self.routeToGroupChat(data)
-                            let event = UpdatedGroupPhotoEvent(photo: image)
+                            let event = UpdatedGroupPhotoEvent(photo: image, photoURL: d.fileURL, chatID: chatID)
                             self.eventPublisher.publish(event: event)
                         case .failure(let failure):
                             _ = self.errorHandler.handleError(failure)

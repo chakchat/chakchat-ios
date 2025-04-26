@@ -127,7 +127,7 @@ class CustomMediaMessageCell: MediaMessageCell {
             return scaledImage
             
         } catch {
-            return UIImage(systemName: "play.circle.fill")!
+            return UIImage(systemName: "play.circle.fill") ?? UIImage()
         }
     }
 }
@@ -196,7 +196,7 @@ extension CustomMediaMessageCell: UIContextMenuInteractionDelegate {
             
             let deleteMenu = UIMenu(title: "Delete", image: UIImage(systemName: "trash"), options: .destructive, children: [deleteForMe, deleteForEveryone])
             
-            return UIMenu(title: "", children: [copy, reactions, reply, load, forward, deleteMenu])
+            return UIMenu(title: "", children: [copy, reply, load, forward, deleteMenu])
         }
     }
     

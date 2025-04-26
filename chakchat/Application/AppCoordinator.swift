@@ -125,10 +125,10 @@ final class AppCoordinator {
         let mainVC = CreateChatsScreen()
         mainChatVC = mainVC
         
-        mainAppContext.wsManager.connectToWS()
-        mainAppContext.wsManager.onMessage = { [weak self] message in
-            self?.handleMessageFromWS(message)
-        }
+//        mainAppContext.wsManager.connectToWS()
+//        mainAppContext.wsManager.onMessage = { [weak self] message in
+//            self?.handleMessageFromWS(message)
+//        }
         
         navigationController.setViewControllers([mainVC], animated: true)
     }

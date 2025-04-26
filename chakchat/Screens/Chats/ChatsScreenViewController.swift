@@ -91,21 +91,13 @@ final class ChatsScreenViewController: UIViewController {
     func addNewChat(_ chatData: ChatsModels.GeneralChatModel.ChatData) {
         chatsData?.insert(chatData, at: 0)
         chatsTableView.reloadData()
-        
-        chatsTableView.performBatchUpdates({
-            chatsTableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-        }, completion: { [weak self] _ in
-            self?.chatsTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
-        })
     }
     
     func deleteChat(_ chatID: UUID) {
-        guard let index = chatsData?.firstIndex(where: { $0.chatID == chatID }) else { return }
-        
-        chatsTableView.performBatchUpdates({
-            chatsData?.remove(at: index)
-            chatsTableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-        }, completion: nil)
+        if let i = chatsData?.firstIndex(where: {$0.chatID == chatID}) {
+            chatsData?.remove(at: i)
+            chatsTableView.reloadData()
+        }
     }
     
     func changeChatPreview(_ event: WSUpdateEvent) {
@@ -151,12 +143,12 @@ final class ChatsScreenViewController: UIViewController {
         formatter.timeZone = TimeZone.current
         if let preview = chat.updatePreview {
             if !preview.isEmpty {
-                cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, getPreview(preview[0]), 1, getDate(preview[0]))
+                cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, getPreview(preview[0]), 0, getDate(preview[0]))
             } else {
-                cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, "Group chat \(event.groupInfoUpdatedData.name) created!", 1, formatter.string(from: Date.now))
+                cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, "Group chat \(event.groupInfoUpdatedData.name) created!", 0, formatter.string(from: Date.now))
             }
         } else {
-            cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, "Group chat \(event.groupInfoUpdatedData.name) created!", 1, formatter.string(from: Date.now))
+            cell.configure(event.groupInfoUpdatedData.groupPhoto, event.groupInfoUpdatedData.name, "Group chat \(event.groupInfoUpdatedData.name) created!", 0, formatter.string(from: Date.now))
         }
     }
     
@@ -174,6 +166,16 @@ final class ChatsScreenViewController: UIViewController {
         }
     }
     
+    func addMember(_ event: AddedMemberEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.chatID}),
+              var chatsData = chatsData
+        else { return }
+        var chat = chatsData[index]
+        chat.members.append(event.memberID)
+        chatsData[index] = chat
+        self.chatsData = chatsData
+    }
+    
     func removeMember(_ event: WSGroupMembersRemovedEvent) {
         guard let index = chatsData?.firstIndex(where: {$0.chatID == event.groupMembersRemovedData.chatID}),
               let chat = chatsData?[index],
@@ -185,6 +187,62 @@ final class ChatsScreenViewController: UIViewController {
         let newMember = event.groupMembersRemovedData.members.filter {!chat.members.contains($0)}
         if case .group(let groupInfo) = chat.info {
             cell.configure(groupInfo.groupPhoto, groupInfo.name, "Removed member", 1, formatter.string(from: Date.now))
+        }
+    }
+    
+    func removeMember(_ event: DeletedMemberEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.chatID}),
+              var chatsData = chatsData
+        else { return }
+        var chat = chatsData[index]
+        chat.members.removeAll(where: {$0 == event.memberID})
+        chatsData[index] = chat
+        self.chatsData = chatsData
+    }
+    
+    func updateGroupInfo(_ event: UpdatedGroupInfoEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.chatID}),
+              var chatsData = chatsData
+        else { return }
+        var chat = chatsData[index]
+        if case .group(var gi) = chat.info {
+            gi.name = event.name
+            gi.description = event.description
+            chat.info = .group(gi)
+            chatsData[index] = chat
+            self.chatsData = chatsData
+            chatsTableView.reloadData()
+        }
+
+        if case .secretGroup(var sgi) = chat.info {
+            sgi.name = event.name
+            sgi.description = event.description
+            chat.info = .secretGroup(sgi)
+            chatsData[index] = chat
+            self.chatsData = chatsData
+            chatsTableView.reloadData()
+        }
+    }
+    
+    func updateGroupPhoto(_ event: UpdatedGroupPhotoEvent) {
+        guard let index = chatsData?.firstIndex(where: {$0.chatID == event.chatID}),
+              var chatsData = chatsData
+        else { return }
+        var chat = chatsData[index]
+        if case .group(var gi) = chat.info {
+            gi.groupPhoto = event.photoURL
+            chat.info = .group(gi)
+            chatsData[index] = chat
+            self.chatsData = chatsData
+            chatsTableView.reloadData()
+        }
+
+        if case .secretGroup(var sgi) = chat.info {
+            sgi.groupPhoto = event.photoURL
+            chat.info = .secretGroup(sgi)
+            chatsData[index] = chat
+            self.chatsData = chatsData
+            chatsTableView.reloadData()
         }
     }
     
@@ -365,7 +423,7 @@ extension ChatsScreenViewController: UITableViewDelegate, UITableViewDataSource 
                         formatter.timeZone = TimeZone.current
                         if let updatePreview = item.updatePreview {
                             if !updatePreview.isEmpty {
-                                cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getPreview(updatePreview[0]), 1, self.getDate(updatePreview[0]))
+                                cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getPreview(updatePreview[0]), 0, self.getDate(updatePreview[0]))
                             } else {
                                 cell.configure(chatInfo.chatPhotoURL, self.getChatName(chatInfo, item.type), self.getCreatePreview(item), 0, formatter.string(from: item.createdAt))
                             }
