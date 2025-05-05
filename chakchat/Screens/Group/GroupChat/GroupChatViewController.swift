@@ -242,7 +242,13 @@ final class GroupChatViewController: MessagesViewController {
                 (String($0.deletedMessageID), $0.sender.senderId)
             }
         )
-        messages = messages.filter { deleteMessageDict[$0.messageId] != $0.sender.senderId }
+        
+        messages = messages.filter { message in
+            guard let senderIdToDelete = deleteMessageDict[message.messageId] else {
+                return true
+            }
+            return message.sender.senderId == senderIdToDelete
+        }
     }
     
     func updateGroupPhoto(_ image: UIImage?) {
@@ -1660,7 +1666,7 @@ class ReactionTextMessageCell: TextMessageCell {
         reactionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         self.indexPath = indexPath
-
+        
         if let message = message as? GroupMessageStatusProtocol {
             messageStatus.text = message.status.rawValue
             if message.status == .sending {
@@ -1674,7 +1680,7 @@ class ReactionTextMessageCell: TextMessageCell {
                 messageStatus.layer.removeAllAnimations()
             }
         }
-
+        
         replyView.isHidden = true
         replyMessage.text = nil
         messageTopConstraint?.isActive = false
@@ -1686,12 +1692,12 @@ class ReactionTextMessageCell: TextMessageCell {
         
         messageTopConstraint?.isActive = true
         messageBottomConstraint?.isActive = true
-
+        
         if let message = message as? GroupTextMessage {
             if let replyTo = message.replyTo {
                 replyView.isHidden = false
                 replyMessage.text = replyTo
-
+                
                 messageTopConstraint?.isActive = false
                 messageTopConstraint = messageLabel.topAnchor.constraint(equalTo: replyView.bottomAnchor, constant: 5)
                 messageTopConstraint?.isActive = true
