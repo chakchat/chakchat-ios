@@ -236,7 +236,13 @@ final class ChatViewController: MessagesViewController {
                 (String($0.deletedMessageID), $0.sender.senderId)
             }
         )
-        messages = messages.filter { deleteMessageDict[$0.messageId] != $0.sender.senderId }
+        
+        messages = messages.filter { message in
+            guard let senderIdToDelete = deleteMessageDict[message.messageId] else {
+                return true
+            }
+            return message.sender.senderId == senderIdToDelete
+        }
     }
     
 //    override func viewWillAppear(_ animated: Bool) {

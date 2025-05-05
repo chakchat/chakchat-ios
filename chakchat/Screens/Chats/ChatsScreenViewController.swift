@@ -49,6 +49,7 @@ final class ChatsScreenViewController: UIViewController {
         interactor.loadMeData()
         interactor.loadMeRestrictions()
         interactor.loadChats()
+        interactor.startPollingChats(interval: 3)
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .languageDidChange, object: nil)
         configureUI()
@@ -70,6 +71,16 @@ final class ChatsScreenViewController: UIViewController {
         shouldAnimateChatsTableView = false
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        interactor.stopPollingChats()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        interactor.startPollingChats(interval: 3)
+    }
+    
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         
@@ -80,6 +91,11 @@ final class ChatsScreenViewController: UIViewController {
     
     // MARK: - Public Methods
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData) {
+        if let chats = chatsData {
+            if chats.count == allChatsData.chats.count {
+                return 
+            }
+        }
         chatsData = allChatsData.chats.sorted { chat1, chat2 in
             let date1 = chat1.updatePreview?.first?.createdAt ?? chat1.createdAt
             let date2 = chat2.updatePreview?.first?.createdAt ?? chat2.createdAt

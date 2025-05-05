@@ -13,6 +13,9 @@ protocol ChatsScreenBusinessLogic: SearchInteractor {
     func loadMeRestrictions()
     func loadChats()
     
+    func startPollingChats(interval: TimeInterval)
+    func stopPollingChats()
+    
     func searchForExistingChat(_ userData: ProfileSettingsModels.ProfileUserData)
     
     func showChats(_ allChatsData: ChatsModels.GeneralChatModel.ChatsData)

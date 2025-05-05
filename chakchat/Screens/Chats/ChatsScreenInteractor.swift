@@ -111,6 +111,20 @@ final class ChatsScreenInteractor: ChatsScreenBusinessLogic {
         }
     }
     
+    private var pollingTimer: Timer?
+
+    func startPollingChats(interval: TimeInterval = 5.0) {
+        pollingTimer?.invalidate()
+        pollingTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            self?.loadChats()
+        }
+    }
+    
+    func stopPollingChats() {
+        pollingTimer?.invalidate()
+        pollingTimer = nil
+    }
+    
     func fetchUsers(_ name: String?, _ username: String?, _ page: Int, _ limit: Int, completion: @escaping (Result<ProfileSettingsModels.Users, any Error>) -> Void) {
         worker.fetchUsers(name, username, page, limit) { [weak self] result in
             guard self != nil else { return }

@@ -7,7 +7,8 @@
 
 import UIKit
 import OSLog
-final class GroupProfileEditViewController: UIViewController {
+import CropViewController
+final class GroupProfileEditViewController: UIViewController, CropViewControllerDelegate {
     
     // MARK: - Constants
     private enum Constants {
@@ -160,7 +161,7 @@ final class GroupProfileEditViewController: UIViewController {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
-        imagePicker.allowsEditing = true
+        //imagePicker.allowsEditing = true
         present(imagePicker, animated: true, completion: nil)
     }
     
@@ -207,9 +208,8 @@ final class GroupProfileEditViewController: UIViewController {
 extension GroupProfileEditViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let pickedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-            iconImageView.image = pickedImage
-            iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
-            isImageSet = true
+            picker.dismiss(animated: true, completion: nil)
+            showCrop(pickedImage)
         }
         let deleteAction = UIAction(
             title: LocalizationManager.shared.localizedString(for: "delete"),
@@ -225,11 +225,36 @@ extension GroupProfileEditViewController : UIImagePickerControllerDelegate, UINa
             clearButton.menu = photoMenu
             clearButton.showsMenuAsPrimaryAction = true
         }
-        picker.dismiss(animated: true, completion: nil)
     }
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
+    }
+    
+    private func showCrop(_ image: UIImage) {
+        let vc = CropViewController(croppingStyle: .circular, image: image)
+        vc.aspectRatioPreset = .presetSquare
+        vc.aspectRatioLockEnabled = true
+        vc.toolbarPosition = .top
+        vc.doneButtonTitle = "Continue"
+        vc.cancelButtonTitle = "Back"
+        vc.delegate = self
+        present(vc, animated: true)
+    }
+    
+    func cropViewController(_ cropViewController: CropViewController, didCropToImage image: UIImage, withRect cropRect: CGRect, angle: Int) {
+        addPickedImage(image)
+        cropViewController.dismiss(animated: true)
+    }
+    
+    private func addPickedImage(_ image: UIImage) {
+        iconImageView.setHeight(Constants.iconImageSize)
+        iconImageView.setWidth(Constants.iconImageSize)
+        iconImageView.image = image
+        iconImageView.contentMode = .scaleAspectFill
+        iconImageView.clipsToBounds = true
+        iconImageView.layer.cornerRadius = iconImageView.frame.width / 2
+        isImageSet = true
     }
 }
 
